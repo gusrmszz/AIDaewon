@@ -1,0 +1,1293 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>내신-모의고사 성적 분석 상담기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+/* Layout: 좌측 고정 열(파일 불러오기·학생 검색) + 우측 학생 화면(탭 4개). 좁은 화면에서는 한 열로 쌓임. */
+:root{ /* 배포 화면 가독성을 위해 다크 배경으로 고정 */
+  --bg:#0f141a; --surface:#171d25; --surface-2:#1f2731; --ink:#e8edf3; --ink-2:#aab4c1; --ink-3:#808b99;
+  --line:#2c3541; --accent:#86b6ef; --accent-soft:#1b2a3f;
+  --good:#5cc98a; --good-soft:#132f20; --bad:#f08a80; --bad-soft:#3a1a17; --warn:#e3a948; --warn-soft:#382810;
+  --hi:#7fb0ff; --hi-soft:#16284a; --t1-bg:#18263a; --t2-bg:#33291a; --up:#ff7b72; --up-soft:#3b1a1a; --down:#6cb6ff; --down-soft:#15263d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-display:"Nanum Myeongjo","AppleMyungjo","Batang",serif;
+  --r:10px;
+  color-scheme:dark }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f141a; --surface:#171d25; --surface-2:#1f2731; --ink:#e8edf3; --ink-2:#aab4c1; --ink-3:#808b99;
+  --line:#2c3541; --accent:#86b6ef; --accent-soft:#1b2a3f;
+  --good:#5cc98a; --good-soft:#132f20; --bad:#f08a80; --bad-soft:#3a1a17; --warn:#e3a948; --warn-soft:#382810;
+  --hi:#7fb0ff; --hi-soft:#16284a; --t1-bg:#18263a; --t2-bg:#33291a; --up:#ff7b72; --up-soft:#3b1a1a; --down:#6cb6ff; --down-soft:#15263d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f141a; --surface:#171d25; --surface-2:#1f2731; --ink:#e8edf3; --ink-2:#aab4c1; --ink-3:#808b99;
+  --line:#2c3541; --accent:#86b6ef; --accent-soft:#1b2a3f;
+  --good:#5cc98a; --good-soft:#132f20; --bad:#f08a80; --bad-soft:#3a1a17; --warn:#e3a948; --warn-soft:#382810;
+  --hi:#7fb0ff; --hi-soft:#16284a; --t1-bg:#18263a; --t2-bg:#33291a; --up:#ff7b72; --up-soft:#3b1a1a; --down:#6cb6ff; --down-soft:#15263d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.app{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
+.topbar{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;border-bottom:1px solid var(--line);padding-block:4px 12px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand-name{font-family:var(--f-display);font-weight:800;font-size:24px;letter-spacing:-.01em}
+.brand-sub{color:var(--ink-3);font-size:15px}
+.src{font-size:14.5px;color:var(--ink-2)}
+.src b{color:var(--ink)}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:860px){.side{position:static}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.lbl{font-size:14px;font-weight:600;color:var(--ink-2);letter-spacing:.02em}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:14px 12px;text-align:left;background:var(--surface-2);cursor:pointer;display:flex;flex-direction:column;gap:2px;width:100%}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{font-size:16px}
+.drop span{font-size:14px;color:var(--ink-3)}
+.privacy{font-size:13.5px;color:var(--ink-3);margin:0}
+.report{font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px}
+.report ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px}
+.report details summary{cursor:pointer;color:var(--ink)}
+.err{color:var(--bad);font-size:15px}
+.sample-flag{display:inline-block;font-size:13px;font-weight:600;padding:1px 7px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+#q{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.results{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:52vh;overflow:auto}
+.results button{width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:7px;cursor:pointer;display:flex;flex-direction:column}
+.results button:hover{background:var(--surface-2)}
+.results button[aria-current="true"]{background:var(--accent-soft)}
+.results .nm{font-weight:600}
+.results .meta{font-size:14px;color:var(--ink-3)}
+.hint{font-size:14.5px;color:var(--ink-3);margin:0}
+main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.stu{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px}
+.stu h1{font-family:var(--f-display);font-weight:800;font-size:30px;margin:0;line-height:1.2;text-wrap:balance}
+.stu .where{color:var(--ink-2);font-size:16px}
+.stu .hist{color:var(--ink-3);font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface-2);color:var(--ink-2)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.up{background:var(--up-soft);color:var(--up)}
+.chip.down{background:var(--down-soft);color:var(--down)}
+b.dir{font-weight:700}
+b.mk-ok{color:var(--good);font-weight:800}
+b.mk-no{color:var(--bad);font-weight:800}
+b.dir.up{color:var(--up)}
+b.dir.down{color:var(--down)}
+b.dir.same{color:var(--ink-2)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:1100px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h2{font-size:17px;margin:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h2 .no{color:var(--accent);font-weight:700}
+.card h2 small{font-weight:400;color:var(--ink-3);font-size:14px}
+.card h3{font-size:15px;margin:0;color:var(--ink-2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.kpi{background:var(--surface-2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.kpi .k{font-size:14px;color:var(--ink-2)}
+.kpi .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .s{font-size:13.5px;color:var(--ink-3)}
+.note{font-size:14.5px;color:var(--ink-3);margin:0}
+.msg{font-size:15px;background:var(--surface-2);border-radius:8px;padding:10px 12px;color:var(--ink-2);margin:0}
+.tw{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--ink-2);font-size:14px;background:var(--surface-2)}
+th:first-child,td:first-child{text-align:left}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+tr.sel td{background:var(--accent-soft)}
+td.cell{cursor:pointer}
+td.cell:hover{background:var(--surface-2)}
+td.cell.sel{background:var(--accent-soft);font-weight:700}
+td.muted,span.muted{color:var(--ink-3)}
+.strip{display:flex;flex-direction:column;gap:2px}
+.strip-row{display:grid;grid-template-columns:120px minmax(0,1fr) 48px;align-items:center;gap:10px;padding:6px 6px;border-radius:7px;border:0;background:none;text-align:left;cursor:pointer;width:100%}
+.strip-row:hover{background:var(--surface-2)}
+.strip-row.sel{background:var(--accent-soft)}
+.strip-row .nm{font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sw{width:9px;height:9px;border-radius:2px;flex:none}
+.track{position:relative;height:18px}
+.track::before{content:"";position:absolute;left:0;right:0;top:8px;height:2px;background:var(--line);border-radius:2px}
+.track .tk{position:absolute;top:4px;width:1px;height:10px;background:var(--line)}
+.track .dot{position:absolute;top:3px;width:12px;height:12px;border-radius:50%;transform:translateX(-6px);border:2px solid var(--surface)}
+.strip-axis{display:grid;grid-template-columns:120px minmax(0,1fr) 48px;gap:10px;padding-inline:6px;font-size:13px;color:var(--ink-3)}
+.strip-axis div{display:flex;justify-content:space-between}
+.bd{margin:2px 6px 10px 136px;display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:14.5px}
+@media (max-width:560px){.bd{margin-left:6px}}
+.bd-list{display:flex;flex-wrap:wrap;gap:6px}
+.bd-item{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 9px}
+.bd-item b{font-variant-numeric:tabular-nums}
+.bd-item .sm{color:var(--ink-3);font-size:13.5px}
+.bd-item.off{opacity:.7;border-style:dashed}
+.bd-f{color:var(--ink-2);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.bd-f strong{color:var(--ink)}
+tr.bd-row td{background:var(--surface);white-space:normal;text-align:left;padding:0}
+tr.bd-row .bd{margin:6px 0 10px}
+.strip-row .chev{font-size:12px;color:var(--ink-3);width:10px;flex:none;transition:transform .15s}
+.strip-row[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.strip-row .val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.chart{position:relative;min-width:0}
+.chart svg{display:block;overflow:visible}
+.chart text{font-family:var(--f-body);font-size:13.5px;fill:var(--ink-3)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart text.vlab{fill:var(--ink);font-weight:700}
+.chart .xh{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.legend{display:flex;flex-wrap:wrap;gap:4px 6px;margin-bottom:6px}
+.legend button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:2px 10px;font-size:14px;cursor:pointer}
+.legend button[aria-pressed="false"]{opacity:.45}
+.legend button[aria-pressed="false"] .sw{background:transparent!important;outline:1.5px solid var(--ink-3)}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12);min-width:120px;z-index:3}
+.tip b{display:block;margin-bottom:4px}
+.tip div{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.tip div span:first-child{display:flex;align-items:center;gap:6px}
+.chart-cap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:5px 12px;font-size:14.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface);font-weight:600}
+.mock-now{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mock-cell{background:var(--surface-2);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:baseline}
+.mock-cell .a{font-size:14.5px;color:var(--ink-2)}
+.mock-cell .g{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.mock-cell .g small{font-size:13px;font-weight:500;color:var(--ink-3);margin-left:1px}
+@media (max-width:480px){.mock-now{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.verdict{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:15px}
+.ctrl{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.ctrl label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--ink-2);font-weight:600}
+.ctrl select,.ctrl input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-width:110px;font-weight:500}
+.ctrl input{width:110px;min-width:0}
+ul.bul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.essay{font-size:15.5px;line-height:1.75;background:var(--surface-2);border-radius:8px;padding:12px 14px;margin:0;white-space:pre-wrap;user-select:text}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14.5px;font-weight:600}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.qs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.qs label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.qs input{margin-top:4px}
+.detail{display:flex;flex-direction:column;gap:10px}
+.detail .formula{font-size:14.5px;background:var(--surface-2);border-radius:8px;padding:8px 10px;color:var(--ink-2);overflow-wrap:anywhere}
+.detail .big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){.split{grid-template-columns:minmax(0,1fr)}}
+table.plan select,table.plan input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:15px}
+table.plan input[type=text]{width:100%;min-width:120px}
+table.plan td{vertical-align:middle}
+.btn.xs{padding:3px 8px;font-size:14px;font-weight:500}
+.qi{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.qi:last-child{border-bottom:0}
+.qb{display:flex;flex-direction:column;gap:4px}
+.qtag{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qev{font-size:14px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.qq{font-weight:500}
+.qfix{display:flex;gap:8px;align-items:baseline;color:var(--ink-2)}
+.qfix b{flex:none;font-size:12px;padding:1px 7px;border-radius:5px;background:var(--hi-soft);color:var(--hi)}
+.qmemo{padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface);font-size:15px;margin-left:24px}
+#qAdd.qmemo{margin-left:0}
+#detail td:first-child{white-space:normal}
+#detail th,#detail td{padding:7px 6px}
+.ach{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 5px;border-radius:5px;font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.ach-A{color:var(--hi);border-color:var(--hi);background:var(--hi-soft)}
+td.hi{color:var(--hi);font-weight:700}
+.mtab td,.mtab th{text-align:center}
+.mtab td:first-child,.mtab th:first-child{text-align:left}
+.mtab th.grp{text-align:center;font-size:14px;color:var(--ink)}
+.mtab th.grp small{font-weight:500;color:var(--ink-3);font-size:12px;margin-left:4px}
+.mtab .t1{background:var(--t1-bg)}
+.mtab .t2{background:var(--t2-bg)}
+.mtab th.t1,.mtab th.t2{color:var(--ink)}
+.mtab .gs{border-left:2px solid var(--ink-3)}
+.mtab td.mt{font-weight:700;font-size:16px;text-align:center}
+.mtab th.t1,.mtab th.t2{text-align:center}
+.mtab td.tq{color:var(--ink-2);font-weight:600;font-size:15px}
+.mtab td.tg{outline:2px solid currentColor;outline-offset:-3px;border-radius:4px}
+.mlab{padding:2px 8px;border-radius:6px}
+.mlab.t1{background:var(--t1-bg)}
+.mlab.t2{background:var(--t2-bg)}
+.rktab td{padding:6px 8px}
+.rktab tr.rk-first td{border-top:2px solid var(--line)}
+.rktab td.rk-r{font-weight:700;font-size:18px;vertical-align:top}
+.rktab td.rk-n{text-align:left;vertical-align:top;white-space:nowrap}
+.rktab td.rk-n span,.rktab td.rk-c span{display:block;font-size:12px;color:var(--ink-3);font-weight:400}
+.rktab td.rk-r .sub{display:block;font-size:12px;font-weight:500;color:var(--ink-3)}
+.rktab td.rk-c{font-weight:700;vertical-align:top}
+.rktab td.rk-m{color:var(--ink-2);text-align:center}
+.rktab td.rk-s{font-weight:700}
+.rktab td.rk-s span{font-size:12px;margin-left:3px}
+.rktab td.rk-s.ok{color:var(--good);background:var(--good-soft)}
+.rktab td.rk-s.no{color:var(--bad);background:var(--bad-soft)}
+.linkbtn{border:0;background:none;padding:0;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.rktab td.rk-n span.rk-cnt{margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.rk-cnt b.ok{color:var(--good)}
+.rk-cnt b.no{color:var(--bad)}
+.h2chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--ink-2);cursor:pointer;padding:3px 10px;border:1px solid var(--line);border-radius:99px;background:var(--surface)}
+.h2chk select{border:0;background:transparent;font-weight:600;color:var(--ink);padding:2px 2px;font-size:14px;cursor:pointer}
+.cn-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cn-grid.one{grid-template-columns:minmax(0,1fr)}
+@media (max-width:1100px){.cn-grid{grid-template-columns:minmax(0,1fr)}}
+.cn-mini{display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--surface-2);border-radius:8px;padding:10px 10px 4px}
+.cn-mini h3{display:flex;align-items:center;gap:6px;color:var(--ink);font-size:15px}
+.cn-mini h3 small{color:var(--ink-3);font-weight:500}
+.cntab td{padding:7px 10px}
+.cntab td.cn-v b{font-size:17px}
+.cntab .sub{display:block;font-size:12px;color:var(--ink-3)}
+.cntab em{font-style:normal;font-weight:700}
+.cntab em.up{color:var(--up)}
+.cntab em.down{color:var(--down)}
+.uvtab td{vertical-align:top}
+.uvtab thead th{position:sticky;top:0;z-index:3;background:var(--surface-2);box-shadow:inset 0 -1px 0 var(--line)}
+.uvtab tr.uv-sec td{position:relative;z-index:1}
+.uvtab tr.uv-first td{border-top:2px solid var(--line)}
+.uvtab tr.uv-sec td{background:var(--accent-soft);color:var(--accent);font-weight:800;text-align:left;font-size:15px}
+.uvtab td.uv-u{font-weight:800;text-align:left;white-space:nowrap;vertical-align:top;background:var(--surface);border-right:1px solid var(--line)}
+.uv-stick{position:sticky;top:calc(var(--uvh,40px) + 6px);display:flex;flex-direction:column}
+.uv-stick small{font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.uvtab td.uv-t b{display:block}
+.uvtab td.uv-t{text-align:left;white-space:normal;min-width:180px;max-width:280px}
+.uvtab td.uv-t span{display:block;font-size:12px;color:var(--ink-3);line-height:1.35}
+.uvtab td.uv-k{text-align:left;white-space:normal;min-width:170px;max-width:260px}
+.uvtab td.uv-k b{font-size:15px}
+.uv-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.uv-chip{font-size:11.5px;padding:0 6px;border-radius:5px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.uv-chip.key{background:var(--warn-soft);color:var(--warn);border-color:transparent;font-weight:700}
+.uv-info{font-size:12.5px;color:var(--ink-3);margin-top:4px;line-height:1.4}
+.uv-warn{font-size:11.5px;padding:0 6px;border-radius:5px;border:1px dashed var(--ink-3);color:var(--ink-3);cursor:help}
+.uvtab td.uv-c{text-align:center;min-width:76px}
+.uvtab td.uv-c b{display:block;font-size:14px}
+.uvtab td.uv-c span{display:block;font-size:11.5px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.uvtab td.uv-c span.bad{color:var(--bad);font-weight:700}
+.uvtab td.uv-c.ok span{color:var(--good)}
+.uvtab td.uv-c.ok{background:var(--good-soft);color:var(--good)}
+.uvtab td.uv-c.no{background:var(--bad-soft);color:var(--bad)}
+.uvtab td.uv-c.na{color:var(--ink-3);font-size:12px}
+.uvtab td.uv-n{font-weight:800;text-align:center}
+.uvtab td.uv-n.ok{color:var(--good)}
+.rk-wrap{max-height:75vh;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.rktab thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);box-shadow:inset 0 -1px 0 var(--line)}
+.rktab thead th.t1{background:var(--t1-bg)}
+.rktab thead th.t2{background:var(--t2-bg)}
+.ctrl.one select:disabled{opacity:.5}
+.ctrl.one{flex-wrap:nowrap;overflow-x:auto;gap:10px;padding-bottom:4px}
+.ctrl.one label{flex:none}
+.ctrl.one select{min-width:0}
+.ctrl.one input{width:64px}
+.ctrl label.chk{flex-direction:row;align-items:center;gap:6px;align-self:center}
+.ctrl label.chk input{min-width:0;width:auto}
+.mtab td.tg.ok{color:var(--good);background:var(--good-soft)}
+.mtab td.tg.no{color:var(--bad);background:var(--bad-soft)}
+.mtab td.warn5{color:var(--bad);font-weight:700;outline:2px solid var(--bad);outline-offset:-4px;border-radius:4px}
+.empty{padding:40px 16px;text-align:center;color:var(--ink-3)}
+.empty strong{display:block;color:var(--ink);font-size:18px;margin-bottom:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-name">내신-모의고사 성적 분석 상담기</span><span class="brand-sub">충주대원고등학교</span></div>
+    <div class="src" id="srcInfo"></div>
+  </header>
+  <div class="layout">
+    <aside class="side">
+      <section class="panel" aria-label="성적 데이터 불러오기">
+        <div class="lbl">성적 데이터 불러오기</div>
+        <button type="button" class="drop" id="drop"><strong>엑셀 파일 선택 또는 끌어 놓기</strong><span>.xlsx · 학생정보, 재학이력, 내신, 모의_*, 과목목록 시트</span></button>
+        <input type="file" id="file" accept=".xlsx,.xlsm,.xls" hidden>
+        <p class="privacy">파일은 이 브라우저 안에서만 읽습니다. 서버로 전송하거나 저장하지 않으며, 창을 닫으면 사라집니다.</p>
+        <div class="report" id="report"></div>
+      </section>
+      <section class="panel" aria-label="학생 검색">
+        <label class="lbl" for="q">학생 이름 검색</label>
+        <input id="q" type="search" placeholder="예: 홍길동" autocomplete="off">
+        <ul class="results" id="results"></ul>
+      </section>
+    </aside>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+/* ───────── 기본 유틸 ───────── */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=h=>h==null?"":String(h).replace(/\s+/g,"").toUpperCase();
+const txt=v=>v==null?"":String(v).trim();
+function num(v){if(v==null||v==="")return null;if(typeof v==="number")return isFinite(v)?v:null;const s=String(v).trim().replace(/,/g,"");return /^-?\d+(\.\d+)?$/.test(s)?Number(s):null}
+function grd(v){const n=num(v);return n!=null&&Number.isInteger(n)&&n>=1&&n<=9?n:null}
+const r2=x=>Math.round((x+1e-9)*100)/100;
+const f2=x=>x==null?"–":r2(x).toFixed(2);
+const ro=v=>/[036]$/.test(String(v))?"으로":"로";
+const fv=x=>x==null?"–":(Number.isInteger(x)?String(x):String(r2(x)));
+function wavg(list){let sc=0,sg=0;for(const r of list){sc+=r.credit;sg+=r.g*r.credit}return sc?sg/sc:null}
+
+const SUBJ_FIRST=["국어","수학","영어","사회","과학"];
+const SUBJ_COLOR={국어:1,수학:2,영어:3,사회:4,과학:5,생활교양:6,예체능:7,교양:8,기타:8};
+const MOCK_LIMIT=4; /* 모의고사는 성적이 있는 회차 중 가장 최근 4회만 분석 */
+const AREA_ORDER=["국어","수학","영어","한국사","통합사회","통합과학"];
+const AREA_COLOR={국어:1,수학:2,영어:3,통합사회:4,통합과학:5,한국사:7};
+const colorOf=(map,name,i)=>`var(--s${map[name]||((i%8)+1)})`;
+
+/* ───────── 시트 해석 ───────── */
+function tbl(aoa){if(!aoa||!aoa.length)return null;const H=(aoa[0]||[]).map(norm);const rows=aoa.slice(1).filter(r=>r&&r.some(v=>v!=null&&String(v).trim()!==""));return{H,rows}}
+function ci(H,...names){for(const n of names){const i=H.indexOf(norm(n));if(i>=0)return i}return -1}
+const gv=(r,i)=>i<0||r[i]===undefined?null:r[i];
+function mode(arr){const m=new Map();for(const v of arr)if(v!=null)m.set(v,(m.get(v)||0)+1);let b=null,c=0;for(const[k,n]of m)if(n>c){b=k;c=n}return b}
+
+function build(sheets,fileName,isSample){
+  const rep={warn:[],info:[],mocks:[]};
+  const names=Object.keys(sheets);
+  const find=n=>names.find(x=>norm(x)===norm(n));
+  /* 과목목록: 과목명 열과 그 왼쪽의 교과군 열을 짝으로 읽음 */
+  const subjMap=new Map();let groupOrder=[];
+  const sl=find("과목목록");
+  if(sl){const a=sheets[sl];const H=(a[0]||[]).map(norm);const pi=H.indexOf(norm("과목명"));let gi=-1;
+    if(pi>0)for(let k=pi-1;k>=0;k--)if(H[k]===norm("교과군")||H[k]===norm("교과")){gi=k;break}
+    if(pi>=0&&gi>=0)for(const r of a.slice(1)){const s=txt(r[pi]),g=txt(r[gi]);if(s&&g)subjMap.set(norm(s),g)}
+    const g0=H.indexOf(norm("교과군"));
+    if(g0>=0&&g0!==gi)groupOrder=a.slice(1).map(r=>txt(r[g0])).filter(Boolean);
+    else groupOrder=[...new Set(subjMap.values())];
+  }else rep.warn.push("과목목록 시트가 없습니다. 내신 시트의 교과군 열만 사용합니다.");
+
+  /* 학생정보 */
+  const students=new Map();const nameIdx=new Map();
+  const si=find("학생정보");
+  if(si){const t=tbl(sheets[si]);if(t){const c={id:ci(t.H,"학생ID"),nm:ci(t.H,"이름","성명"),gr:ci(t.H,"현재학년","학년"),cl:ci(t.H,"현재반","반"),no:ci(t.H,"현재번호","번호"),st:ci(t.H,"재학상태","상태")};
+    for(const r of t.rows){const id=txt(gv(r,c.id)),nm=txt(gv(r,c.nm));if(!id||!nm)continue;
+      students.set(id,{id,name:nm,grade:num(gv(r,c.gr)),cls:num(gv(r,c.cl)),no:num(gv(r,c.no)),status:txt(gv(r,c.st)),hist:[]})}}}
+  else rep.warn.push("학생정보 시트가 없어 내신·모의 시트의 이름으로 학생 목록을 만들었습니다.");
+  for(const s of students.values()){const a=nameIdx.get(s.name)||[];a.push(s.id);nameIdx.set(s.name,a)}
+  const link={byName:0,unmatched:0,added:0};
+  function resolve(idv,nmv,r,c){let id=txt(idv);const nm=txt(nmv);
+    if(!id&&nm){const ids=nameIdx.get(nm);if(ids&&ids.length===1){link.byName++;id=ids[0]}else{link.unmatched++;return null}}
+    if(!id)return null;
+    if(!students.has(id)){students.set(id,{id,name:nm||id,grade:num(gv(r,c.gr)),cls:num(gv(r,c.cl)),no:num(gv(r,c.no)),status:"",hist:[]});link.added++;
+      const a=nameIdx.get(nm||id)||[];a.push(id);nameIdx.set(nm||id,a)}
+    return id}
+
+  /* 재학이력 */
+  const hi=find("재학이력");
+  if(hi){const t=tbl(sheets[hi]);if(t){const c={yr:ci(t.H,"학년도"),gr:ci(t.H,"학년"),cl:ci(t.H,"반"),no:ci(t.H,"번호"),nm:ci(t.H,"이름"),id:ci(t.H,"학생ID")};
+    for(const r of t.rows){if(!txt(gv(r,c.nm))&&!txt(gv(r,c.id)))continue;const id=resolve(gv(r,c.id),gv(r,c.nm),r,c);if(!id)continue;
+      students.get(id).hist.push({year:num(gv(r,c.yr)),grade:num(gv(r,c.gr)),cls:num(gv(r,c.cl)),no:num(gv(r,c.no))})}}}
+
+  /* 내신 */
+  const naesin=new Map();let maxG=0,nRows=0,badChk=0,noKey=0;const unknownSubj=new Set();const semSeen=new Map();
+  const ni=find("내신");
+  if(ni){const t=tbl(sheets[ni]);if(t){const c={yr:ci(t.H,"학년도"),se:ci(t.H,"학기"),gr:ci(t.H,"학년"),cl:ci(t.H,"반"),no:ci(t.H,"번호"),nm:ci(t.H,"이름","성명"),grp:ci(t.H,"교과군","교과"),sub:ci(t.H,"과목명","과목"),cr:ci(t.H,"학점","이수학점","단위수"),ach:ci(t.H,"성취도"),gd:ci(t.H,"등급","석차등급"),raw:ci(t.H,"원점수"),id:ci(t.H,"학생ID"),chk:ci(t.H,"입력확인")};
+    const miss=[["학기",c.se],["학년",c.gr],["과목명",c.sub],["학점",c.cr],["등급",c.gd]].filter(x=>x[1]<0).map(x=>x[0]);
+    if(miss.length)rep.warn.push(`내신 시트에서 필요한 열을 찾지 못했습니다: ${miss.join(", ")}`);
+    for(const r of t.rows){const sub=txt(gv(r,c.sub));if(!sub)continue;
+      const chk=txt(gv(r,c.chk));if(c.chk>=0&&chk&&chk!=="정상")badChk++;
+      const id=resolve(gv(r,c.id),gv(r,c.nm),r,c);if(!id)continue;
+      const gr=num(gv(r,c.gr)),se=num(gv(r,c.se));if(gr==null||se==null){noKey++;continue}
+      let grp=txt(gv(r,c.grp));if(!grp)grp=subjMap.get(norm(sub))||"";if(!grp){unknownSubj.add(sub);grp="기타"}
+      const rec={year:num(gv(r,c.yr)),grade:gr,sem:se,subject:sub,group:grp,credit:num(gv(r,c.cr)),ach:txt(gv(r,c.ach)),raw:num(gv(r,c.raw)),g:grd(gv(r,c.gd))};
+      if(rec.g!=null&&rec.g>maxG)maxG=rec.g;
+      if(!naesin.has(id))naesin.set(id,[]);naesin.get(id).push(rec);nRows++;
+      const sk=`${rec.year??""}학년도 ${gr}학년 ${se}학기`;semSeen.set(sk,(semSeen.get(sk)||0)+1)}}}
+  else rep.warn.push("내신 시트가 없습니다.");
+
+  /* 모의_* */
+  const mocks=[];
+  for(const sn of names.filter(n=>/^모의_/.test(n.trim()))){const t=tbl(sheets[sn]);if(!t)continue;
+    const c={yr:ci(t.H,"시행연도","연도","학년도"),mo:ci(t.H,"시행월","월"),gr:ci(t.H,"학년"),cl:ci(t.H,"반"),no:ci(t.H,"번호"),nm:ci(t.H,"이름","성명"),ar:ci(t.H,"영역","과목"),raw:ci(t.H,"원점수"),std:ci(t.H,"표준점수"),pct:ci(t.H,"백분위"),gd:ci(t.H,"등급"),id:ci(t.H,"학생ID"),chk:ci(t.H,"입력확인")};
+    const rows=new Map();let bad=0;const ys=[],ms=[],gs=[];
+    for(const r of t.rows){const ar=txt(gv(r,c.ar));if(!ar)continue;const chk=txt(gv(r,c.chk));if(c.chk>=0&&chk&&chk!=="정상")bad++;
+      const id=resolve(gv(r,c.id),gv(r,c.nm),r,c);if(!id)continue;
+      ys.push(num(gv(r,c.yr)));ms.push(num(gv(r,c.mo)));gs.push(num(gv(r,c.gr)));
+      if(!rows.has(id))rows.set(id,new Map());
+      rows.get(id).set(ar,{raw:num(gv(r,c.raw)),std:num(gv(r,c.std)),pct:num(gv(r,c.pct)),g:grd(gv(r,c.gd))})}
+    let n=0;for(const am of rows.values())if([...am.values()].some(x=>x.g!=null))n++;
+    const m={sheet:sn,year:mode(ys),month:mode(ms),level:mode(gs),rows,n};mocks.push(m);
+    rep.mocks.push({sheet:sn,label:mockName(m),n,bad})}
+  mocks.sort((a,b)=>(a.year??0)-(b.year??0)||(a.month??0)-(b.month??0)||a.sheet.localeCompare(b.sheet));
+  rep.mocks.sort((a,b)=>mocks.findIndex(m=>m.sheet===a.sheet)-mocks.findIndex(m=>m.sheet===b.sheet));
+
+  if(!ni&&!mocks.length)throw new Error(`내신 시트와 모의_ 시트를 찾지 못했습니다. 이 파일의 시트: ${names.join(", ")}`);
+  if(badChk)rep.warn.push(`내신 시트에서 입력확인이 '정상'이 아닌 행 ${badChk}개`);
+  for(const m of rep.mocks)if(m.bad)rep.warn.push(`${m.sheet}에서 입력확인이 '정상'이 아닌 행 ${m.bad}개`);
+  if(link.byName)rep.warn.push(`학생ID가 비어 있어 이름으로 연결한 행 ${link.byName}개`);
+  if(link.unmatched)rep.warn.push(`학생ID가 없고 이름으로도 한 명을 특정할 수 없어 제외한 행 ${link.unmatched}개`);
+  if(link.added)rep.warn.push(`학생정보에 없는 학생ID ${link.added}명을 성적 시트 기준으로 추가`);
+  if(noKey)rep.warn.push(`학년 또는 학기가 비어 제외한 내신 행 ${noKey}개`);
+  if(unknownSubj.size)rep.warn.push(`교과군을 찾지 못해 '기타'로 분류한 과목: ${[...unknownSubj].join(", ")}`);
+  rep.info.push(`학생 ${students.size}명`);
+  rep.info.push(`내신 ${nRows}행 · ${[...semSeen.keys()].join(", ")||"자료 없음"}`);
+  return{fileName,isSample,students,naesin,mocks,groupOrder,gradeMax:maxG>5?9:5,rep}
+}
+function mockName(m){return m.month!=null?`${m.year!=null?m.year+"년 ":""}${m.month}월`:m.sheet}
+
+/* ───────── 학생 분석 ───────── */
+function analyze(id){
+  const st=DB.students.get(id);
+  const rows=DB.naesin.get(id)||[];
+  const semMap=new Map();
+  for(const r of rows){const k=`${r.grade}|${r.sem}|${r.year??""}`;if(!semMap.has(k))semMap.set(k,{grade:r.grade,sem:r.sem,year:r.year,rows:[]});semMap.get(k).rows.push(r)}
+  const sems=[...semMap.values()].sort((a,b)=>a.grade-b.grade||a.sem-b.sem||(a.year??0)-(b.year??0));
+  const cnt=new Map();for(const s of sems){const k=`${s.grade}-${s.sem}`;cnt.set(k,(cnt.get(k)||0)+1)}
+  const acc=[];
+  for(const s of sems){const dup=cnt.get(`${s.grade}-${s.sem}`)>1;
+    s.label=`${s.grade}-${s.sem}`+(dup?`(${s.year})`:"");s.long=`${s.grade}학년 ${s.sem}학기`+(dup?` (${s.year}학년도)`:"");
+    s.graded=s.rows.filter(r=>r.g!=null&&r.credit>0);
+    s.avg=wavg(s.graded);acc.push(...s.graded);s.cum=wavg(acc);
+    s.credTotal=s.rows.reduce((p,r)=>p+(r.credit>0?r.credit:0),0);s.credGraded=s.graded.reduce((p,r)=>p+r.credit,0);
+    for(const r of s.rows)r.semLabel=s.label}
+  const semsV=sems.filter(s=>s.avg!=null);
+  const gset=new Set();for(const s of sems)for(const r of s.graded)gset.add(r.group);
+  const order=[...SUBJ_FIRST,...DB.groupOrder.filter(g=>!SUBJ_FIRST.includes(g))];
+  const groups=[...gset].sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b)});
+  const subjSem={},subjCum={};
+  for(const g of groups){subjSem[g]=sems.map(s=>wavg(s.graded.filter(r=>r.group===g)));subjCum[g]=wavg(acc.filter(r=>r.group===g))}
+  /* 모의 */
+  const inc=[],exc=[];
+  for(const m of DB.mocks){const am=m.rows.get(id);if(am&&[...am.values()].some(x=>x.g!=null))inc.push({m,areas:am});else exc.push(m)}
+  const older=inc.length>MOCK_LIMIT?inc.splice(0,inc.length-MOCK_LIMIT):[];
+  const multiYear=new Set(inc.map(x=>x.m.year)).size>1;
+  for(const x of inc){x.label=x.m.month!=null?(multiYear?`${String(x.m.year).slice(-2)}년 ${x.m.month}월`:`${x.m.month}월`):x.m.sheet;x.min=minCalc(x.areas)}
+  const areaSet=new Set();for(const x of inc)for(const[a,v]of x.areas)if(v.g!=null||v.pct!=null)areaSet.add(a);
+  const areas=[...areaSet].sort((a,b)=>{const ia=AREA_ORDER.indexOf(a),ib=AREA_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b)});
+  return{st,sems,semsV,groups,subjSem,subjCum,allGraded:acc,mocks:inc,mockExcluded:exc,mockOlder:older,areas}
+}
+function minCalc(a){const G=n=>a.get(n)?.g??null;const k=G("국어"),m=G("수학"),e=G("영어"),s=G("통합사회"),c=G("통합과학");
+  const miss=[["국어",k],["수학",m],["영어",e],["통합사회",s],["통합과학",c]].filter(x=>x[1]==null).map(x=>x[0]);
+  if(miss.length)return{miss};
+  const t1=Math.min(s,c),t2=Math.floor((s+c)/2);
+  const sums=t=>{const v=[k,m,e,t].sort((x,y)=>x-y);return{2:v[0]+v[1],3:v[0]+v[1]+v[2],4:v[0]+v[1]+v[2]+v[3],sorted:v}};
+  return{k,m,e,s,c,t1,t2,S:{t1:sums(t1),t2:sums(t2)}}}
+
+/* ───────── 목표 최저기준 (브라우저별 편의 저장) ───────── */
+let T={method:"t1",n:3,goal:7};
+try{const s=JSON.parse(localStorage.getItem("gw.target")||"null");if(s&&["t1","t2"].includes(s.method)&&[2,3,4].includes(s.n)&&s.goal>0)T=s}catch(e){}
+function saveT(){try{localStorage.setItem("gw.target",JSON.stringify(T))}catch(e){}}
+const mName=m=>m==="t1"?"탐구1":"탐구2";
+/* 탐구1·탐구2 두 방식 모두 판정 (m 생략 시 탐구1) */
+function judge(x,m="t1"){if(!x.min||x.min.miss)return null;const v=x.min.S[m][T.n];return{v,ok:v<=T.goal}}
+const okTxt=j=>j.ok?"⟦충족⟧":"⟦미충족⟧";
+function bothTxt(a,b){return a.ok&&b.ok?"두 방식 모두 충족":!a.ok&&!b.ok?"두 방식 모두 미충족":a.ok?"탐구1 기준만 충족":"탐구2 기준만 충족"}
+function streak(A,m="t1"){let n=0;for(let i=A.mocks.length-1;i>=0;i--){const j=judge(A.mocks[i],m);if(!j)break;if(j.ok)n++;else break}return n}
+
+/* ───────── 문장 생성 (계산 결과만 사용) ───────── */
+/* 등급은 숫자가 작을수록 좋으므로 값이 줄면 '상승' */
+function dir(prev,cur){const d=r2(cur)-r2(prev);return d<0?"상승":d>0?"하락":"유지"}
+const tg=w=>`⟦${w}⟧`; /* 문장 안 방향 표시 → mark()에서 색 입힘 */
+function mark(s){return esc(s).replace(/⟦(상승|하락|유지|미충족|충족)⟧/g,(m,w)=>w==="충족"?`<b class="mk-ok">충족</b>`:w==="미충족"?`<b class="mk-no">미충족</b>`:`<b class="dir ${w==="상승"?"up":w==="하락"?"down":"same"}">${w}</b>`)}
+function insights(A){
+  const out=[];const S=A.semsV;
+  if(S.length===1)out.push(`아직 한 학기(${S[0].long})의 성적만 있어 학기 간 성적 변화는 분석하지 않습니다. 현재 학기 평균내신은 ${f2(S[0].avg)}입니다.`);
+  if(S.length>=2){const a=S[S.length-2],b=S[S.length-1];const d=dir(a.avg,b.avg),d2=dir(a.cum,b.cum);
+    out.push(`최근 학기 평균내신: ${a.label} ${f2(a.avg)} → ${b.label} ${f2(b.avg)} ${tg(d)}`);
+    out.push(`누적 평균내신: ${f2(a.cum)} → ${f2(b.cum)} ${tg(d2)}`)}
+  let big=null;
+  for(const g of A.groups){const seq=A.sems.map((s,i)=>({l:s.label,v:A.subjSem[g][i]})).filter(x=>x.v!=null);
+    if(seq.length>=3){const l3=seq.slice(-3).map(x=>r2(x.v));
+      if(l3[0]>l3[1]&&l3[1]>l3[2])out.push(`${g} 교과: 최근 3개 학기 연속 ${tg("상승")} (${l3.map(v=>v.toFixed(2)).join(" → ")})`);
+      else if(l3[0]<l3[1]&&l3[1]<l3[2])out.push(`${g} 교과: 최근 3개 학기 연속 ${tg("하락")} (${l3.map(v=>v.toFixed(2)).join(" → ")})`)}
+    if(seq.length>=2){const p=seq[seq.length-2],q=seq[seq.length-1];const d=Math.abs(r2(q.v)-r2(p.v));if(d>0&&(!big||d>big.d))big={g,p,q,d}}}
+  if(big)out.push(`직전 학기 대비 변화가 가장 큰 교과: ${big.g} ${big.p.l} ${f2(big.p.v)} → ${big.q.l} ${f2(big.q.v)} ${tg(dir(big.p.v,big.q.v))}`);
+  const M=A.mocks;
+  if(!M.length)out.push("입력된 모의고사 성적이 없습니다.");
+  if(M.length===1)out.push(`모의고사 성적이 한 회차(${M[0].label})만 있어 회차 간 변화는 분석하지 않습니다.`);
+  if(M.length>=2){const f=M[0],l=M[M.length-1];const up=[],dn=[];
+    for(const a of A.areas){const x=f.areas.get(a)?.g,y=l.areas.get(a)?.g;if(x==null||y==null)continue;if(y<x)up.push(`${a}(${x}→${y})`);else if(y>x)dn.push(`${a}(${x}→${y})`)}
+    if(up.length)out.push(`모의고사 ${f.label} → ${l.label} ${tg("상승")}: ${up.join(", ")}`);
+    if(dn.length)out.push(`모의고사 ${f.label} → ${l.label} ${tg("하락")}: ${dn.join(", ")}`);
+    if(!up.length&&!dn.length)out.push(`모의고사 ${f.label} → ${l.label}: 모든 영역 ${tg("유지")}`)}
+  if(M.length){const l=M[M.length-1];const j=judge(l);
+    if(j){const j2=judge(l,"t2");out.push(`최근 모의고사(${l.label}) ${T.n}합: 탐구1 ${j.v}(${okTxt(j)}) · 탐구2 ${j2.v}(${okTxt(j2)}) / 목표 ${T.goal} 이하`)}
+    else out.push(`최근 모의고사(${l.label})는 ${l.min.miss.join(", ")} 등급이 없어 최저기준을 계산하지 않았습니다.`);
+    for(const m of ["t1","t2"]){const sk=streak(A,m);if(sk>=2)out.push(`${mName(m)} 기준 최근 ${sk}회 연속 목표 최저기준을 ⟦충족⟧했습니다.`)}
+    const js=M.map(x=>judge(x)).filter(Boolean),js2=M.map(x=>judge(x,"t2")).filter(Boolean);if(js.length)out.push(`${A.mockOlder.length?`최근 ${MOCK_LIMIT}회 중 `:""}계산 가능한 ${js.length}회 중 충족 횟수: 탐구1 ${js.filter(j=>j.ok).length}회 · 탐구2 ${js2.filter(j=>j.ok).length}회`)}
+  return out}
+const eul=v=>/[013678]$/.test(String(v))?"을":"를";
+const said=w=>w==="유지"?`${tg("유지")}했습니다`:`${tg(w)}했습니다`;
+/* 분석문에 쓰는 최저 참고 기준 (합, 목표, 대상) */
+const ESSAY_MIN=[["메디컬",[[4,5],[3,4]]],["서울 주요대학",[[4,8],[3,7]]],["지거국",[[2,8]]]];
+function essay(A){
+  const p=[];const S=A.semsV;
+  if(S.length===1){const b=S[0];p.push(`현재 학기(${b.long}) 평균내신은 ${f2(b.avg)}이며, 아직 한 학기의 성적만 있어 학기 간 변화는 분석하지 않습니다.`)}
+  if(S.length>=2){const a=S[S.length-2],b=S[S.length-1];
+    const d1=dir(a.avg,b.avg);p.push(d1==="유지"?`최근 학기(${b.long}) 평균내신은 ${f2(b.avg)}${ro(f2(b.avg))}, 이전 학기(${a.label})와 같은 수준을 ${said("유지")}.`:`최근 학기(${b.long}) 평균내신은 ${f2(b.avg)}${ro(f2(b.avg))}, 이전 학기(${a.label} ${f2(a.avg)})보다 ${said(d1)}.`);
+    const d2=dir(a.cum,b.cum);p.push(d2==="유지"?`누적 평균내신은 ${f2(b.cum)}${eul(f2(b.cum))} ${said("유지")}.`:`누적 평균내신은 ${f2(b.cum)}${ro(f2(b.cum))}, 이전 시점(${f2(a.cum)})보다 ${said(d2)}.`);
+    for(const g of A.groups){const seq=A.sems.map((s,i)=>({s,v:A.subjSem[g][i]})).filter(x=>x.v!=null);if(seq.length<2)continue;
+      const x=seq[seq.length-2],y=seq[seq.length-1];
+      const w=dir(x.v,y.v);p.push(w==="유지"?`${g} 교과는 ${f2(y.v)}${eul(f2(y.v))} ${said("유지")} (${x.s.label} → ${y.s.label}).`:`${g} 교과는 ${x.s.label} ${f2(x.v)}에서 ${y.s.label} ${f2(y.v)}${ro(f2(y.v))} ${said(w)}.`)}}
+  const M=A.mocks;
+  if(M.length){const l=M[M.length-1];const parts=A.areas.map(a=>{const v=l.areas.get(a)?.g;return v!=null?`${a} ${v}등급`:null}).filter(Boolean);
+    p.push(`최근 모의고사(${l.label})에서 ${parts.join(", ")}을 받았습니다.`);
+    if(M.length>=2){const pv=M[M.length-2];const ch=A.areas.map(a=>{const x=pv.areas.get(a)?.g,y=l.areas.get(a)?.g;if(x==null||y==null)return null;const w=y<x?"상승":y>x?"하락":"유지";return`${a} ${tg(w)}${w==="유지"?"":`(${x}→${y})`}`}).filter(Boolean);
+      if(ch.length)p.push(`직전 회차(${pv.label}) 대비 ${ch.join(", ")}.`)}
+    /* 분석문 최저 설명: 4합 → 3합 → 2합 순, 고정 참고 기준 */
+    if(l.min&&!l.min.miss){p.push(`최근 모의고사(${l.label}) 최저기준 충족 여부는 다음과 같습니다.`);
+      for(const[lab,cs]of ESSAY_MIN){p.push(`· ${lab} (${cs.map(([k,g])=>`${k}합 ${g}`).join(" / ")})`);
+        for(const[k,g]of cs){const v1=l.min.S.t1[k],v2=l.min.S.t2[k];p.push(`   ${k}합 ${g} 이하 — 탐구1: ${v1} ${tg(v1<=g?"충족":"미충족")} · 탐구2: ${v2} ${tg(v2<=g?"충족":"미충족")}`)}}}
+    else if(l.min)p.push(`최근 모의고사(${l.label})는 ${l.min.miss.join(", ")} 등급이 없어 최저기준을 계산하지 않았습니다.`)}
+  return p.join("\n")}
+
+/* ───────── 차트 ───────── */
+const RO=("ResizeObserver" in window)?new ResizeObserver(es=>{for(const e of es){const h=e.target;if(h._w!==Math.round(h.clientWidth))drawChart(h)}}):null;
+function chart(host,spec){host._spec=spec;host._hidden=host._hidden||new Set();drawChart(host);if(RO)RO.observe(host)}
+function drawChart(host){
+  const sp=host._spec;if(!sp)return;const W=Math.max(260,Math.round(host.clientWidth||600));host._w=W;const H=sp.height||240;
+  const m={l:42,r:14,t:12,b:32},pw=W-m.l-m.r,ph=H-m.t-m.b,n=sp.cats.length;
+  const X=i=>m.l+pw*(i+.5)/n;const Y=v=>sp.invert?m.t+(v-sp.yMin)/(sp.yMax-sp.yMin)*ph:m.t+(sp.yMax-v)/(sp.yMax-sp.yMin)*ph;
+  const vis=sp.series.filter(s=>!host._hidden.has(s.name));
+  let leg="";
+  if(sp.series.length>1)leg=`<div class="legend">${sp.series.map(s=>`<button type="button" data-s="${esc(s.name)}" aria-pressed="${!host._hidden.has(s.name)}"><span class="sw" style="background:${s.color}"></span>${esc(s.name)}</button>`).join("")}</div>`;
+  let g="";
+  for(const t of sp.ticks)g+=`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${m.l-8}" y="${Y(t)+4}" text-anchor="end">${t}</text>`;
+  sp.cats.forEach((c,i)=>{g+=`<text x="${X(i)}" y="${H-10}" text-anchor="middle">${esc(c)}</text>`});
+  for(const s of vis){let d="",pen=false;s.values.forEach((v,i)=>{if(v==null){pen=false;return}d+=`${pen?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`;pen=true});
+    g+=`<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:2;stroke-linejoin:round;stroke-linecap:round"${s.dash?` stroke-dasharray="5 4"`:""}/>`;
+    s.values.forEach((v,i)=>{if(v!=null){g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="4.5" style="fill:${s.color};stroke:var(--surface);stroke-width:2"/>`;if(sp.labels)g+=`<text x="${X(i)}" y="${Y(v)-10}" text-anchor="middle" class="vlab">${sp.fmt(v)}</text>`}})}
+  g+=`<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${m.t+ph}" visibility="hidden"/>`;
+  g+=`<rect class="hit" x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" style="fill:transparent"/>`;
+  host.innerHTML=`${leg}<div style="position:relative"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sp.aria||"")}">${g}</svg><div class="tip" hidden></div></div>`;
+  host.querySelectorAll(".legend button").forEach(b=>b.onclick=()=>{const nm=b.dataset.s;if(host._hidden.has(nm))host._hidden.delete(nm);else if(sp.series.length-host._hidden.size>1)host._hidden.add(nm);drawChart(host)});
+  const svg=host.querySelector("svg"),tip=host.querySelector(".tip"),xh=svg.querySelector(".xh");
+  const move=ev=>{const rc=svg.getBoundingClientRect();const x=ev.clientX-rc.left;let i=Math.floor((x-m.l)/pw*n);i=Math.max(0,Math.min(n-1,i));
+    xh.setAttribute("x1",X(i));xh.setAttribute("x2",X(i));xh.setAttribute("visibility","visible");
+    tip.innerHTML=`<b>${esc(sp.cats[i])}</b>`+vis.map(s=>`<div><span><span class="sw" style="background:${s.color}"></span>${esc(s.name)}</span><span class="num">${s.values[i]==null?"–":sp.fmt(s.values[i])}</span></div>`).join("");
+    tip.hidden=false;const tw=tip.offsetWidth;let left=X(i)+12;if(left+tw>W)left=X(i)-12-tw;tip.style.left=Math.max(0,left)+"px";tip.style.top=m.t+"px"};
+  svg.addEventListener("pointermove",move);svg.addEventListener("pointerdown",move);
+  svg.addEventListener("pointerleave",()=>{tip.hidden=true;xh.setAttribute("visibility","hidden")});
+}
+function gradeTicks(max){return max<=5?[1,2,3,4,5]:[1,2,3,4,5,6,7,8,9]}
+
+/* ───────── 상태 ───────── */
+let DB=null,CUR=null,TAB="sum",SEL=null,MOCKMODE="g";const OPEN=new Set();let CELL=null;
+const TABS=[["sum","성적 종합"],["nae","내신 분석"],["fut","내신 예측"],["mock","모의고사 분석"],["min","최저기준 분석"],["rank","학급별 최저현황"],["cnt","최저 인원 변화"]];
+const COHORT={rank:"학급별 최저현황",cnt:"최저 인원 변화"};
+
+/* ───────── 왼쪽 패널 ───────── */
+function renderReport(){
+  const r=DB.rep;const src=$("#srcInfo");
+  src.innerHTML=DB.isSample?`<span class="sample-flag">예시 데이터</span> 가상의 학생 2명으로 표시 중입니다`:`불러온 파일 <b>${esc(DB.fileName)}</b>`;
+  let h=`<ul>${r.info.map(x=>`<li>${esc(x)}</li>`).join("")}${r.mocks.map(m=>`<li>${esc(m.sheet)} · ${esc(m.label)} · ${m.n?`${m.n}명 입력`:"성적 미입력 → 분석 제외"}</li>`).join("")}</ul>`;
+  if(r.warn.length)h+=`<details${DB.isSample?"":" open"}><summary>확인할 사항 ${r.warn.length}건</summary><ul>${r.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`;
+  $("#report").innerHTML=h}
+function renderResults(){
+  const q=$("#q").value.trim();const ul=$("#results");
+  if(!q){ul.innerHTML=`<li class="hint">${DB.isSample?"'예시'를 입력하면 예시 학생이 검색됩니다.":"이름 일부를 입력하세요. 동명이인은 A·B 표시이름으로 구분됩니다."}</li>`;return}
+  const list=[...DB.students.values()].filter(s=>s.name.includes(q)).sort((a,b)=>a.name.localeCompare(b.name,"ko")||(a.grade??0)-(b.grade??0));
+  if(!list.length){ul.innerHTML=`<li class="hint">'${esc(q)}'에 해당하는 학생이 없습니다.</li>`;return}
+  ul.innerHTML=list.slice(0,40).map(s=>`<li><button type="button" data-id="${esc(s.id)}" aria-current="${s.id===CUR}"><span class="nm">${esc(s.name)}</span><span class="meta">${esc(where(s))}</span></button></li>`).join("")+(list.length>40?`<li class="hint">상위 40명만 표시합니다. 이름을 더 입력하세요.</li>`:"");
+  ul.querySelectorAll("button").forEach(b=>b.onclick=()=>select(b.dataset.id))}
+/* 재학이력 중 가장 최근 학년도 기준 학년·반·번호, 없으면 학생정보 값 */
+function cur(s){const h=s.hist.filter(x=>x.grade!=null||x.cls!=null).sort((a,b)=>(a.year??0)-(b.year??0)||(a.grade??0)-(b.grade??0)).pop();return h?{grade:h.grade,cls:h.cls,no:h.no}:{grade:s.grade,cls:s.cls,no:s.no}}
+function where(s){const c=cur(s);const p=[];if(c.grade!=null)p.push(`${c.grade}학년`);if(c.cls!=null)p.push(`${c.cls}반`);if(c.no!=null)p.push(`${c.no}번`);return p.join(" ")+(s.status?` · ${s.status}`:"")}
+
+function select(id){CUR=id;SEL=null;CELL=null;OPEN.clear();renderResults();renderMain();if(window.innerWidth<860)$("#main").scrollIntoView({behavior:"smooth",block:"start"})}
+
+/* ───────── 메인 ───────── */
+function renderMain(){
+  const main=$("#main");
+  if(!CUR&&COHORT[TAB]){main.innerHTML=`<div class="stu"><div><h1>학년 현황</h1><div class="where">학년 전체 · 학생을 검색하면 개인 분석 탭이 열립니다</div></div></div>
+    <div class="tabs" role="tablist">${Object.entries(COHORT).map(([k,l])=>`<button type="button" role="tab" id="tab-${k}" aria-selected="${TAB===k}" data-t="${k}">${l}</button>`).join("")}</div><div id="pane"></div>`;
+    main.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{TAB=b.dataset.t;renderMain()});(TAB==="rank"?paneRank:paneCnt)($("#pane"));return}
+  if(!CUR){main.innerHTML=`<div class="card empty"><strong>학생을 선택하세요</strong>왼쪽 검색창에 이름을 입력하면 해당 학생의 내신과 모의고사를 학생ID 기준으로 모아 분석합니다.<div style="margin-top:14px"><button type="button" class="btn" id="goRank">학급별 최저현황 보기</button> <button type="button" class="btn" id="goCnt">최저 인원 변화 보기</button></div></div>`;$("#goRank").onclick=()=>{TAB="rank";renderMain()};$("#goCnt").onclick=()=>{TAB="cnt";renderMain()};return}
+  const A=analyze(CUR);const s=A.st;
+  const stChip=s.status&&s.status!=="재학"?` <span class="chip warn">${esc(s.status)}</span>`:"";
+  main.innerHTML=`<div class="stu"><div><h1>${esc(s.name)}</h1><div class="where">${esc(where(s))}${stChip}</div></div></div>
+  <div class="tabs" role="tablist">${TABS.map(([k,l])=>`<button type="button" role="tab" id="tab-${k}" aria-selected="${TAB===k}" data-t="${k}">${l}</button>`).join("")}</div>
+  <div id="pane" role="tabpanel"></div>`;
+  main.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{TAB=b.dataset.t;renderMain()});
+  const pane=$("#pane");
+  ({sum:paneSum,nae:paneNae,mock:paneMock,min:paneMin,fut:paneFut,rank:paneRank,cnt:paneCnt})[TAB](pane,A)}
+
+/* 공통 블록 */
+function semChart(host,A,h){
+  const S=A.semsV;chart(host,{cats:S.map(s=>s.label),series:[{name:"학기 평균내신",color:"var(--s1)",values:S.map(s=>s.avg)},{name:"누적 평균내신",color:"var(--s2)",values:S.map(s=>s.cum),dash:true}],
+    yMin:1,yMax:DB.gradeMax,invert:true,ticks:gradeTicks(DB.gradeMax),fmt:f2,height:h,aria:"학기 평균내신과 누적 평균내신 변화"})}
+function subjChart(host,A,h){
+  const idx=A.sems.map((s,i)=>i).filter(i=>A.sems[i].avg!=null);
+  chart(host,{cats:idx.map(i=>A.sems[i].label),series:A.groups.map((g,k)=>({name:g,color:colorOf(SUBJ_COLOR,g,k),values:idx.map(i=>A.subjSem[g][i])})),
+    yMin:1,yMax:DB.gradeMax,invert:true,ticks:gradeTicks(DB.gradeMax),fmt:f2,height:h,aria:"교과별 학기 평균내신 변화"})}
+function mockChart(host,A,h,modeP){
+  const pct=modeP==="p";const areas=A.areas.filter(a=>A.mocks.some(x=>pct?x.areas.get(a)?.pct!=null:x.areas.get(a)?.g!=null));
+  chart(host,{cats:A.mocks.map(x=>x.label),series:areas.map((a,k)=>({name:a,color:colorOf(AREA_COLOR,a,k+5),values:A.mocks.map(x=>pct?x.areas.get(a)?.pct??null:x.areas.get(a)?.g??null)})),
+    yMin:pct?0:1,yMax:pct?100:9,invert:!pct,ticks:pct?[0,25,50,75,100]:[1,2,3,4,5,6,7,8,9],fmt:pct?(v=>fv(v)):(v=>v+"등급"),height:h,aria:pct?"모의고사 영역별 백분위 변화":"모의고사 영역별 등급 변화"})}
+/* 교과 평균이 어떤 과목으로 계산됐는지 보여 주는 구성 내역 */
+/* 예체능은 원점수 90 이상·성취도 A 파란색 강조에서 제외 */
+const isArt=r=>r.group==="예체능";
+const achB=(a,plain)=>a?`<span class="ach${plain?"":` ach-${esc(a)}`}">${esc(a)}</span>`:"";
+const gradedFirst=l=>l.slice().sort((a,b)=>(a.g!=null&&a.credit>0?0:1)-(b.g!=null&&b.credit>0?0:1));
+function achDist(rows){const c={};for(const r of rows)if(r.ach)c[r.ach]=(c[r.ach]||0)+1;const k=Object.keys(c).sort();return k.length?k.map(x=>`${achB(x)}<span class="num">${c[x]}</span>`).join(" "):"–"}
+function bdHTML(list,showSem,resultLabel){
+  const gr=list.filter(r=>r.g!=null&&r.credit>0),off=list.filter(r=>!(r.g!=null&&r.credit>0));
+  const sc=gr.reduce((p,r)=>p+r.credit,0),sg=gr.reduce((p,r)=>p+r.g*r.credit,0);
+  const item=r=>`<span class="bd-item${r.g!=null&&r.credit>0?"":" off"}">${showSem?`<span class="sm">${esc(r.semLabel)}</span>`:""}<span>${esc(r.subject)}</span>${r.g!=null&&r.credit>0?`${achB(r.ach,isArt(r))}<b>${r.g}등급</b><span class="sm">${r.credit}학점</span>`:`${achB(r.ach,isArt(r))}<span class="sm">등급 없음 · ${r.credit??"–"}학점 · 평균 제외</span>`}</span>`;
+  return`<div class="bd"><div class="bd-list">${gr.map(item).join("")}${off.map(item).join("")}</div>
+  ${gr.length?"":`<div class="bd-f">석차등급이 있는 과목이 없어 평균을 계산하지 않습니다.</div>`}
+  ${off.length?`<div class="bd-f muted">반영학점 ${sc} / 이수학점 ${sc+off.reduce((p,r)=>p+(r.credit>0?r.credit:0),0)} · 석차등급이 없는 과목은 성취도를 등급으로 바꾸지 않고 제외합니다.</div>`:""}</div>`}
+function stripHTML(A){
+  const max=DB.gradeMax;const pos=v=>((v-1)/(max-1)*100);
+  const ticks=gradeTicks(max).map(t=>`<span class="tk" style="left:${pos(t)}%"></span>`).join("");
+  return`<div class="strip">${A.groups.map((g,k)=>{const v=A.subjCum[g];const open=OPEN.has(g);const list=A.sems.flatMap(s=>s.rows.filter(r=>r.group===g));
+    const n=list.filter(r=>r.g!=null&&r.credit>0).length;
+    return`<button type="button" class="strip-row${open?" sel":""}" data-g="${esc(g)}" aria-expanded="${open}" title="누르면 ${esc(g)} 교과를 구성한 과목 ${n}개를 표시합니다"><span class="nm"><span class="chev">▶</span><span class="sw" style="background:${colorOf(SUBJ_COLOR,g,k)}"></span>${esc(g)}</span><span class="track">${ticks}<span class="dot" style="left:${pos(v)}%;background:${colorOf(SUBJ_COLOR,g,k)}"></span></span><span class="val">${f2(v)}</span></button>${open?bdHTML(list,A.sems.length>1,`${g} 누적 평균내신`):""}`}).join("")}
+    <div class="strip-axis"><span></span><div><span>1등급</span><span>${max}등급</span></div><span></span></div></div>`}
+function bindStrip(root,rerender){root.querySelectorAll(".strip-row").forEach(b=>b.onclick=()=>{const g=b.dataset.g;if(OPEN.has(g))OPEN.delete(g);else OPEN.add(g);rerender();const nb=[...document.querySelectorAll(".strip-row")].find(x=>x.dataset.g===g);if(nb)nb.focus({preventScroll:true})})}
+function olderNote(A){return A.mockOlder.length?`<p class="note">최근 ${MOCK_LIMIT}회만 분석합니다. 이전 회차 ${A.mockOlder.length}회(${A.mockOlder.map(x=>esc(mockName(x.m))).join(", ")})는 화면과 계산에서 제외했습니다.</p>`:""}
+function minTableHTML(x){
+  if(!x.min||x.min.miss)return`<p class="msg">${x.min?`${x.min.miss.join(", ")} 등급이 없어`:"성적이 없어"} 최저기준을 계산하지 않았습니다.</p>`;
+  const S=x.min.S;return`<div class="tw"><table><thead><tr><th></th><th>탐구1</th><th>탐구2</th></tr></thead><tbody>${[2,3,4].map(n=>`<tr${T.n===n?' class="sel"':""}><td>${n}합</td><td>${S.t1[n]}</td><td>${S.t2[n]}</td></tr>`).join("")}</tbody></table></div>
+  `}
+function verdictHTML(x){const j=judge(x);if(!j)return"";const j2=judge(x,"t2");const c=(l,j)=>`<span>${l} <b class="num">${j.v}</b> <span class="chip ${j.ok?"good":"bad"}">${j.ok?"✓ 충족":"✕ 미충족"}</span></span>`;
+  return`<div class="verdict"><span>목표 <b>${T.n}합 ${T.goal} 이하</b></span>${c("탐구1",j)}${c("탐구2",j2)}</div>`}
+
+/* ───────── 학생별 상담 질문 (계산 결과에서 규칙으로 생성) ───────── */
+const QS=new Map(); /* 학생ID → {checked:Set, memo:{}, custom:[]} · 이 창에서만 유지 */
+function questions(A){
+  /* q: 원인 확인 질문, fix: 보완 방법 질문(부족한 부분에만) */
+  const Q=[];const add=(pri,tag,ev,q,key,fix)=>Q.push({id:"r"+Q.length,pri,tag,ev,q,key,fix});
+  const S=A.semsV;
+  if(S.length>=2){const a=S[S.length-2],b=S[S.length-1];const d=r2(b.avg)-r2(a.avg);
+    if(d>0)add(90,"내신",`학기 평균 ${a.label} ${f2(a.avg)} → ${b.label} ${f2(b.avg)} (하락)`,"이번 학기 시험 준비가 이전 학기와 달랐던 점은 무엇인가요? (공부 시작 시점, 과목 수, 수행평가 부담 등)",null,"다음 학기에는 시험 준비를 언제부터, 어떤 과목 순서로 시작할 계획인가요?");
+    else if(d<0)add(55,"내신",`학기 평균 ${a.label} ${f2(a.avg)} → ${b.label} ${f2(b.avg)} (상승)`,"성적이 오른 이번 학기에 효과가 있었던 공부 방법은 무엇인가요? 다음 학기에도 계속할 수 있나요?")}
+  if(S.length===1){const gr=S[0].graded;const mn=Math.min(...gr.map(r=>r.g)),mx=Math.max(...gr.map(r=>r.g));
+    const nm=g=>{const l=gr.filter(r=>r.g===g).map(r=>r.subject);return l.length>3?`${l.slice(0,3).join("·")} 외 ${l.length-3}과목`:l.join("·")};
+    if(gr.length>=2&&mx>mn)add(60,"내신",`가장 높은 ${nm(mn)} ${mn}등급 · 가장 낮은 ${nm(mx)} ${mx}등급`,`첫 학기 결과 중 예상과 가장 달랐던 과목은 무엇인가요?`,"single",`가장 낮게 나온 과목(${nm(mx)})을 보완하기 위해 다음 학기에 바꿔 볼 공부 방법은 무엇인가요?`)}
+  let dn=null,up=null;
+  for(const g of A.groups){const seq=A.sems.map((s,i)=>({s,v:A.subjSem[g][i]})).filter(x=>x.v!=null);if(seq.length<2)continue;
+    const p=seq[seq.length-2],q=seq[seq.length-1];const d=r2(q.v)-r2(p.v);
+    if(d>0&&(!dn||d>dn.d))dn={g,p,q,d};if(d<0&&(!up||d<up.d))up={g,p,q,d}}
+  const subjList=(s,g)=>s.graded.filter(r=>r.group===g).map(r=>`${r.subject} ${r.g}등급`).join(", ");
+  if(dn)add(80+Math.min(10,dn.d*10),"내신",`${dn.g} ${dn.p.s.label} ${f2(dn.p.v)} → ${dn.q.s.label} ${f2(dn.q.v)} · ${subjList(dn.q.s,dn.g)}`,`${dn.g} 교과가 가장 많이 낮아졌습니다. 이번 학기 ${dn.g} 과목 중 가장 어려웠던 과목과 그 이유는 무엇인가요?`,null,`${dn.g} 교과를 보완하기 위해 매주 따로 확보할 수 있는 시간은 얼마이고, 어떤 방법(개념 복습, 오답 정리, 수업 중 질문)을 써 볼까요?`);
+  if(up)add(50,"내신",`${up.g} ${up.p.s.label} ${f2(up.p.v)} → ${up.q.s.label} ${f2(up.q.v)}`,`${up.g} 교과가 가장 많이 올랐습니다. 무엇이 도움이 되었고, 그 방법을 다른 교과에도 적용해 볼 수 있을까요?`);
+  const cg=A.groups.filter(g=>CORE.includes(g)&&A.subjCum[g]!=null).map(g=>({g,v:A.subjCum[g]})).sort((x,y)=>x.v-y.v);
+  if(cg.length>=2&&r2(cg[cg.length-1].v)-r2(cg[0].v)>=1){const b=cg[0],w=cg[cg.length-1];
+    add(S.length===1?61:70,"내신",`누적 ${b.g} ${f2(b.v)} · ${w.g} ${f2(w.v)} (차이 ${(r2(w.v)-r2(b.v)).toFixed(2)})`,`${w.g} 교과는 ${b.g} 교과보다 공부 방식이나 시간 배분이 어떻게 다른가요? 수업 이해, 과제, 시험 대비 중 어디에서 차이가 생기나요?`,"single",`${b.g} 교과에서 잘 되고 있는 방법 중 ${w.g} 교과에 가져올 수 있는 것은 무엇인가요?`)}
+  if(S.length){const ls=S[S.length-1];let gap=null;
+    for(const g of A.groups){const rs=ls.graded.filter(r=>r.group===g);if(rs.length<2)continue;const hi=rs.reduce((a,b)=>a.g<=b.g?a:b),lo=rs.reduce((a,b)=>a.g>=b.g?a:b);const d=lo.g-hi.g;if(d>=2&&(!gap||d>gap.d))gap={g,hi,lo,d}}
+    if(gap)add(65,"내신",`${ls.label} ${gap.g}: ${gap.hi.subject} ${gap.hi.g}등급 · ${gap.lo.subject} ${gap.lo.g}등급`,`같은 ${gap.g} 교과인데 ${gap.lo.subject}이(가) ${gap.hi.subject}보다 낮은 이유는 무엇인가요? 과목 특성(암기·서술·문제풀이)에 따른 차이가 있나요?`,null,`${gap.lo.subject}의 약한 부분(단원·평가 유형)을 보완하기 위해 이번 학기 안에 실천할 한 가지는 무엇인가요?`)}
+  const M=A.mocks;
+  if(M.length>=2){const l=M[M.length-1],pv=M[M.length-2];let w=null,b=null;
+    for(const a of A.areas){const x=pv.areas.get(a)?.g,y=l.areas.get(a)?.g;if(x==null||y==null)continue;const d=y-x;if(d>=1&&(!w||d>w.d))w={a,x,y,d};if(d<=-1&&(!b||d<b.d))b={a,x,y,d}}
+    if(w)add(75+w.d,"모의",`${w.a} ${pv.label} ${w.x}등급 → ${l.label} ${w.y}등급`,`${w.a}에서 시간이 부족했나요, 특정 유형이나 단원에서 틀렸나요? 틀린 문항을 다시 풀어 봤나요?`,"m:"+w.a,`다음 모의고사까지 ${w.a}에서 틀린 유형을 정리하고 비슷한 문제를 일주일에 몇 번 연습할 수 있을까요?`);
+    if(b)add(45,"모의",`${b.a} ${pv.label} ${b.x}등급 → ${l.label} ${b.y}등급`,`${b.a} 성적이 오른 이유는 무엇이라고 생각하나요? 공부 방법에서 바뀐 점이 있나요?`,"m:"+b.a)}
+  if(M.length>=3){let f=null;for(const a of A.areas){if(a==="한국사")continue;const v=M.map(x=>x.areas.get(a)?.g).filter(x=>x!=null);if(v.length<3)continue;const r=Math.max(...v)-Math.min(...v);if(r>=2&&(!f||r>f.r))f={a,v,r}}
+    if(f)add(58,"모의",`${f.a} 등급 ${f.v.join(" → ")}`,`${f.a} 등급이 회차마다 크게 달라집니다. 잘 본 회차와 못 본 회차의 차이(시험 범위, 컨디션, 시간 배분)는 무엇이었나요?`,"m:"+f.a,`${f.a} 성적을 안정시키기 위해 문제 푸는 순서나 시간 배분을 어떻게 정해 두면 좋을까요?`)}
+  if(M.length){const l=M[M.length-1];const ks=["국어","수학","영어"].filter(k=>A.subjCum[k]!=null&&l.areas.get(k)?.g!=null);
+    if(ks.length===3){const nv=ks.map(k=>r2(A.subjCum[k])),mv=ks.map(k=>l.areas.get(k).g);
+      const nb=nv.indexOf(Math.min(...nv)),nw=nv.indexOf(Math.max(...nv)),mb=mv.indexOf(Math.min(...mv)),mw=mv.indexOf(Math.max(...mv));
+      const uniq=a=>new Set(a).size===3;const ev=`내신 누적 ${ks.map((k,i)=>`${k} ${nv[i].toFixed(2)}`).join(" · ")} / ${l.label} 모의 ${ks.map((k,i)=>`${k} ${mv[i]}`).join(" · ")}`;
+      if(uniq(nv)&&uniq(mv)&&nb===mw)add(72,"내신·모의",ev,`내신에서는 ${ks[nb]}가 가장 좋지만 모의고사에서는 가장 낮습니다. 학교 시험 준비와 수능형 문제 준비는 어떻게 다르게 하고 있나요?`,null,`${ks[nb]} 수능형 문제(시간 제한 풀이, 기출)를 일주일에 몇 번 넣을 수 있을까요?`);
+      else if(uniq(nv)&&uniq(mv)&&nw===mb)add(72,"내신·모의",ev,`모의고사에서는 ${ks[mb]}가 가장 좋지만 내신에서는 가장 낮습니다. 수행평가, 서술형, 학교 시험 범위 대비에서 놓치는 부분이 있나요?`,null,`${ks[mb]} 학교 시험을 위해 수업 자료·교과서 정리와 서술형 대비를 어떻게 보완할 수 있을까요?`)}}
+  const lj=[...M].reverse().find(x=>judge(x));
+  if(lj){const j=judge(lj),j2=judge(lj,"t2"),n=lj.min,gap=j.v-T.goal,gap2=j2.v-T.goal;const ev=`${lj.label} ${T.n}합 탐구1 ${j.v} · 탐구2 ${j2.v} · 목표 ${T.goal} · 국${n.k} 수${n.m} 영${n.e}`;
+    if(gap<=0&&gap2>0)add(78,"최저",ev+" (탐구2만 미충족)",`탐구 한 과목만 반영하면 충족하지만, 두 과목 평균(탐구2)으로는 미충족입니다. 지원하려는 대학의 탐구 반영 방식을 확인했나요?`,null,`약한 탐구 과목을 한 등급 올리기 위해 어떤 단원부터, 언제 공부할 계획인가요?`);
+    if(gap>0&&gap<=2)add(82,"최저",ev+` (${gap} 부족)`,`목표까지 ${gap}등급 남았습니다. 국어·수학·영어·탐구 중 다음 모의고사에서 한 등급 올리기 가장 현실적인 영역은 어디인가요?`,null,`그 영역을 한 등급 올리기 위해 다음 모의고사까지 주당 몇 시간을, 어떤 방법으로 쓸 계획인가요?`);
+    else if(gap>2)add(60,"최저",ev+` (${gap} 부족)`,`지금 성적과 목표(${T.n}합 ${T.goal}) 사이에 ${gap}등급 차이가 있습니다. 목표 대학·전형의 최저기준을 다시 확인해 봤나요?`,null,`다음 모의고사에서 합을 1~2 줄이는 단기 목표를 세운다면, 가장 먼저 보완할 영역과 방법은 무엇인가요?`);
+    else if(gap===0||gap2===0)add(68,"최저",ev+" (여유 없음)",`목표를 딱 맞게 충족했습니다. 한 영역만 떨어져도 미충족이 됩니다. 가장 불안한 영역은 어디인가요?`,null,`그 영역의 등급을 안정시키기 위해 꾸준히 할 수 있는 공부는 무엇인가요?`);
+    if(Math.abs(n.s-n.c)>=2){const wk=n.s>n.c?"통합사회":"통합과학";add(62,"최저",`${lj.label} 통합사회 ${n.s}등급 · 통합과학 ${n.c}등급`,`${wk}에서 어려운 단원은 무엇인가요? 탐구 두 과목 평균을 쓰는 대학(탐구2 방식)에서는 이 차이가 최저 충족에 영향을 줍니다.`,null,`${wk}의 어려운 단원을 언제, 어떤 자료로 다시 정리할 계획인가요?`)}}
+  Q.sort((a,b)=>b.pri-a.pri);const seen=new Set();const out=Q.filter(x=>{if(!x.key)return true;if(x.key==="single"&&S.length!==1)return true;if(seen.has(x.key))return false;seen.add(x.key);return true}).slice(0,6);
+  const gen=[["공통","—","가장 보완이 필요하다고 느끼는 교과는 무엇인가요?","그 교과를 위해 이번 달 안에 실천할 보완 방법 한 가지는 무엇인가요?"],["공통","—","다음 학기에 가장 올리고 싶은 교과 하나와 목표 등급은 무엇인가요?","목표를 이루기 위해 지금 공부 방법에서 바꿀 점은 무엇인가요?"],["공통","—","희망 진로와 관련해 앞으로 들을 선택과목을 정했나요?",null]];
+  for(const[tag,ev,q,fix]of gen){if(out.length>=3)break;out.push({id:"g"+out.length,pri:0,tag,ev,q,fix})}
+  /* 보완 질문이 하나도 없으면 공통 보완 질문을 반드시 추가 */
+  if(!out.some(x=>x.fix)){const[tag,ev,q,fix]=gen[0];out.push({id:"g9",pri:0,tag,ev,q,fix})}
+  return out}
+function qState(){if(!QS.has(CUR))QS.set(CUR,{checked:new Set(),memo:{},custom:[]});return QS.get(CUR)}
+function renderQ(box,A){
+  const st=qState();const list=[...questions(A),...st.custom.map((q,i)=>({id:"c"+i,tag:"직접 추가",ev:"",q}))];
+  box.innerHTML=`<ul class="qs">${list.map(x=>`<li class="qi"><label><input type="checkbox" data-q="${x.id}"${st.checked.has(x.id)?" checked":""}><span class="qb"><span class="qtag"><span class="chip${x.tag==="최저"?" warn":""}">${esc(x.tag)}</span>${x.ev&&x.ev!=="—"?`<span class="qev">${esc(x.ev)}</span>`:""}</span><span class="qq">${esc(x.q)}</span>${x.fix?`<span class="qfix"><b>보완</b>${esc(x.fix)}</span>`:""}</span></label>
+    <input type="text" class="qmemo" id="qm-${x.id}" data-m="${x.id}" placeholder="학생 답변 메모" value="${esc(st.memo[x.id]||"")}" aria-label="답변 메모"></li>`).join("")}</ul>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="text" id="qAdd" class="qmemo" style="flex:1;min-width:180px" placeholder="질문 직접 추가" aria-label="질문 직접 추가"><button type="button" class="btn" id="qAddBtn">추가</button></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="btn" id="qCopy">상담 기록 복사</button><span class="note" id="qCopied"></span></div>
+  <p class="note">질문은 이 학생의 분석 결과에서 조건에 맞는 것만 골라 근거와 함께 보여 주며, 부족한 부분에는 '보완' 질문을 함께 붙입니다(최대 6개, 부족하면 공통 질문으로 채움). 체크와 메모는 이 창을 닫으면 사라집니다.</p>`;
+  box.querySelectorAll("input[data-q]").forEach(c=>c.onchange=()=>{c.checked?st.checked.add(c.dataset.q):st.checked.delete(c.dataset.q)});
+  box.querySelectorAll("input[data-m]").forEach(m=>m.oninput=()=>{st.memo[m.dataset.m]=m.value;if(m.value.trim())st.checked.add(m.dataset.m);const c=box.querySelector(`input[data-q="${m.dataset.m}"]`);if(c&&m.value.trim())c.checked=true});
+  const addQ=()=>{const v=$("#qAdd").value.trim();if(!v)return;st.custom.push(v);renderQ(box,A);$("#qAdd").focus()};
+  $("#qAddBtn").onclick=addQ;$("#qAdd").onkeydown=e=>{if(e.key==="Enter")addQ()};
+  $("#qCopy").onclick=async()=>{const s=A.st;const d=new Date();const sel=list.filter(x=>st.checked.has(x.id));
+    const t=`[상담 기록] ${s.name} (${where(s)}) · ${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}\n`+(sel.length?sel:list).map((x,i)=>`${i+1}. ${x.q}${x.fix?`\n   보완: ${x.fix}`:""}${x.ev&&x.ev!=="—"?`\n   근거: ${x.ev}`:""}${st.memo[x.id]?`\n   답변: ${st.memo[x.id]}`:""}`).join("\n");
+    try{await navigator.clipboard.writeText(t);$("#qCopied").textContent=sel.length?`체크한 ${sel.length}개를 복사했습니다.`:"체크한 질문이 없어 전체를 복사했습니다."}catch(e){$("#qCopied").textContent="복사할 수 없는 환경입니다. 메모를 직접 옮겨 주세요."}}}
+
+/* 성적 종합 */
+function paneSum(p,A){
+  const S=A.semsV,last=S[S.length-1],M=A.mocks,lm=M[M.length-1];
+  const lastMin=[...M].reverse().find(x=>x.min&&!x.min.miss);
+  let dirN="",dirM="";
+  if(S.length>=2){const d=dir(S[S.length-2].avg,last.avg);dirN=`<span class="chip ${d==="상승"?"up":d==="하락"?"down":""}">내신 학기평균 직전 대비 ${d}</span>`}
+  const js=M.map(x=>judge(x));const jm=js.filter(Boolean);
+  if(jm.length>=2){const a=M.filter((x,i)=>js[i]);for(const m of ["t1","t2"]){const pv=judge(a[a.length-2],m).v,cv=judge(a[a.length-1],m).v;const d=cv<pv?"상승":cv>pv?"하락":"유지";
+    dirM+=`<span class="chip ${d==="상승"?"up":d==="하락"?"down":""}">모의 ${mName(m)} ${T.n}합 직전 회차 대비 ${d} (${pv}→${cv})</span>`}}
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <div class="grid2">
+    <section class="card"><h2><span class="no">①</span>내신 전체</h2>
+      ${S.length?`<div class="kpis"><div class="kpi"><span class="k">최근 학기 평균내신</span><span class="v">${f2(last.avg)}</span><span class="s">${esc(last.long)} · 반영 ${last.credGraded}/${last.credTotal}학점</span></div><div class="kpi"><span class="k">현재 누적 평균내신</span><span class="v">${f2(last.cum)}</span><span class="s">${esc(S[0].label)} ~ ${esc(last.label)} · ${S.length}개 학기</span></div>${(()=>{const C=convert(A);if(!C.length)return"";const L=C[C.length-1];return`<div class="kpi"><span class="k">9등급 환산 (참고)</span><span class="v" style="font-size:22px">${f2(L.bs9)} <span class="muted" style="font-size:15px;font-weight:500">부산</span> ${f2(L.gg9)} <span class="muted" style="font-size:15px;font-weight:500">경기</span></span><span class="s">${esc(L.label)}까지 누적 기준 · 내신 분석 탭에서 상세</span></div>`})()}</div>
+      ${S.length>=2?`<div class="chart" id="c1"></div>`:`<p class="msg">아직 한 학기의 성적만 있어 학기 간 성적 변화는 분석하지 않습니다.</p>`}`:`<p class="msg">석차등급이 있는 내신 성적이 없습니다.</p>`}
+    </section>
+    <section class="card"><h2><span class="no">②</span>교과별 내신 <small>현재 누적 · 1등급에 가까울수록 왼쪽 · 교과를 누르면 구성 과목 표시</small></h2>
+      ${A.groups.length?stripHTML(A):`<p class="msg">교과별로 계산할 내신 성적이 없습니다.</p>`}
+      ${S.length>=2?`<div class="chart" id="c2"></div>`:""}
+    </section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h2><span class="no">③</span>모의고사 ${lm?`<small>최근 회차 ${esc(lm.label)}</small>`:""}</h2>
+      ${lm?`<div class="mock-now">${A.areas.map(a=>{const v=lm.areas.get(a)?.g;return`<div class="mock-cell"><span class="a">${esc(a)}</span><span class="g">${v??"–"}${v!=null?"<small>등급</small>":""}</span></div>`}).join("")}</div>
+      ${M.length>=2?`<div class="chart" id="c3"></div>`:`<p class="msg">모의고사 성적이 한 회차만 있어 회차 간 변화는 분석하지 않습니다.</p>`}${olderNote(A)}`:`<p class="msg">입력된 모의고사 성적이 없습니다.</p>`}
+    </section>
+    <section class="card"><h2><span class="no">④</span>최저기준 ${lastMin?`<small>${esc(lastMin.label)} 기준</small>`:""}</h2>
+      ${lastMin?minTableHTML(lastMin)+verdictHTML(lastMin)+`<div><button type="button" class="btn" id="goMin">목표 기준 변경 · 회차별 충족 보기</button></div>`:`<p class="msg">국어·수학·영어·통합사회·통합과학 등급이 모두 있는 회차가 없어 최저기준을 계산하지 않았습니다.</p>`}
+    </section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h2><span class="no">⑤</span>성적 변화 요약</h2>
+      ${dirN||dirM?`<div style="display:flex;flex-wrap:wrap;gap:6px">${dirN}${dirM}</div><p class="note">내신과 모의고사는 하나의 숫자로 합치지 않고 변화 방향만 나란히 비교합니다.</p>`:""}
+      <ul class="bul">${insights(A).map(t=>`<li>${mark(t)}</li>`).join("")}</ul>
+      <h3>분석문</h3><p class="essay" id="essay">${mark(essay(A))}</p>
+      <div><button type="button" class="btn" id="copy">분석문 복사</button> <span class="note" id="copied"></span></div>
+    </section>
+    <section class="card"><h2><span class="no">⑥</span>상담 시 확인할 내용 <small>이 학생의 분석 결과에서 생성</small></h2><div id="qbox" style="display:flex;flex-direction:column;gap:10px"></div></section>
+  </div></div>`;
+  bindStrip(p,()=>paneSum(p,A));
+  renderQ($("#qbox"),A);
+  if($("#c1"))semChart($("#c1"),A,200);
+  if($("#c2"))subjChart($("#c2"),A,220);
+  if($("#c3"))mockChart($("#c3"),A,220,"g");
+  const gm=$("#goMin");if(gm)gm.onclick=()=>{TAB="min";renderMain()};
+  $("#copy").onclick=async()=>{const t=$("#essay").textContent;try{await navigator.clipboard.writeText(t);$("#copied").textContent="복사했습니다."}catch(e){const r=document.createRange();r.selectNodeContents($("#essay"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("#copied").textContent="선택했습니다. Ctrl+C로 복사하세요."}}}
+
+/* 내신 분석 */
+function paneNae(p,A){
+  const S=A.sems;
+  if(!S.length){p.innerHTML=`<div style="padding-top:16px"><p class="msg">이 학생의 내신 자료가 없습니다.</p></div>`;return}
+  if(!SEL){const li=[...S.keys()].reverse().find(i=>S[i].avg!=null);SEL={type:"sem",i:li??S.length-1}}
+  const semRows=S.map((s,i)=>`<tr class="click${SEL.type==="sem"&&SEL.i===i?" sel":""}" data-i="${i}" tabindex="0"><td>${esc(s.label)}</td><td>${f2(s.avg)}</td><td>${f2(s.avg==null?null:s.cum)}</td><td class="muted">${s.credGraded}/${s.credTotal}</td><td style="text-align:left">${achDist(s.rows)}</td></tr>`).join("");
+  const cellList=(g,i)=>i<0?S.flatMap(s=>s.rows.filter(r=>r.group===g)):S[i].rows.filter(r=>r.group===g);
+  const tip=l=>l.map(r=>`${r.subject} ${r.ach?r.ach+"·":""}${r.g!=null&&r.credit>0?`${r.g}등급·${r.credit}학점`:"등급 없음"}`).join(", ");
+  const matrix=A.groups.length?`<div class="tw"><table><thead><tr><th>교과</th>${S.map(s=>`<th>${esc(s.label)}</th>`).join("")}<th>누적</th></tr></thead><tbody>${A.groups.map(g=>{
+    const cells=S.map((s,i)=>{const v=A.subjSem[g][i];const sel=CELL&&CELL.g===g&&CELL.i===i;return v==null?`<td class="muted">–</td>`:`<td class="cell${sel?" sel":""}" data-g="${esc(g)}" data-i="${i}" tabindex="0" title="${esc(tip(cellList(g,i)))}">${f2(v)}</td>`}).join("");
+    const selC=CELL&&CELL.g===g&&CELL.i===-1;
+    let row=`<tr><td>${esc(g)}</td>${cells}<td class="cell${selC?" sel":""}" data-g="${esc(g)}" data-i="-1" tabindex="0" title="${esc(tip(cellList(g,-1)))}"><b>${f2(A.subjCum[g])}</b></td></tr>`;
+    if(CELL&&CELL.g===g){const i=CELL.i;row+=`<tr class="bd-row"><td colspan="${S.length+2}">${bdHTML(cellList(g,i),i<0&&S.length>1,i<0?`${g} 누적 평균내신`:`${S[i].long} ${g} 교과 평균내신`)}</td></tr>`}
+    return row}).join("")}</tbody></table></div>`:`<p class="msg">교과별로 계산할 성적이 없습니다.</p>`;
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <section class="card"><h2><span class="no">①</span>전체 내신 변화 <small>그래프는 1등급이 위쪽</small></h2>
+    ${A.semsV.length>=2?`<div class="chart" id="n1"></div>`:`<p class="msg">아직 한 학기의 성적만 있어 학기 간 성적 변화는 분석하지 않습니다.</p>`}
+    <div class="split"><div class="tw"><table><thead><tr><th>학기</th><th>학기내신</th><th>누적내신</th><th>반영/전체 학점</th><th style="text-align:left">성취도 분포</th></tr></thead><tbody>${semRows}</tbody></table><p class="note" style="margin-top:6px">행을 누르면 그 학기를 구성한 과목을 오른쪽에서 확인할 수 있습니다. 누적내신은 학기 평균을 다시 평균내지 않고, 해당 시점까지의 모든 등급 과목을 학점으로 다시 계산한 값입니다.</p></div>
+    <div class="card" style="background:var(--surface-2);border:0" id="detail"></div></div>
+  </section>
+  <section class="card"><h2><span class="no">②</span>교과별 누적 평균내신 <small>학생 자신의 교과 간 비교 · 교과를 누르면 구성 과목 표시</small></h2>${stripHTML(A)}</section>
+  <section class="card"><h2><span class="no">③</span>교과별 학기 변화 <small>칸을 누르면 바로 아래에 구성 과목 표시 · 다시 누르면 닫힘</small></h2>
+    ${A.semsV.length>=2&&A.groups.length?`<div class="chart" id="n2"></div>`:""}${matrix}</section>
+  ${convCardHTML(A,'<span class="no">④</span>')}</div>`;
+  if($("#n1"))semChart($("#n1"),A,240);
+  if($("#n2"))subjChart($("#n2"),A,260);
+  renderDetail(A);
+  const pick=(sel)=>{SEL=sel;paneNae(p,A);const d=$("#detail");if(d&&window.innerWidth<1100)d.scrollIntoView({behavior:"smooth",block:"nearest"})};
+  p.querySelectorAll("tr.click").forEach(tr=>{tr.onclick=()=>pick({type:"sem",i:+tr.dataset.i});tr.onkeydown=e=>{if(e.key==="Enter")tr.click()}});
+  p.querySelectorAll("td.cell").forEach(td=>{const i=+td.dataset.i,g=td.dataset.g;td.onclick=()=>{CELL=CELL&&CELL.g===g&&CELL.i===i?null:{g,i};paneNae(p,A);const n=[...p.querySelectorAll("td.cell")].find(x=>x.dataset.g===g&&+x.dataset.i===i);if(n)n.focus({preventScroll:true})};td.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();td.click()}}});
+  bindStrip(p,()=>paneNae(p,A))}
+function renderDetail(A){
+  const el=$("#detail");if(!el)return;const S=A.sems;let title,list,showSem=false;
+  if(SEL.type==="sem"){const s=S[SEL.i];title=`${s.long} 전체`;list=s.rows}
+  else if(SEL.type==="cell"){const s=S[SEL.i];title=`${s.long} ${SEL.g}`;list=s.rows.filter(r=>r.group===SEL.g)}
+  else{title=`${SEL.g} 교과 누적`;list=S.flatMap(s=>s.rows.filter(r=>r.group===SEL.g));showSem=true}
+  const gr=list.filter(r=>r.g!=null&&r.credit>0);const avg=wavg(gr);const sc=gr.reduce((p,r)=>p+r.credit,0);const tc=list.reduce((p,r)=>p+(r.credit>0?r.credit:0),0);
+  el.innerHTML=`<div class="detail"><h3 style="color:var(--ink);font-size:16px">${esc(title)}</h3>
+  <div class="tw"><table><thead><tr><th>과목</th><th>원점수</th><th style="text-align:center">성취도</th><th>등급</th><th>학점</th></tr></thead><tbody>${gradedFirst(list).map(r=>`<tr><td>${showSem?`<span class="muted">${esc(r.semLabel)}</span> `:""}${esc(r.subject)}${SEL.type==="sem"?` <span class="muted">${esc(r.group)}</span>`:""}</td><td${r.raw!=null&&r.raw>=90&&!isArt(r)?' class="hi"':""}>${r.raw==null?"–":fv(r.raw)}</td><td style="text-align:center">${achB(r.ach,isArt(r))||"–"}</td>${r.g!=null&&r.credit>0?`<td${r.g===1?' class="hi"':""}>${r.g}등급</td>`:`<td class="muted" title="석차등급 없음 · 평균내신 계산에서 제외">제외</td>`}<td>${r.credit??"–"}</td></tr>`).join("")}</tbody></table></div>
+  ${gr.length?`  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><span>${SEL.type==="sem"?"학기 평균내신":SEL.type==="cell"?`${esc(SEL.g)} 교과 학기 평균내신`:`${esc(SEL.g)} 누적 평균내신`}</span><span class="big">${f2(avg)}</span></div>`:`<p class="msg">석차등급이 있는 과목이 없어 평균을 계산하지 않습니다.</p>`}
+  <p class="note"><span style="color:var(--hi);font-weight:700">파란색</span>은 원점수 90 이상, 성취도 A, 1등급입니다(예체능 제외). 원점수는 참고용으로만 보여 주며 평균 계산에는 쓰지 않습니다. 평균내신 산출 반영학점 ${sc}학점 · 전체 이수학점 ${tc}학점. 석차등급이 없는 과목은 성취도를 등급으로 바꾸지 않고 제외합니다.</p></div>`}
+
+/* ───────── 9등급제 환산 (참고) ─────────
+   부산: 부산광역시교육청학력개발원 「5등급제 고1~고2-1 누적 등급평균 분석」 — 학점 반영 등급평균, 2-1 누적비 ↔ 24학년도 고3 9등급 평균
+   경기: 경기진학지도협의회 「2026학년도 2학년 성적 분석」 — 국영수사과 석차등급 단순평균(학점 미적용), 누적비 ↔ 2025학년도 고3 9등급 */
+const CONV={
+  bs:{name:"부산교육청",grid:[1.00,1.04,1.08,1.16,1.24,1.33,1.42,1.50,1.66,1.83,2.00,2.16,2.33,2.50,2.66,2.83,3.00,3.16,3.33,3.50,3.66,3.83,4.00,4.16,4.33,4.50,4.66,4.83,5.00],
+    p21:[0.68,1.01,1.40,2.23,3.16,4.29,5.44,6.49,8.89,12.41,16.58,20.64,25.45,31.00,36.37,42.75,49.96,56.15,62.92,69.29,74.93,80.30,85.54,89.21,92.51,94.58,96.16,97.48,100],
+    n21:[1.28,1.38,1.47,1.68,1.87,2.07,2.25,2.39,2.66,2.98,3.30,3.58,3.87,4.18,4.45,4.72,5.03,5.30,5.58,5.87,6.12,6.40,6.71,6.99,7.28,7.54,7.80,8.12,9.00],
+    gridC:[1.00,1.16,1.33,1.50,1.66,1.83,2.00,2.16,2.33,2.50,2.66,2.83,3.00,3.16,3.33,3.50,3.66,3.83,4.00,4.16,4.33,4.50,4.66,4.83,5.00],
+    p11:[2.07,2.85,5.03,7.30,9.97,13.56,18.59,21.06,26.45,31.87,36.92,43.70,51.18,55.22,62.16,68.50,73.48,79.42,85.22,87.27,91.06,93.51,95.14,96.95,100],
+    p12:[1.30,2.76,4.81,7.08,9.51,13.03,17.42,21.04,26.02,31.39,36.58,42.93,49.98,55.84,62.84,69.09,74.08,79.74,84.90,88.48,91.75,94.07,95.66,97.03,100],
+    pTop:[[0.20,1.09],[0.30,1.15],[0.40,1.19]]},
+  gg:{name:"경기진협",grid:[1.00,1.05,1.10,1.15,1.20,1.25,1.30,1.333,1.500,1.667,1.833,2.000,2.167,2.333,2.500,2.667,2.833,3.000,3.167,3.333,3.500,3.667,3.833,4.000,4.167,4.333,4.500,4.667,4.833,5.000],
+    p11:[1.75,1.77,1.77,2.36,3.41,3.57,4.05,4.89,7.58,10.36,14.01,19.13,22.15,27.54,32.87,38.08,44.50,51.67,56.08,62.51,68.57,73.48,78.99,84.82,87.41,90.87,93.34,95.09,96.75,100],
+    p12:[1.20,1.20,1.95,2.11,3.07,3.83,4.03,4.99,7.67,9.54,14.26,18.73,21.67,27.93,33.26,37.15,45.13,51.86,55.98,63.70,69.56,73.20,79.93,84.88,87.53,91.74,93.93,95.20,97.08,100],
+    p21:[0.59,0.61,1.18,1.77,2.33,2.92,3.56,4.27,6.66,9.54,12.99,18.05,22.49,27.40,32.66,37.90,44.12,51.49,57.57,63.49,69.03,74.28,78.97,84.47,88.46,91.46,93.92,95.70,97.42,100],
+    n21:[1.24,1.24,1.39,1.51,1.60,1.70,1.80,1.90,2.20,2.49,2.77,3.11,3.37,3.63,3.90,4.15,4.41,4.72,4.98,5.20,5.43,5.68,5.90,6.21,6.46,6.69,6.93,7.19,7.51,8.97],
+    n12:[1.39,1.39,1.53,1.56,1.73,1.85,1.88,2.01,2.29,2.49,2.86,3.15,3.32,3.66,3.93,4.12,4.46,4.74,4.91,5.21,5.46,5.63,5.96,6.23,6.40,6.71,6.93,7.12,7.43,8.97]}};
+function interp(xs,ys,x){if(x<=xs[0])return ys[0];for(let i=1;i<xs.length;i++)if(x<=xs[i]){const t=(x-xs[i-1])/(xs[i]-xs[i-1]||1);return ys[i-1]+t*(ys[i]-ys[i-1])}return ys[ys.length-1]}
+function pctCurve(pairs){const m=new Map();for(const[p,n]of pairs.sort((a,b)=>a[0]-b[0]))if(!m.has(p))m.set(p,n);return[[...m.keys()],[...m.values()]]}
+
+/* 경기진협 1~2학기(63개교 16,110명) 정밀 환산표와 「환산 9등급 대응 2025 대입 70% cut 대학」 예시 — 참고용 계산기(wonwongemini-ctrl.github.io)에 수록된 값 */
+const GG12F={grade:[1.000,1.083,1.167,1.250,1.333,1.417,1.500,1.583,1.667,1.750,1.833,1.917,2.000,2.083,2.167,2.250,2.333,2.417,2.500,2.583,2.667,2.750,2.833,2.917,3.000,3.083,3.167,3.250,3.333,3.417,3.500,3.583,3.667,3.750,3.833,3.917,4.000,4.083,4.167,4.250,4.333,4.417,4.500,4.583,4.667,4.750,4.833,4.917,5.000],g9:[1.39,1.53,1.73,1.87,2.03,2.18,2.31,2.45,2.61,2.73,2.88,3.00,3.16,3.28,3.41,3.54,3.68,3.80,3.95,4.08,4.21,4.34,4.48,4.61,4.75,4.87,5.00,5.12,5.24,5.33,5.47,5.59,5.71,5.83,5.98,6.09,6.25,6.36,6.50,6.61,6.72,6.81,6.94,7.05,7.18,7.30,7.45,7.62,8.97]};
+const UNI={hg:[
+  '고려대 학교추천 정치외교학과','성균관대 학교장추천 글로벌경영학과','한양대 교과(추천형) 영어영문학과','건국대 KU지역균형 경영학과',
+  '서울시립대 지역균형 경영학부','숭실대 학생부우수자 금융학부','서울과학기술대 고교추천 행정학과','덕성여대 고교추천 글로벌융합대학(인문)',
+  '단국대 지역균형선발 정치외교학과','인천대 교과성적우수자 법학부','한양대(에) 지역균형선발 경제학부','인천대 지역균형 자유전공학부(인문)',
+  '경기대 교과성적우수자 사회과학대학(통합)','동덕여대 학생부교과우수자 일어일본학전공','안양대 아리학생부교과 러시아언어문화학과','강남대 지역균형 글로벌문화콘텐츠대학',
+  '협성대 학생부교과우수자 세무회계학과','성결대 교과성적우수자 경영학과','차의과대 지역균형선발 미래융합대학','한세대 학생부교과우수자 사회복지학전공',
+  '경동대 일반학생 경찰학과','평택대 PTU추천 국제지역및신학자율전공','강서대 일반학생 상담심리학과','협성대 미래역량우수자 사회복지학과',
+  '서울신학대 일반 아동보육학과'
+],hj:[
+  '서울대 지역균형 인문계열','서울대 일반 역사교육과','연세대 활동우수형 사회학과','고려대 계열적합형 교육학과',
+  '서강대 일반 정치외교학과','중앙대 CAU융합형 경영학전공','이화여대 미래인재서류 심리학과','한국외대 학생부종합면접 경영학부',
+  '건국대 KU자기추천 국제무역학과','성신여대 자기주도인재 미디어커뮤니케이션학과','숭실대 SSU미래인재 법학과','단국대 DKU인재서류 사회계열광역',
+  '서울과기대 학교생활우수자 행정학과','인하대 인하미래인재(면) 경제학과','덕성여대 덕성인재Ⅱ 글로벌융합대학(인문)','아주대 ACE 사학과',
+  '경기대 KGU학생부종합 경영학부','가천대 가천바람개비 법과대학','한국외대 학생부종합(서) 헝가리학과','광운대 광운참빛인재 경영학전공',
+  '한양대(에) 서류형 LIONS자율전공학부(인)','성신여대 자기주도인재 프랑스어문ㆍ문화학과','강남대 학교생활우수자1 자유전공학부','대진대 윈윈대진 미디어커뮤니케이션학과',
+  '성공회대 열린인재 인문융합콘텐츠학부'
+],ng:[
+  '연세대 추천형 사회환경시스템공학부','한양대 교과(추천형) 기계공학부','중앙대 지역균형 간호학과','서울과학기술대 고교추천 전자공학과',
+  '국민대 교과성적우수자 미래융합전공(B)','세종대 지역균형 인공지능데이터사이언스학과','인하대 지역균형 환경공학과','명지대 학교장추천 환경시스템공학전공',
+  '인천대 지역균형 생명과학전공','가천대 학생부우수자 컴퓨터공학과','명지대 교과면접 산업경영공학과','인천대 교과성적우수자 환경공학전공',
+  '경기대 교과성적우수자 창의공과대학(통합)','서울여대 교과우수자 식품생명공학','수원대 교과우수 컴퓨터공학부','신한대 일반 에너지공학과',
+  '안양대 아리학생부교과 화장품발명디자인학과','강남대 지역균형 컴퓨터공학부','대진대 학생부우수자 전기공학과','성결대 교과성적우수자 공학계열자율전공학부',
+  '대진대 학교장추천 보건경영학과','한경국립대 일반 ICT로봇기계공학부','한세대 학생부교과우수자 IT학부','평택대 PTU추천 데이터정보학과',
+  '협성대 미래역량우수자 도시공학과'
+],nj:[
+  '서울대 일반 컴퓨터공학부','연세대 활동우수 물리학과','고려대 학업우수 수학교육과','경희대 네오르네상스 화학공학과',
+  '서울시립대 학생부종합Ⅰ 컴퓨터과학부','홍익대 학교생활우수자 컴퓨터공학과','동국대 DoDream 전자전기공학부','세종대 창의인재(면접) 생명시스템학부',
+  '서울과기대 학교생활우수자 환경공학과','숭실대 SSU미래인재 화학과','건국대 KU자기추천 건축학부','덕성여대 덕성인재Ⅰ 과학기술대학',
+  '아주대 ACE 프런티어과학학부','단국대 DKU인재면접형 전자전기공학과','인하대 인하미래인재(면) 이차전지융합학과','경기대 KGU학생부종합 사회에너지시스템공학과',
+  '가천대 가천바람개비 화공생명배터리공학부','명지대 명지인재면접 정보통신공학전공','안양대 아리학생부종합Ⅱ 식품영양학과','을지대 EU면접형 자연계열학부',
+  '삼육대 SW인재 인공지능융합학부','한국공학대 창의인재 나노반도체공학전공','강남대 학교생활우수자1 인공지능융합학부','한경국립대 잠재력우수자 동물응용과학전공',
+  '강남대 학교생활우수자1 컴퓨터공학부'
+]};
+const BS_P21C=[0.68,2.23,4.29,6.49,8.89,12.41,16.58,20.64,25.45,31.00,36.37,42.75,49.96,56.15,62.92,69.29,74.93,80.30,85.54,89.21,92.51,94.58,96.16,97.48,100];
+const BS_CURVE=pctCurve([...CONV.bs.pTop,...CONV.bs.p21.map((p,i)=>[p,CONV.bs.n21[i]])]);
+const GG_CURVE=pctCurve(CONV.gg.p21.map((p,i)=>[p,CONV.gg.n21[i]]));
+const CORE=["국어","수학","영어","사회","과학"];
+/* 학생의 1-1, 1-2, 2-1 시점별 누적값을 두 자료의 정의대로 계산해 환산 */
+function convert(A){
+  const out=[];const acc=[];
+  for(const s of A.sems){acc.push(...s.graded);const key=`${s.grade}-${s.sem}`;if(!["1-1","1-2","2-1"].includes(key))continue;
+    if(A.sems.filter(x=>`${x.grade}-${x.sem}`===key).length>1)continue;
+    const bsAvg=wavg(acc);const core=acc.filter(r=>CORE.includes(r.group));const ggAvg=core.length?core.reduce((p,r)=>p+r.g,0)/core.length:null;
+    const row={key,label:s.label,bsAvg,ggAvg,ggN:core.length};
+    if(bsAvg!=null){const B=CONV.bs;if(key==="2-1"){row.bsP=interp(B.grid,B.p21,bsAvg);row.bs9=interp(B.grid,B.n21,bsAvg);row.bsDirect=true;
+        const pb=interp(B.gridC,B.p12,bsAvg),pc=interp(B.gridC,BS_P21C,bsAvg);row.est31P=Math.min(100,Math.max(0.05,pc*Math.pow(pb>0?pc/pb:1,2)));row.est319=interp(BS_CURVE[0],BS_CURVE[1],row.est31P)}
+      else{row.bsP=interp(B.gridC,key==="1-1"?B.p11:B.p12,bsAvg);row.bs9=interp(BS_CURVE[0],BS_CURVE[1],row.bsP);row.bsDirect=false}}
+    if(ggAvg!=null){const G=CONV.gg;row.ggP=interp(G.grid,G[key==="1-1"?"p11":key==="1-2"?"p12":"p21"],ggAvg);
+      if(key==="1-1"){row.gg9=interp(GG_CURVE[0],GG_CURVE[1],row.ggP);row.ggDirect=false}else{row.gg9=interp(G.grid,key==="1-2"?G.n12:G.n21,ggAvg);row.ggDirect=true}}
+    out.push(row)}
+  return out}
+const fp=p=>p==null?"–":(p<10?p.toFixed(2):p.toFixed(1))+"%";
+function uniHTML(L){
+  if(L.gg9==null)return"";const top=GG12F.g9[24];
+  if(L.gg9>top+0.0001)return`<details class="note"><summary style="cursor:pointer">수시 지원 대학 예시 (경기진협 · 참고)</summary><p class="msg" style="margin-top:6px">경기진협 대학 예시는 환산 9등급 ${f2(top)}(5등급 평균 3.000, 누적비 약 52%)까지만 공개되어 있어, 이 학생의 환산값 ${f2(L.gg9)}에는 해당 예시가 없습니다.</p></details>`;
+  let bi=0,bd=1e9;for(let i=0;i<=24;i++){const d=Math.abs(GG12F.g9[i]-L.gg9);if(d<bd){bd=d;bi=i}}
+  const it=(t,l)=>`<li><b>${t}</b> ${esc(l[bi])}</li>`;
+  return`<details class="note"><summary style="cursor:pointer">수시 지원 대학 예시 (경기진협 · 참고)</summary><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;color:var(--ink-2)">
+  <span>경기진협 환산 ${f2(L.gg9)}에 가장 가까운 예시 지점: 환산 9등급 ${f2(GG12F.g9[bi])} (1~2학기 기준 5등급 평균 ${GG12F.grade[bi].toFixed(3)})</span>
+  <ul class="bul">${it("인문 교과",UNI.hg)}${it("인문 종합",UNI.hj)}${it("자연 교과",UNI.ng)}${it("자연 종합",UNI.nj)}</ul>
+  <span>대입정보포털 '어디가' 2025학년도 교과·종합전형 70% 컷(9등급제 입결)을 근거로 경기진협이 제안한 예시 모집단위 한 곳씩입니다. 수능 최저, 서류·면접, 2028 대입의 성취도 반영 방식은 반영되지 않았으며 합격 가능성을 뜻하지 않습니다.</span></div></details>`}
+function convCardHTML(A,num){
+  const C=convert(A);
+  const lastKey=A.sems.length?`${A.sems[A.sems.length-1].grade}-${A.sems[A.sems.length-1].sem}`:"";
+  const beyond=C.length&&!["1-1","1-2","2-1"].includes(lastKey);
+  if(!C.length)return`<section class="card"><h2>${num}9등급제 환산 <small>참고</small></h2><p class="msg">1학년 1학기 ~ 2학년 1학기 누적 성적이 없어 환산하지 않습니다. 두 분석 자료는 2학년 1학기까지만 제공됩니다.</p></section>`;
+  const rows=C.map(r=>`<tr${r===C[C.length-1]?' class="sel"':""}><td>${esc(r.label)}까지</td><td>${f2(r.bsAvg)}</td><td>상위 ${fp(r.bsP)}</td><td><b>${f2(r.bs9)}</b>${r.bsDirect?"":"<span class=\"muted\">*</span>"}</td><td>${r.ggAvg==null?"–":r.ggAvg.toFixed(3)}</td><td>상위 ${fp(r.ggP)}</td><td><b>${f2(r.gg9)}</b>${r.ggDirect===false?"<span class=\"muted\">*</span>":""}</td></tr>`).join("");
+  const L=C[C.length-1];
+  return`<section class="card"><h2>${num}9등급제 환산 <small>참고 자료 · 배치표로 쓰지 마세요</small></h2>
+  <div class="kpis"><div class="kpi"><span class="k">부산교육청 기준 환산</span><span class="v">${f2(L.bs9)}</span><span class="s">${esc(L.label)}까지 누적 ${f2(L.bsAvg)} · 상위 ${fp(L.bsP)}</span></div>
+    <div class="kpi"><span class="k">경기진협 기준 환산</span><span class="v">${f2(L.gg9)}</span><span class="s">${esc(L.label)}까지 국영수사과 ${L.ggAvg==null?"–":L.ggAvg.toFixed(3)} · 상위 ${fp(L.ggP)}</span></div></div>
+  <div class="tw"><table><thead><tr><th rowspan="2">누적 시점</th><th colspan="3" style="text-align:center">부산교육청 (전 과목 · 학점 반영)</th><th colspan="3" style="text-align:center">경기진협 (국영수사과 · 단순평균)</th></tr>
+    <tr><th>5등급 평균</th><th>누적비</th><th>9등급 환산</th><th>5등급 평균</th><th>누적비</th><th>9등급 환산</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${L.est31P!=null?`<div class="verdict"><span class="chip warn">추세 추정</span><span>지금 누적(${f2(L.bsAvg)})을 3학년 1학기까지 그대로 유지하면 부산 기준 상위 약 <b>${fp(L.est31P)}</b>, 9등급 환산 약 <b>${f2(L.est319)}</b></span><span class="muted">학기가 지날수록 상위권 누적비가 줄어드는 1-2→2-1 변화율이 두 학기 더 이어진다고 가정한 비공식 추정값입니다.</span></div>`:""}
+  ${uniHTML(L)}
+  ${beyond?`<p class="note">두 자료는 2학년 1학기까지만 있어, 그 이후 학기는 환산하지 않고 2-1까지의 누적값으로 보여 줍니다.</p>`:""}
+  <details class="note"><summary style="cursor:pointer">환산 방법과 한계</summary><ul class="bul" style="margin-top:6px">
+    <li>학생의 누적 평균을 자료의 등급평균 구간 사이에서 직선으로 보간해 누적비(상위 %)를 구하고, 같은 누적비에 해당하는 9등급제 평균을 읽습니다.</li>
+    <li>* 표시는 자료에 해당 시점의 9등급 환산값이 없어, 그 시점 누적비를 2-1 기준 누적비–9등급 대응에 적용한 추정값입니다.</li>
+    <li>두 자료는 평균 계산 방식이 다릅니다. 부산은 학점을 반영한 등급평균(대상 과목 범위는 자료에 명시되지 않아 등급이 있는 전 과목으로 계산), 경기는 국영수사과(한국사 포함) 석차등급의 단순평균입니다.</li>
+    <li>표본은 부산 98개교 15,978명, 경기 106개교 26,511명이며 2025년 입학생(2028 대입) 자료입니다. 지역·학교 특성과 입학 연도가 다르면 분포가 다를 수 있습니다.</li>
+    <li>3학년 1학기 추세 추정, 경기진협 1~2학기 정밀 환산표와 대학 예시는 선생님이 알려 주신 참고용 계산기(wonwongemini-ctrl.github.io)에 수록된 값과 계산 방식을 그대로 옮겼습니다. 추세 추정은 공식 발표 수치가 아닙니다.</li><li>2028 대입부터 대학별로 성취도까지 환산하는 등 반영 방식이 다양해져, 평균 등급만으로 합격 가능성을 판단할 수 없습니다(두 자료 모두 참고용임을 명시).</li></ul></details></section>`}
+
+/* 내신 예측: 앞으로 이수할 과목의 학점·등급을 입력해 누적 평균내신을 미리 계산 */
+let PLAN=null;
+const nextSem=(g,s)=>s===1?[g,2]:[g+1,1];
+const semIdx=(g,s)=>g*2+s;
+function planBuild(A,end){
+  const last=A.sems[A.sems.length-1];const src=[...A.sems].reverse().find(s=>s.graded.length);
+  const [eg,es]=end.split("-").map(Number);const old=new Map((PLAN&&PLAN.sems||[]).map(s=>[s.label,s]));
+  const out=[];let [g,s]=nextSem(last.grade,last.sem);
+  while(semIdx(g,s)<=semIdx(eg,es)){const label=`${g}-${s}`;
+    out.push(old.get(label)||{grade:g,sem:s,label,rows:src.graded.map(r=>({group:r.group,subject:"",credit:r.credit,g:r.g}))});[g,s]=nextSem(g,s)}
+  return out}
+function planCalc(A){
+  const G0=A.allGraded.reduce((p,r)=>p+r.g*r.credit,0),C0=A.allGraded.reduce((p,r)=>p+r.credit,0);
+  let G=G0,C=C0;const sems=PLAN.sems.map(s=>{const v=s.rows.filter(r=>r.credit>0&&r.g>=1&&r.g<=DB.gradeMax);
+    const sg=v.reduce((p,r)=>p+r.g*r.credit,0),sc=v.reduce((p,r)=>p+r.credit,0);G+=sg;C+=sc;return{label:s.label,avg:sc?sg/sc:null,cum:C?G/C:null,sc}});
+  const F=C-C0;
+  const grp={};for(const r of A.allGraded){(grp[r.group]=grp[r.group]||{g0:0,c0:0,g:0,c:0});grp[r.group].g0+=r.g*r.credit;grp[r.group].c0+=r.credit}
+  for(const s of PLAN.sems)for(const r of s.rows)if(r.credit>0&&r.g>=1&&r.g<=DB.gradeMax){(grp[r.group]=grp[r.group]||{g0:0,c0:0,g:0,c:0});grp[r.group].g+=r.g*r.credit;grp[r.group].c+=r.credit}
+  return{G0,C0,F,sems,final:C?G/C:null,grp}}
+function paneFut(p,A){
+  const S=A.semsV;
+  if(!S.length){p.innerHTML=`<div style="padding-top:16px"><p class="msg">석차등급이 있는 내신 성적이 없어 예측할 수 없습니다.</p></div>`;return}
+  const last=A.sems[A.sems.length-1];const cur=S[S.length-1];
+  if(!PLAN||PLAN.sid!==CUR){PLAN={sid:CUR,end:"3-1",target:null,sems:[]};PLAN.sems=planBuild(A,PLAN.end)}
+  const max=DB.gradeMax;const R=planCalc(A);const curCum=cur.cum;
+  const ends=["2-1","2-2","3-1"].filter(e=>{const[g,s]=e.split("-").map(Number);return semIdx(g,s)>semIdx(last.grade,last.sem)});
+  /* 목표 역산 */
+  const tgt=PLAN.target??Math.max(1,r2(Math.round((curCum-0.3)*10)/10));
+  let need="";
+  if(R.F>0){const req=(tgt*(R.C0+R.F)-R.G0)/R.F;const best=(R.G0+1*R.F)/(R.C0+R.F);
+    need=req<1?`<span class="chip bad">도달 어려움</span><span>남은 ${PLAN.sems.length}개 학기(${R.F}학점)를 모두 1등급으로 받아도 누적 ${f2(best)}까지 가능합니다.</span>`
+      :req>=max?`<span class="chip good">이미 범위 안</span><span>남은 학기 성적과 관계없이 누적 ${f2(tgt)} 이내가 유지됩니다.</span>`
+      :`<span>남은 ${PLAN.sems.length}개 학기(${R.F}학점) 평균을 <b class="num" style="font-size:20px">${f2(Math.floor(req*100)/100)}</b>등급 이내로 받으면 누적 ${f2(tgt)}에 도달합니다.</span><span class="muted">최근 학기 ${f2(cur.avg)} 대비 ${r2(cur.avg)-Math.floor(req*100)/100>0?`${(r2(cur.avg)-Math.floor(req*100)/100).toFixed(2)}등급 향상 필요`:"현재 수준 유지로 가능"}</span>`}
+  const base=r2(cur.avg);const lv=[[`최근 학기 수준 유지`,base],[`0.5등급 향상`,Math.max(1,base-0.5)],[`1등급 향상`,Math.max(1,base-1)],[`전 과목 1등급`,1]];
+  const seen=new Set();const scen=lv.filter(([,v])=>{const k=v.toFixed(2);if(seen.has(k))return false;seen.add(k);return true});
+  const scenRows=R.F>0?scen.map(([l,v])=>{const c=(R.G0+v*R.F)/(R.C0+R.F);return`<tr><td>${l}</td><td>${f2(v)}</td><td><b>${f2(c)}</b></td><td class="muted">${f2(curCum)} → ${f2(c)}</td></tr>`}).join(""):"";
+  const gopts=[...new Set([...A.groups,...SUBJ_FIRST,...DB.groupOrder])];
+  const semCards=PLAN.sems.map((s,si)=>{const rs=R.sems[si];return`<div class="card" style="background:var(--surface-2);border:0;gap:10px">
+    <div class="chart-cap"><h3 style="color:var(--ink);font-size:16px">${s.grade}학년 ${s.sem}학기 <span class="muted" style="font-weight:400">예상</span></h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline"><span>학기 <b class="num">${f2(rs.avg)}</b></span><span>누적 <b class="num">${f2(rs.cum)}</b></span></div></div>
+    <div class="tw"><table class="plan"><thead><tr><th>교과</th><th style="text-align:left">과목명(선택)</th><th>학점</th><th>예상 등급</th><th></th></tr></thead><tbody>
+    ${s.rows.map((r,ri)=>`<tr><td><select id="f-${si}-${ri}-grp" aria-label="교과">${gopts.map(g=>`<option${g===r.group?" selected":""}>${esc(g)}</option>`).join("")}</select></td>
+      <td style="text-align:left"><input id="f-${si}-${ri}-sub" type="text" value="${esc(r.subject)}" placeholder="${esc(r.group)} 과목" aria-label="과목명"></td>
+      <td><input id="f-${si}-${ri}-cr" type="number" min="1" max="10" step="1" value="${r.credit??""}" inputmode="numeric" aria-label="학점" style="width:64px"></td>
+      <td><select id="f-${si}-${ri}-g" aria-label="예상 등급">${gradeTicks(max).map(g=>`<option value="${g}"${g===r.g?" selected":""}>${g}등급</option>`).join("")}</select></td>
+      <td><button type="button" class="btn xs" data-del="${si}-${ri}" aria-label="과목 삭제">삭제</button></td></tr>`).join("")}</tbody></table></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-add="${si}">과목 추가</button>
+      <label class="muted" style="font-size:14.5px;display:flex;gap:6px;align-items:center" for="f-${si}-all">모든 과목을<select id="f-${si}-all"><option value="">선택</option>${gradeTicks(max).map(g=>`<option value="${g}">${g}등급</option>`).join("")}</select>으로</label></div></div>`}).join("");
+  const grpRows=Object.keys(R.grp).filter(g=>R.grp[g].c0||R.grp[g].c).sort((a,b)=>{const o=[...SUBJ_FIRST,...DB.groupOrder];const ia=o.indexOf(a),ib=o.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)}).map(g=>{const x=R.grp[g];const now=x.c0?x.g0/x.c0:null,then=(x.c0+x.c)?(x.g0+x.g)/(x.c0+x.c):null;
+    const d=now!=null&&then!=null?r2(then)-r2(now):null;return`<tr><td>${esc(g)}</td><td>${f2(now)}</td><td><b>${f2(then)}</b></td><td>${d==null||d===0?`<span class="muted">변화 없음</span>`:`<span class="chip ${d<0?"up":"down"}">${d<0?"▲ "+Math.abs(d).toFixed(2)+" 상승":"▼ "+d.toFixed(2)+" 하락"}</span>`}</td></tr>`}).join("");
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <section class="card"><h2>예측 결과 <small>입력한 계획대로 이수할 때</small></h2>
+    <div class="kpis"><div class="kpi"><span class="k">현재 누적 평균내신</span><span class="v">${f2(curCum)}</span><span class="s">${esc(S[0].label)} ~ ${esc(cur.label)} · ${R.C0}학점</span></div>
+      <div class="kpi"><span class="k">예상 누적 평균내신</span><span class="v">${f2(R.final)}</span><span class="s">${PLAN.sems.length?`${esc(PLAN.sems[PLAN.sems.length-1].label)}까지 · ${R.C0+R.F}학점`:"예측할 학기 없음"}</span></div>
+      <div class="kpi"><span class="k">변화</span><span class="v" style="color:${R.F&&r2(R.final)<r2(curCum)?"var(--up)":R.F&&r2(R.final)>r2(curCum)?"var(--down)":"inherit"}">${R.F&&r2(R.final)!==r2(curCum)?(r2(R.final)<r2(curCum)?"▲ ":"▼ ")+Math.abs(r2(R.final)-r2(curCum)).toFixed(2):"–"}</span><span class="s">${R.F?(r2(R.final)<r2(curCum)?"현재보다 상승 (숫자가 작을수록 좋음)":r2(R.final)>r2(curCum)?"현재보다 하락":"현재와 같음"):""}</span></div></div>
+    ${PLAN.sems.length?`<div class="chart" id="f1"></div>`:""}
+    ${ends.length>1?`<div class="ctrl"><label for="fEnd">예측 마지막 학기<select id="fEnd">${ends.map(e=>`<option${e===PLAN.end?" selected":""}>${e}</option>`).join("")}</select></label></div>`:""}
+    <p class="note">대입 반영 범위인 3학년 1학기까지 예측합니다. 입력값은 저장되지 않으며 다른 학생을 선택하면 초기화됩니다.</p></section>
+  ${PLAN.sems.length?`<section class="card"><h2>목표 누적내신 역산</h2>
+    <div class="ctrl"><label for="fT">목표 누적 평균내신<input id="fT" type="number" min="1" max="${max}" step="0.01" value="${tgt.toFixed(2)}"></label></div>
+    ${need?`<div class="verdict">${need}</div>`:""}
+    <div class="tw"><table><thead><tr><th>남은 학기 평균</th><th>평균 등급</th><th>예상 누적</th><th>현재 → 예상</th></tr></thead><tbody>${scenRows}</tbody></table></div>
+    <p class="note">아래 학기별 계획의 학점 합계(${R.F}학점)를 기준으로 계산합니다.</p></section>
+  <section class="card"><h2>학기별 이수 계획 <small>최근 학기 과목·학점·등급으로 미리 채워 두었습니다. 등급과 학점을 바꿔 보세요.</small></h2>${semCards}</section>
+  <section class="card"><h2>교과별 누적 예측</h2><div class="tw"><table><thead><tr><th>교과</th><th>현재 누적</th><th>예상 누적</th><th>변화</th></tr></thead><tbody>${grpRows}</tbody></table></div></section>`
+  :`<p class="msg">3학년 1학기까지 성적이 모두 있어 예측할 학기가 없습니다.</p>`}</div>`;
+  if($("#f1")){const cats=[...S.map(s=>s.label),...PLAN.sems.map(s=>s.label)];const n=S.length;
+    const pad=(a,b)=>[...a,...b];
+    chart($("#f1"),{cats,series:[
+      {name:"학기 평균내신",color:"var(--s1)",values:pad(S.map(s=>s.avg),PLAN.sems.map(()=>null))},
+      {name:"누적 평균내신",color:"var(--s2)",values:pad(S.map(s=>s.cum),PLAN.sems.map(()=>null))},
+      {name:"학기 평균(예측)",color:"var(--s1)",dash:true,values:pad(S.map((s,i)=>i===n-1?s.avg:null),R.sems.map(x=>x.avg))},
+      {name:"누적(예측)",color:"var(--s2)",dash:true,values:pad(S.map((s,i)=>i===n-1?s.cum:null),R.sems.map(x=>x.cum))}],
+      yMin:1,yMax:max,invert:true,ticks:gradeTicks(max),fmt:f2,height:240,aria:"실제 및 예측 평균내신 변화"})}
+  const rer=()=>{const id=document.activeElement&&document.activeElement.id;const y=window.scrollY;paneFut(p,A);if(id&&document.getElementById(id))document.getElementById(id).focus({preventScroll:true});window.scrollTo(0,y)};
+  const fe=$("#fEnd");if(fe)fe.onchange=()=>{PLAN.end=fe.value;PLAN.sems=planBuild(A,PLAN.end);rer()};
+  const ft=$("#fT");if(ft)ft.onchange=()=>{const v=parseFloat(ft.value);if(isFinite(v)&&v>=1&&v<=max)PLAN.target=r2(v);rer()};
+  PLAN.sems.forEach((s,si)=>{s.rows.forEach((r,ri)=>{const q=k=>document.getElementById(`f-${si}-${ri}-${k}`);
+      q("grp").onchange=e=>{r.group=e.target.value;rer()};q("sub").onchange=e=>{r.subject=e.target.value.trim();rer()};
+      q("cr").onchange=e=>{const v=parseInt(e.target.value,10);if(v>0)r.credit=v;rer()};q("g").onchange=e=>{r.g=+e.target.value;rer()}});
+    const all=document.getElementById(`f-${si}-all`);all.onchange=()=>{const v=+all.value;if(v)s.rows.forEach(r=>r.g=v);rer()}});
+  p.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const s=PLAN.sems[+b.dataset.add];const lr=s.rows[s.rows.length-1];s.rows.push({group:lr?lr.group:"국어",subject:"",credit:lr?lr.credit:3,g:lr?lr.g:Math.min(3,max)});rer()});
+  p.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const[si,ri]=b.dataset.del.split("-").map(Number);PLAN.sems[si].rows.splice(ri,1);rer()})}
+
+/* 모의고사 분석 */
+function paneMock(p,A){
+  const M=A.mocks;
+  if(!M.length){p.innerHTML=`<div style="padding-top:16px"><p class="msg">입력된 모의고사 성적이 없습니다.${A.mockExcluded.length?` (성적 미입력 회차: ${A.mockExcluded.map(m=>esc(mockName(m))).join(", ")})`:""}</p></div>`;return}
+  const rowsOf=a=>{const R=[["원점수","raw"],["표준점수","std"],["백분위","pct"],["등급","g"]].filter(([,k])=>M.some(x=>x.areas.get(a)?.[k]!=null));
+    return`<div class="tw"><table><thead><tr><th>${esc(a)}</th>${M.map(x=>`<th>${esc(x.label)}</th>`).join("")}</tr></thead><tbody>${R.map(([l,k])=>`<tr><td>${l}</td>${M.map(x=>{const v=x.areas.get(a)?.[k];return`<td${k==="g"?' style="font-weight:700"':""}>${v==null?"–":fv(v)}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>`};
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <section class="card"><div class="chart-cap"><h2>회차별 변화 <small>${MOCKMODE==="g"?"등급 · 1등급이 위쪽":"백분위 · 높을수록 위쪽"}</small></h2>
+    <div class="seg" role="group" aria-label="표시 값"><button type="button" data-m="g" aria-pressed="${MOCKMODE==="g"}">등급</button><button type="button" data-m="p" aria-pressed="${MOCKMODE==="p"}">백분위</button></div></div>
+    ${M.length>=2?`<div class="chart" id="m1"></div>`:`<p class="msg">모의고사 성적이 한 회차만 있어 회차 간 변화는 분석하지 않습니다.</p>`}
+    ${olderNote(A)}${A.mockExcluded.length?`<p class="note">성적이 입력되지 않아 제외한 회차: ${A.mockExcluded.map(m=>`${esc(m.sheet)}(${esc(mockName(m))})`).join(", ")}</p>`:""}
+  </section>
+  <section class="card"><h2>영역별 상세 <small>표준점수·백분위는 입력된 영역만 표시</small></h2>
+    <div class="grid2">${A.areas.map(a=>`<div>${rowsOf(a)}</div>`).join("")}</div></section></div>`;
+  if($("#m1"))mockChart($("#m1"),A,280,MOCKMODE);
+  p.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{MOCKMODE=b.dataset.m;paneMock(p,A)})}
+
+/* ───────── 대학 권역별 최저 충족 (2028 시행계획 기준 재검증표) ─────────
+   rg: top=서울 주요대학(이화·숙명 제외 13개) / etc=서울 기타 및 수도권 / nat=지거국(부산~제주)
+   메디컬은 top=서울(울산대 포함) / etc=수도권 / nat=지거국으로 표기
+   kind: sum(등급합) · each(각 영역 n등급 이내) · count(n등급 이내 영역 개수) · or(둘 중 하나) · na(개별 확인)
+   pool: K국어 M수학 E영어 H한국사 S통합사회 C통합과학 T탐구(tam 규칙으로 산출)
+   tam: top1 상위1 · avg 평균(소수) · avgF 평균 절사 · avgC 평균 올림 · avgR 평균 반올림 · C 과탐만 · sep 사·과 각각 */
+const UNIV_RULES=[{"u":"연세대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"인문","lab":"2합4","warn":[],"kind":"sum","n":2,"max":4,"tam":"sep","pool":["K","M","S","C"],"must":[["K","M"]],"eng":3,"hist":4},{"u":"연세대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"자연 일반","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4},{"u":"연세대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"통합(상경계열, 응용통계학과, 생활과학대학, 간호대학)","lab":"인문 2합4 또는 자연 2합5","warn":[],"kind":"or","n":null,"max":null,"tam":"sep","pool":["K","M","S","C"],"must":[],"eng":3,"hist":4,"alts":[{"kind":"sum","n":2,"max":4,"must":[["K","M"]]},{"kind":"sum","n":2,"max":5,"must":[["M"]]}],"note":"원문: 인문 또는 자연계열(일반)의 최저 중 하나 충족(인문 2합4 / 자연 2합5)"},{"u":"연세대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"인문","lab":"2합4","warn":[],"kind":"sum","n":2,"max":4,"tam":"sep","pool":["K","M","S","C"],"must":[["K","M"]],"eng":3,"hist":4},{"u":"연세대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"자연 일반","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4},{"u":"연세대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"통합(상경계열, 응용통계학과, 생활과학대학, 간호대학)","lab":"인문 2합4 또는 자연 2합5","warn":[],"kind":"or","n":null,"max":null,"tam":"sep","pool":["K","M","S","C"],"must":[],"eng":3,"hist":4,"alts":[{"kind":"sum","n":2,"max":4,"must":[["K","M"]]},{"kind":"sum","n":2,"max":5,"must":[["M"]]}],"note":"원문: 인문 또는 자연계열(일반)의 최저 중 하나 충족(인문 2합4 / 자연 2합5)"},{"u":"연세대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"국제(아시아학전공, 융합인문사회과학부(HASS), 융합과학공학부(ISE))","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"sep","pool":["K","M","S","C"],"must":[["K","M"]],"eng":2,"hist":4},{"u":"고려대","rg":"top","g":"일반","tp":"학생부종합","nm":"학업우수전형","unit":"인문계·자연계(의학과 제외)","lab":"4합9","warn":[],"kind":"sum","n":4,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"note":"4개 영역 모두 반영(국·수·영·탐)"},{"u":"고려대","rg":"top","g":"일반","tp":"실기/실적","nm":"특기자전형","unit":"디자인조형학부","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"서강대","rg":"top","g":"일반","tp":"학생부교과","nm":"지역균형","unit":"전 계열","lab":"3각3","warn":[],"kind":"each","n":3,"max":3,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"note":"3개 영역 각각 3등급 이내(등급합 아님)"},{"u":"서강대","rg":"top","g":"일반","tp":"학생부종합","nm":"일반Ⅱ","unit":"전 계열","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"성균관대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(서류형) [융합인재]","unit":"전 모집단위","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"sep","pool":["K","M","E","S","C"],"must":[],"eng":null,"hist":"req"},{"u":"성균관대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과 [추천인재]","unit":"글로벌AI융합학부, 인문과학계열(전공예약 포함), 사회과학계열(전공예약 포함), 경영학과, 사범대학, 영상학과, 의상학과, 자연과학계열(전공예약 포함), 공학계열, 건설환경공학부, 건축학과(5년제)","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"sep","pool":["K","M","E","S","C"],"must":[],"eng":null,"hist":"req"},{"u":"성균관대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과 [추천인재]","unit":"자유전공계열, 글로벌리더학부, 글로벌경제학과, 글로벌경영학과, 전자전기정보공학부, 컴퓨터공학과, 반도체융합공학과, 에너지학과, 글로벌바이오메디컬공학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"sep","pool":["K","M","E","S","C"],"must":[],"eng":null,"hist":"req"},{"u":"한양대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(추천형)","unit":"자연, 상경, 한양인터칼리지학부","lab":"3각3","warn":[],"kind":"each","n":3,"max":3,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"3개 영역 각각 3등급 이내(등급합 아님)"},{"u":"한양대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(추천형)","unit":"인문, 의류학과, 실내건축디자인학과","lab":"3각3","warn":[],"kind":"each","n":3,"max":3,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"3개 영역 각각 3등급 이내(등급합 아님)"},{"u":"한양대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(학업형)","unit":"자연, 상경, 한양인터칼리지학부(자연, 인문)","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"sep","pool":["K","M","E","S","C"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"한양대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(학업형)","unit":"인문, 예체능, 의류학과, 실내건축디자인학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"sep","pool":["K","M","E","S","C"],"must":[],"eng":null,"hist":"req"},{"u":"중앙대","rg":"top","g":"일반","tp":"학생부교과","nm":"지역균형","unit":"전체(약학부 제외)","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"info":"참고: 영어(2등급 누적 20% 미만 시)·과탐(일부 계열) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"인문·사회·경영경제(일부)·사범(지균) 등 계열은 과탐 1·2등급을 통합해 1등급으로 간주"},{"u":"중앙대","rg":"top","g":"일반","tp":"학생부종합","nm":"최저 있는 학종(Up)","unit":"전체(의/약학부 제외)","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"info":"참고: 영어(2등급 누적 20% 미만 시)·과탐(일부 계열) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"인문·사회·경영경제(일부)·사범(지균) 등 계열은 과탐 1·2등급을 통합해 1등급으로 간주"},{"u":"중앙대","rg":"top","g":"일반","tp":"실기/실적","nm":"실기","unit":"공연영상창작학부(영화, 문예창작, 사진)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"info":"참고: 영어(2등급 누적 20% 미만 시) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"(단, 필수 응시). 제2외국어와 한문은 반영하지 않음"},{"u":"경희대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"인문/자연, 자율·자유전공(의·한의·치의·약 제외)","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5},{"u":"경희대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(네오르네상스-서류형)","unit":"인문/자연, 자율·자유전공(의·한의·치의·약 제외)","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5},{"u":"경희대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"예술·체육","lab":"1개 영역 3등급 이내","warn":[],"kind":"each","n":1,"max":3,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"한국외대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(학교장추천전형)","unit":"영어대학·서양어대학·아시아언어문화대학·중국학대학·일본학대학·사회과학대학·상경대학·경영대학·국제학부·Language & Diplomacy학부·Language & Trade학부·자유전공학부(서울)·인문대학·국가전략언어대학·경상대학","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"한국외대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(학교장추천전형)","unit":"자연과학대학·공과대학·융합인재대학·Culture & Technology 융합대학","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"한국외대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(학생부종합전형(서류형))","unit":"영어대학·서양어대학·아시아언어문화대학·중국학대학·일본학대학·사회과학대학·상경대학·경영대학·사범대학·국제학부·Language & Diplomacy학부·Language & Trade학부·자유전공학부(서울)·인문대학·국가전략언어대학·경상대학","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"한국외대","rg":"top","g":"일반","tp":"학생부종합","nm":"학생부종합(학생부종합전형(서류형))","unit":"자연과학대학·공과대학·융합인재대학·Culture & Technology 융합대학","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"서울시립대","rg":"top","g":"일반","tp":"학생부교과","nm":"지역균형선발전형","unit":"전체","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"건국대","rg":"top","g":"일반","tp":"학생부교과","nm":"학생부교과(KU지역균형)","unit":"인문/자연","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"top1","pool":["K","M","E","H","T"],"must":[],"eng":null,"hist":null,"note":"2027 \"없음\" → 2028 신설"},{"u":"홍익대","rg":"top","g":"일반","tp":"학생부교과","nm":"학교장추천자","unit":"인문계열/자연계열/예술학과/캠퍼스자율전공(인문·예능)/캠퍼스자율전공(자연·예능)","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"홍익대","rg":"top","g":"일반","tp":"학생부종합","nm":"학교생활우수자(서류형)","unit":"인문계열/자연계열/예술학과/캠퍼스자율전공(인문·예능)/캠퍼스자율전공(자연·예능)","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"홍익대","rg":"top","g":"일반","tp":"실기/실적","nm":"미술우수자","unit":"미술계열","lab":"3합9","warn":[],"kind":"sum","n":3,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4},{"u":"숭실대","rg":"etc","g":"일반","tp":"학생부교과","nm":"교과우수자전형","unit":"전 계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"국민대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(교과우수자-학교장추천)","unit":"인문·자연(자유전공 A/B, 미래융합 A/B 포함)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"세종대","rg":"etc","g":"일반","tp":"학생부교과","nm":"지역균형 전형","unit":"자유전공학부","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"세종대","rg":"etc","g":"일반","tp":"학생부교과","nm":"지역균형 전형","unit":"인문계열","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"세종대","rg":"etc","g":"일반","tp":"학생부교과","nm":"지역균형 전형","unit":"자연계열","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"세종대","rg":"etc","g":"일반","tp":"학생부교과","nm":"항공시스템공학 특별전형","unit":"우주항공시스템공학부 항공시스템공학전공","lab":"3합10","warn":[],"kind":"sum","n":3,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"공군 계약학과 특별전형(학생부종합)"},{"u":"광운대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"자율전공학부(자연)·자율전공학부(인문)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"2027 없음 → 2028 신설. 지역균형전형만 최저 적용"},{"u":"명지대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(학교장추천)","unit":"인문·사회과학·경영·미디어휴먼라이프·인공지능소프트웨어융합대학, 자율전공(인문)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"명지대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(학교장추천)","unit":"화학·생명과학·스마트시스템공과·반도체ICT·건축대학, 자율전공(자연)","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"명지대","rg":"etc","g":"일반","tp":"학생부종합","nm":"학생부종합(명지인재서류)","unit":"인문·사회과학·경영·미디어휴먼라이프·인공지능소프트웨어융합대학, 자율전공(인문)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"명지대","rg":"etc","g":"일반","tp":"학생부종합","nm":"학생부종합(명지인재서류)","unit":"화학·생명과학·스마트시스템공과·반도체ICT·건축대학, 자율전공(자연)","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"서울과기대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(고교추천전형)","unit":"전계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"아주대","rg":"etc","g":"일반","tp":"학생부교과","nm":"고교추천전형","unit":"인문계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"탐구 2개 과목만으로 수능최저학력기준을 맞출 수 없음"},{"u":"아주대","rg":"etc","g":"일반","tp":"학생부교과","nm":"고교추천전형","unit":"자연계열","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"탐구 2개 과목만으로 수능최저학력기준을 맞출 수 없음"},{"u":"아주대","rg":"etc","g":"일반","tp":"학생부종합","nm":"ACE전형 서류형","unit":"인문계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"탐구 2개 과목만으로 수능최저학력기준을 맞출 수 없음"},{"u":"아주대","rg":"etc","g":"일반","tp":"학생부종합","nm":"ACE전형 서류형","unit":"자연계열","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"탐구 2개 과목만으로 수능최저학력기준을 맞출 수 없음"},{"u":"인하대","rg":"etc","g":"일반","tp":"학생부교과","nm":"지역균형","unit":"공통","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"가천대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부우수자)","unit":"인문계열, 자연계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"가천대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부우수자)","unit":"바이오로직스학과","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"단국대","rg":"etc","g":"일반","tp":"학생부교과","nm":"학생부교과(지역균형선발)","unit":"죽전캠퍼스 전 모집단위(퇴계·율곡혁신칼리지, 인문, 자연, 체육교육과)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수전형","unit":"경영학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수전형","unit":"인문대학, 사회과학대학, 사범대학, 경제통상대학, 생활과학대학 해당 모집단위","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수전형","unit":"학부대학 자유전공학부, 예술대학 예술문화영상학과, 생명자원과학대학 식품자원경제학과","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수전형","unit":"자연과학대학, 공과대학, 사범대학, 간호대학, 정보의생명공학대학, 학부대학 해당 모집단위","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수전형","unit":"생활과학대학 식품영양학과, 생명자원과학대학 해당 모집단위","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부종합","nm":"서류전형","unit":"인문·사회 해당 모집단위","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부종합","nm":"서류전형","unit":"약학부 이외 자연 모집단위","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"학생부종합","nm":"저소득층학생전형","unit":"간호학과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"일반","tp":"실기/실적","nm":"실기전형","unit":"체육교육과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"응시 영역 중 상위 2개 영역 등급 합 6 이내"},{"u":"부산대","rg":"nat","g":"일반","tp":"실기/실적","nm":"실기전형","unit":"미술학과, 조형학과, 디자인학과(애니메이션전공)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"응시 영역 중 상위 2개 영역 등급 합 10 이내"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수자전형","unit":"IT대학","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수자전형","unit":"경상대학, 사범대학, 간호대학, 행정학부, 자율전공학부","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수자전형","unit":"공과대학, 첨단기술융합대학, 공학첨단자율학부","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"교과우수자전형","unit":"인문대학, 사회과학대학, 자연과학대학, 농업생명과학대학, 생활과학대학","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(일반학생)","unit":"IT대학 (모바일공학 제외)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"교과 기준(2합5)에서 1등급 완화"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(일반학생)","unit":"경상대학, 사범대학, 간호대학, 행정학부, 자율전공학부","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"교과 기준(2합5)에서 1등급 완화"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(일반학생)","unit":"공과대학, 첨단기술융합대학, 공학첨단자율학부","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"교과 기준(2합6)에서 1등급 완화"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(일반학생)","unit":"인문대학, 사회과학대학, 자연과학대학, 농업생명과학대학, 생활과학대학","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"교과 기준(2합6)에서 1등급 완화"},{"u":"경북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"모바일과학인재전형","unit":"전자공학부 모바일공학전공","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"일반","tp":"실기/실적","nm":"실기/실적(예·체능)전형","unit":"미술학과, 디자인학과","lab":"1개 영역 4등급 이내","warn":[],"kind":"each","n":1,"max":4,"tam":"sep","pool":["K","E","S","C"],"must":[],"eng":null,"hist":"req","note":"1개 영역만 4등급 이내면 충족"},{"u":"경북대","rg":"nat","g":"일반","tp":"실기/실적","nm":"실기/실적(예·체능)전형","unit":"체육교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"기준은 41~42쪽 참조로 기재되어 있어 발췌문에서 구체 기준 확인 불가"},{"u":"전남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"간호대학·경영대학","lab":"3합9","warn":[],"kind":"sum","n":3,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"공과·농생명·사범·사회과학·생활과학·예술(미술이론)·인문·자연과학·AI융합대학·자율전공","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"수산해양대학(수산생명의학과)","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(예체능실기)","unit":"사범대학 체육교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과","unit":"인문대학, 사회과학대학, 경상대학, 국제학부, 공과대학, 사범대학(국어교육과, 영어교육과, 교육학과, 수학교육과, 기술교육과), 간호대학, 생명시스템과학대학, 자율전공융합학부, 인문사회융합학부, 공학융합학부","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과","unit":"지식융합학부, 자연과학대학, 사범대학(건설공학교육과, 기계공학교육과, 전기·전자·통신공학교육과, 화학공학교육과), 생활과학대학, 농생명융합학부, 자연과학융합학부","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"사범대학(국어교육과, 영어교육과, 교육학과, 수학교육과, 기술교육과)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"사범대학(건설공학·기계공학·전기전자통신공학·화학공학교육과)","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"간호대학","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"충남대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅰ 서류","unit":"간호대학","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"경상·교육·사회과학·생활과학·인문·국제학부·환경생명자원 등","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"공학계열1·2, 농생명, 스마트팜, 자연과학1·2, 국제이공, 이차전지, 첨단방위산업","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"수학과학교육계열","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"C","pool":["M","C"],"must":[],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"융합자율전공학부1·2","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"간호학과, 어문교육계열","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(큰사람)","unit":"간호학과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"인문·사회과학·경영·농업경제·생활과학(인문)·인문사회자율","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"사범대학(인문)","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"자연과학·공과·전자정보대학 등 자연계","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"농업생명환경·생활과학(자연)·창의융합(자연)","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"사범대학(자연)","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"간호학과","lab":"3합10","warn":[],"kind":"sum","n":3,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req","note":"2027 2합6 → 2028 3합10"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"인문계 전 모집단위","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"자연과학·공과·전자정보·창의융합 등 자연계","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"간호학과","lab":"3합10","warn":[],"kind":"sum","n":3,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"사범대학(인문사회계열)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"경영·사회과학·인문대학, 식품자원경제, 영상문화, 자유전공(인문)","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"간호대학","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"사범대학 수학교육과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"사범대학 과학교육과(과탐 반영)","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[["C"]],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"사범대학(자연계열) 기타 학과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"농업생명·동물생명·산림환경·자유전공(자연)","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"문화예술·공과대학(공학계열), IT대학","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"의생명과학대학, 자연과학대학","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부종합","nm":"학생부종합(미래인재 서류)","unit":"간호학과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(교과-실기)","unit":"체육교육과","lab":"2합9","warn":[],"kind":"sum","n":2,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(교과-실기)","unit":"스포츠과학과","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(특수교육대상자)","unit":"사범대학 인문사회계열(교육·역사·영어·윤리·일반사회·지리·한문교육)","lab":"2합9","warn":[],"kind":"sum","n":2,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"강원대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(특수교육대상자)","unit":"사범대학 자연과학계열(가정·과학·수학교육)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사회과학대학(사회복지학부, 경제학부)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사회과학대학(심리·정치외교·행정·미디어커뮤니케이션)","lab":"3합12","warn":[],"kind":"sum","n":3,"max":12,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"자연과학대학(생명과학부·수학물리학부·정보통계학과·화학과·제약공학과)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"경영대학 전 모집단위","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"공과대학(기계공학부·세라믹공학·건축학과·화학공학과)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"IT공과대학(AI정보공학·소프트웨어·반도체·전기·전자·제어로봇·메카트로닉스)","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"우주항공대학 항공우주공학부","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"농업생명과학대학 환경생명화학과","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"법과대학 법학부","lab":"2합9","warn":[],"kind":"sum","n":2,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 미술교육과","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학(교육·역사·유아·윤리·일반사회·일어·지리·체육교육과)","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 국어교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 화학교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["C"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 수학교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 생물교육과","lab":"2합7","warn":[],"kind":"sum","n":2,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["C"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"사범대학 영어교육과","lab":"2합6","warn":[],"kind":"sum","n":2,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"학생부교과","nm":"학생부교과(일반)","unit":"간호학과","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"일반","tp":"실기/실적","nm":"실기/실적(실기전형)","unit":"사범대학 미술교육과","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"인문대, 사회대, 경상대","lab":"2합9","warn":[],"kind":"sum","n":2,"max":9,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"생명대, 해양대, 자연대, 공과대","lab":"2합10","warn":[],"kind":"sum","n":2,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"글로벌자율학부","lab":"2합11","warn":[],"kind":"sum","n":2,"max":11,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"사범대(수학교육과, 체육교육과 제외)","lab":"3합10","warn":[],"kind":"sum","n":3,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"수학교육과","lab":"3합10","warn":[],"kind":"sum","n":3,"max":10,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"체육교육과","lab":"2합8","warn":[],"kind":"sum","n":2,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"간호학과","lab":"3합11","warn":[],"kind":"sum","n":3,"max":11,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"일반","tp":"학생부교과","nm":"일반학생","unit":"초등교육학부","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"연세대","rg":"top","g":"의예","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"연세대","rg":"top","g":"의예","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"고려대","rg":"top","g":"의예","tp":"학생부교과","nm":"학교추천전형","unit":"의학과","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"note":"4개 영역 모두 반영(국·수·영·탐)"},{"u":"고려대","rg":"top","g":"의예","tp":"학생부종합","nm":"학업우수전형","unit":"의학과","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"note":"4개 영역 모두 반영(국·수·영·탐)"},{"u":"한양대","rg":"top","g":"의예","tp":"학생부종합","nm":"학생부종합(학업형)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"중앙대","rg":"top","g":"의예","tp":"학생부종합","nm":"최저 있는 학종(Up)","unit":"의학부","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"info":"참고: 영어(2등급 누적 20% 미만 시) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"4개 영역 모두 반영"},{"u":"경희대","rg":"top","g":"의예","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"경희대","rg":"top","g":"의예","tp":"학생부종합","nm":"학생부종합(네오르네상스-서류형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"아주대","rg":"etc","g":"의예","tp":"학생부종합","nm":"ACE전형 면접형","unit":"의학과","lab":"4합6","warn":[],"kind":"sum","n":4,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"4개 영역 모두 반영(탐구는 과탐·사탐 평균)"},{"u":"인하대","rg":"etc","g":"의예","tp":"학생부종합","nm":"인하미래인재(면접형)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"인하대","rg":"etc","g":"의예","tp":"학생부종합","nm":"농어촌학생","unit":"의예과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"인하대","rg":"etc","g":"의예","tp":"학생부종합","nm":"서해5도지역출신자","unit":"의예과","lab":"2합5","warn":[],"kind":"sum","n":2,"max":5,"tam":"avgC","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null,"note":"서해5도: 의예과만 적용, 탐구는 통합과학·통합사회 평균(올림)"},{"u":"가천대","rg":"etc","g":"의예","tp":"학생부교과","nm":"학생부교과(학생부우수자)","unit":"의예과","lab":"3각1","warn":[],"kind":"each","n":3,"max":1,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null,"note":"3개 영역 각각 1등급(등급합 아님)"},{"u":"가천대","rg":"etc","g":"의예","tp":"학생부종합","nm":"학생부종합(가천의약학)","unit":"의예과","lab":"3각1","warn":[],"kind":"each","n":3,"max":1,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null,"note":"3개 영역 각각 1등급(등급합 아님)"},{"u":"단국대","rg":"etc","g":"의예","tp":"학생부종합","nm":"학생부종합(DKU인재 면접형)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"단국대","rg":"etc","g":"의예","tp":"학생부종합","nm":"학생부종합(농어촌학생, 정원외)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"부산대","rg":"nat","g":"의예","tp":"학생부교과","nm":"교과우수전형","unit":"의예과, 치의예과, 한의학전문대학원 학·석사통합과정","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"없음 / 원문 묶음 모집단위: 의예과, 치의예과, 한의학전문대학원 학·석사통합과정"},{"u":"경북대","rg":"nat","g":"의예","tp":"학생부교과","nm":"교과우수자전형","unit":"의예과, 치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgR","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 기초생활수급자등은 1등급 하향(의·치 3합5, 약 3합6) / 원문 묶음 모집단위: 의예과, 치의예과"},{"u":"경북대","rg":"nat","g":"의예","tp":"학생부종합","nm":"일반학생전형","unit":"의예과, 치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgR","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 학교장추천전형은 치의예과에 해당 / 원문 묶음 모집단위: 의예과, 치의예과"},{"u":"전남대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과(사회배려대상자 기초/차상위/한부모)","unit":"의과대학(의예)","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합(고교생활우수자Ⅰ)","unit":"의과대학(의예)","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합(농어촌학생)","unit":"의과대학(의예)","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"충남대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과","unit":"의과대학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"의과대학","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합Ⅰ 서류","unit":"의과대학","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"전북대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"의예과(일반)","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합(큰사람)","unit":"의예과","lab":"4합6","warn":[],"kind":"sum","n":4,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"의예과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과(일반)","unit":"의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"의예","tp":"학생부교과","nm":"학생부교과(기초생활수급자등)","unit":"의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합(일반)","unit":"의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"의예","tp":"학생부종합","nm":"학생부종합(농어촌학생)","unit":"의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"의예","tp":"학생부교과","nm":"일반학생","unit":"의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"울산대","rg":"top","g":"의예","tp":"학생부종합","nm":"학생부종합(잠재역량)","unit":"의예과","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"note":"4개 영역 모두 반영. 지역인재·지역인재(기초/차상위)·지역의사제 의예는 지역 한정이라 제외"},{"u":"연세대","rg":"top","g":"치의예","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"연세대","rg":"top","g":"치의예","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"경희대","rg":"top","g":"치의예","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"경희대","rg":"top","g":"치의예","tp":"학생부종합","nm":"학생부종합(네오르네상스-서류형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"단국대","rg":"etc","g":"치의예","tp":"학생부종합","nm":"학생부종합(DKU인재 면접형)","unit":"치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"단국대","rg":"etc","g":"치의예","tp":"학생부종합","nm":"학생부종합(농어촌학생, 정원외)","unit":"치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"부산대","rg":"nat","g":"치의예","tp":"학생부교과","nm":"교과우수전형","unit":"의예과, 치의예과, 한의학전문대학원 학·석사통합과정","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"없음 / 원문 묶음 모집단위: 의예과, 치의예과, 한의학전문대학원 학·석사통합과정"},{"u":"부산대","rg":"nat","g":"치의예","tp":"학생부종합","nm":"면접전형","unit":"치의예과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"치의예","tp":"학생부교과","nm":"교과우수자전형","unit":"의예과, 치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgR","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 기초생활수급자등은 1등급 하향(의·치 3합5, 약 3합6) / 원문 묶음 모집단위: 의예과, 치의예과"},{"u":"경북대","rg":"nat","g":"치의예","tp":"학생부종합","nm":"일반학생전형","unit":"의예과, 치의예과","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"avgR","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 학교장추천전형은 치의예과에 해당 / 원문 묶음 모집단위: 의예과, 치의예과"},{"u":"경북대","rg":"nat","g":"치의예","tp":"학생부종합","nm":"농어촌학생전형","unit":"치의예과, 약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"기준별 등급 합 1등급 하향 적용 / 원문 묶음 모집단위: 치의예과, 약학과"},{"u":"전남대","rg":"nat","g":"치의예","tp":"학생부교과","nm":"학생부교과(일반)","unit":"치의학전문대학원(학·석사통합)","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"치의예","tp":"학생부교과","nm":"학생부교과(사회배려대상자 기초/차상위/한부모)","unit":"치의학전문대학원(학·석사통합)","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"전남대","rg":"nat","g":"치의예","tp":"학생부종합","nm":"학생부종합(고교생활우수자Ⅰ)","unit":"치의학전문대학원(학·석사통합)","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avg","pool":["K","M","E","T"],"must":[["M"],["T"]],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"치의예","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"치의예과(일반)","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"전북대","rg":"nat","g":"치의예","tp":"학생부종합","nm":"학생부종합(큰사람)","unit":"치의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경희대","rg":"top","g":"한의예","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"경희대","rg":"top","g":"한의예","tp":"학생부종합","nm":"학생부종합(네오르네상스-서류형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"가천대","rg":"etc","g":"한의예","tp":"학생부교과","nm":"학생부교과(학생부우수자)","unit":"한의예과","lab":"2각1","warn":[],"kind":"each","n":2,"max":1,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null,"note":"2개 영역 각각 1등급(등급합 아님)"},{"u":"가천대","rg":"etc","g":"한의예","tp":"학생부교과","nm":"학생부교과(농어촌)","unit":"한의예과","lab":"2각1","warn":[],"kind":"each","n":2,"max":1,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null,"note":"한의예과에 한해 적용, 2개 영역 각각 1등급"},{"u":"부산대","rg":"nat","g":"한의예","tp":"학생부교과","nm":"교과우수전형","unit":"의예과, 치의예과, 한의학전문대학원 학·석사통합과정","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"없음 / 원문 묶음 모집단위: 의예과, 치의예과, 한의학전문대학원 학·석사통합과정"},{"u":"연세대","rg":"top","g":"약학","tp":"학생부교과","nm":"학생부교과전형[추천형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"연세대","rg":"top","g":"약학","tp":"학생부종합","nm":"학생부종합[종합인재형]","unit":"의예과, 치의예과, 약학과","lab":"1등급 2개 이상","warn":[],"kind":"count","n":2,"max":1,"tam":"sep","pool":["K","M","S","C"],"must":[["M"]],"eng":3,"hist":4,"note":"국어·수학·사탐·과탐 중 1등급 2개 이상(수학 포함). 등급합 방식 아님 / 원문 묶음 모집단위: 의예과, 치의예과, 약학과"},{"u":"성균관대","rg":"top","g":"약학","tp":"학생부종합","nm":"학생부종합(서류형) [융합인재]","unit":"약학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"sep","pool":["K","M","E","S","C"],"must":[],"eng":null,"hist":null},{"u":"중앙대","rg":"top","g":"약학","tp":"학생부교과","nm":"지역균형","unit":"약학부","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"info":"참고: 영어(2등급 누적 20% 미만 시) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"제2외국어와 한문은 반영하지 않음"},{"u":"중앙대","rg":"top","g":"약학","tp":"학생부종합","nm":"최저 있는 학종(Up)","unit":"약학부","lab":"4합5","warn":[],"kind":"sum","n":4,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":4,"info":"참고: 영어(2등급 누적 20% 미만 시) 2등급까지 1등급 처리 규정 있음 — 판정은 원 등급 기준","note":"제2외국어와 한문은 반영하지 않음"},{"u":"경희대","rg":"top","g":"약학","tp":"학생부교과","nm":"학생부교과(지역균형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"경희대","rg":"top","g":"약학","tp":"학생부종합","nm":"학생부종합(네오르네상스-서류형)","unit":"의예·한의예(인문·자연)·치의예·약학","lab":"3합4","warn":[],"kind":"sum","n":3,"max":4,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":5,"note":"원문 묶음 모집단위: 의예·한의예(인문·자연)·치의예·약학"},{"u":"아주대","rg":"etc","g":"약학","tp":"학생부종합","nm":"ACE전형 면접형","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[],"eng":null,"hist":null},{"u":"가천대","rg":"etc","g":"약학","tp":"학생부교과","nm":"학생부교과(학생부우수자)","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"가천대","rg":"etc","g":"약학","tp":"학생부종합","nm":"학생부종합(가천의약학)","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"가천대","rg":"etc","g":"약학","tp":"학생부종합","nm":"학생부종합(교육기회균형)","unit":"약학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"C","pool":["K","M","E","C"],"must":[],"eng":null,"hist":null},{"u":"단국대","rg":"etc","g":"약학","tp":"학생부종합","nm":"학생부종합(DKU인재 면접형)","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"단국대","rg":"etc","g":"약학","tp":"학생부종합","nm":"학생부종합(농어촌학생, 정원외)","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"부산대","rg":"nat","g":"약학","tp":"학생부종합","nm":"서류전형","unit":"약학부","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"부산대","rg":"nat","g":"약학","tp":"학생부종합","nm":"저소득층학생전형","unit":"약학부","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경북대","rg":"nat","g":"약학","tp":"학생부교과","nm":"교과우수자전형","unit":"수의예과, 약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 기초생활수급자등대상자전형은 위 기준에서 등급 합 1등급 하향 적용 / 원문 묶음 모집단위: 수의예과, 약학과"},{"u":"경북대","rg":"nat","g":"약학","tp":"학생부종합","nm":"일반학생전형","unit":"수의예과, 약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 학교장추천전형 적용 모집단위는 원문상 치의예과 / 원문 묶음 모집단위: 수의예과, 약학과"},{"u":"경북대","rg":"nat","g":"약학","tp":"학생부종합","nm":"농어촌학생전형","unit":"치의예과, 약학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"기준별 등급 합 1등급 하향 적용 / 원문 묶음 모집단위: 치의예과, 약학과"},{"u":"전남대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(일반)","unit":"수의과대학·약학대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(사회배려대상자 기초/차상위/한부모)","unit":"수의과대학·약학대학","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합(고교생활우수자Ⅰ)","unit":"수의과대학·약학대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합(농어촌학생)","unit":"수의과대학·약학대학","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"충남대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과","unit":"약학대학","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"약학대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합Ⅰ 서류","unit":"약학대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"전북대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의예과, 약학과"},{"u":"전북대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합(큰사람)","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의예과, 약학과"},{"u":"충북대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"약학대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"약학대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"강원대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"수의과대학, 약학대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null,"note":"원문 묶음 모집단위: 수의과대학, 약학대학"},{"u":"강원대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(저소득학생)","unit":"약학과","lab":"3합9","warn":[],"kind":"sum","n":3,"max":9,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"경상국립대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(일반)","unit":"약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"약학","tp":"학생부교과","nm":"학생부교과(기초생활수급자등)","unit":"약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합(일반)","unit":"약학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"약학","tp":"학생부종합","nm":"학생부종합(농어촌학생)","unit":"약학과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"약학","tp":"학생부교과","nm":"일반학생","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"없음 / 원문 묶음 모집단위: 수의예과, 약학과"},{"u":"경북대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"교과우수자전형","unit":"수의예과, 약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 기초생활수급자등대상자전형은 위 기준에서 등급 합 1등급 하향 적용 / 원문 묶음 모집단위: 수의예과, 약학과"},{"u":"경북대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"일반학생전형","unit":"수의예과, 약학과","lab":"3합5","warn":[],"kind":"sum","n":3,"max":5,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"지역인재 학교장추천전형 적용 모집단위는 원문상 치의예과 / 원문 묶음 모집단위: 수의예과, 약학과"},{"u":"전남대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(일반)","unit":"수의과대학·약학대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(사회배려대상자 기초/차상위/한부모)","unit":"수의과대학·약학대학","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합(고교생활우수자Ⅰ)","unit":"수의과대학·약학대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"전남대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합(농어촌학생)","unit":"수의과대학·약학대학","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"avg","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의과대학·약학대학"},{"u":"충남대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과","unit":"수의과대학","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합Ⅰ 면접","unit":"수의과대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"충남대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합Ⅰ 서류","unit":"수의과대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":null,"note":"직업탐구 응시자 지원할 수 없음"},{"u":"전북대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(일반학생)","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의예과, 약학과"},{"u":"전북대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합(큰사람)","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"원문 묶음 모집단위: 수의예과, 약학과"},{"u":"충북대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(학생부교과)","unit":"수의예과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"충북대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합Ⅱ","unit":"수의예과","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"top1","pool":["K","M","E","T"],"must":[],"eng":null,"hist":"req"},{"u":"강원대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(일반·일반-정성평가)","unit":"수의과대학, 약학대학","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null,"note":"원문 묶음 모집단위: 수의과대학, 약학대학"},{"u":"강원대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합(미래인재 서류)","unit":"수의학과","lab":"3합8","warn":[],"kind":"sum","n":3,"max":8,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":null},{"u":"경상국립대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"학생부교과(일반)","unit":"수의예과","lab":"3합6","warn":[],"kind":"sum","n":3,"max":6,"tam":"avgF","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"경상국립대","rg":"nat","g":"수의예","tp":"학생부종합","nm":"학생부종합(일반)","unit":"수의예과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"top1","pool":["K","M","E","T"],"must":[["M"]],"eng":null,"hist":"req"},{"u":"제주대","rg":"nat","g":"수의예","tp":"학생부교과","nm":"일반학생","unit":"수의예과, 약학과","lab":"3합7","warn":[],"kind":"sum","n":3,"max":7,"tam":"C","pool":["K","M","E","C"],"must":[["M"]],"eng":null,"hist":"req","note":"없음 / 원문 묶음 모집단위: 수의예과, 약학과"}];
+const RG_NAME={top:"서울 주요대학",etc:"서울 기타 및 수도권",nat:"지거국"};
+const RG_MED={top:"서울",etc:"수도권",nat:"지거국"};
+const NAT_ORDER=["부산대","경북대","충남대","충북대","전남대","전북대","강원대","경상국립대","제주대"];
+const TAM_NAME={top1:"탐구 상위 1과목",avg:"탐구 2과목 평균(소수 그대로)",avgF:"탐구 평균(절사)",avgC:"탐구 평균(올림)",avgR:"탐구 평균(반올림)",C:"과학탐구만",sep:"사탐·과탐 각각 영역"};
+const AREA_NAME={K:"국어",M:"수학",E:"영어",H:"한국사",S:"통합사회",C:"통합과학",T:"탐구"};
+function combos(a,n){const r=[];const f=(s,acc)=>{if(acc.length===n){r.push(acc);return}for(let i=s;i<a.length;i++)f(i+1,[...acc,a[i]])};f(0,[]);return r}
+function evalRule(R,areas){
+  const G=n=>areas.get(n)?.g??null;
+  const v={K:G("국어"),M:G("수학"),E:G("영어"),H:G("한국사"),S:G("통합사회"),C:G("통합과학")};
+  if(R.kind==="na")return{st:"na"};
+  const s=v.S,c=v.C;
+  const T=s==null||c==null?null:R.tam==="top1"?Math.min(s,c):R.tam==="avg"?(s+c)/2:R.tam==="avgF"?Math.floor((s+c)/2):R.tam==="avgC"?Math.ceil((s+c)/2):R.tam==="avgR"?Math.round((s+c)/2):null;
+  const val=a=>a==="T"?(R.tam==="C"?c:T):v[a];
+  const pool=R.pool.map(a=>({a,g:val(a)}));
+  if(pool.some(x=>x.g==null))return{st:"miss"};
+  const mustOk=(set,must,lim)=>(must||[]).every(gr=>set.some(x=>gr.includes(x.a)&&(lim==null||x.g<=lim)));
+  const one=(k,n,max,must)=>{
+    if(k==="sum"){let best=null;for(const cb of combos(pool,n)){if(!mustOk(cb,must))continue;const t=cb.reduce((p,x)=>p+x.g,0);if(best==null||t<best)best=t}return{ok:best!=null&&best<=max+1e-9,v:best}}
+    if(k==="each"){const ok=combos(pool,n).some(cb=>mustOk(cb,must)&&cb.every(x=>x.g<=max));return{ok}}
+    if(k==="count"){const good=pool.filter(x=>x.g<=max);return{ok:good.length>=n&&mustOk(good,must,max)}}
+    return{ok:false}};
+  let res=R.kind==="or"?(()=>{const rs=R.alts.map(x=>one(x.kind,x.n,x.max,x.must));return rs.find(x=>x.ok)||rs[0]})():one(R.kind,R.n,R.max,R.must);
+  /* why: [{t:문구, bad:미달 여부}] — 합(등급합 전형은 항상), 기준 미달, 영어·한국사 제한 조건 */
+  const why=[];
+  if(res.v!=null&&(R.kind==="sum"||(R.kind==="or"&&res.v!=null)))why.push({t:`합 ${fv(res.v)}`,bad:!res.ok});
+  else if(!res.ok)why.push({t:`${R.lab} 미달`,bad:true});
+  if(R.eng!=null){if(v.E==null)return{st:"miss"};if(v.E>R.eng)why.push({t:`영어 ${R.eng}이내 미충족(${v.E})`,bad:true})}
+  if(typeof R.hist==="number"){if(v.H==null)return{st:"miss"};if(v.H>R.hist)why.push({t:`한국사 ${R.hist}이내 미충족(${v.H})`,bad:true})}
+  if(R.hist==="req"&&v.H==null)return{st:"miss"};
+  return{st:why.some(w=>w.bad)?"no":"ok",v:res.v,why}}
+function ruleChips(R){
+  const c=[];
+  for(const g of R.must||[])c.push(g.length>1?`${g.map(a=>AREA_NAME[a]).join("·")} 중 1개 필수`:`${AREA_NAME[g[0]]} 필수`);
+  if(R.eng!=null)c.push(`영어 ${R.eng}등급 이내`);
+  if(typeof R.hist==="number")c.push(`한국사 ${R.hist}등급 이내`);
+  if(R.pool.includes("H"))c.push("한국사 합산 가능");
+  if(R.tam!=="top1"||R.pool.includes("T"))c.push(TAM_NAME[R.tam]);
+  if(!R.pool.includes("E")&&R.eng==null)c.push("영어 미반영");
+  return c}
+let UV={rg:"top",g:"일반",tp:"all",u:"all",only:false};
+try{const s=JSON.parse(localStorage.getItem("gw.univ")||"null");if(s)UV={...UV,...s,u:"all"}}catch(e){}
+function renderUniv(box,A){
+  const M=A.mocks;
+  const groups=["일반","메디컬 전체","의예","치의예","약학","수의예","한의예"];
+  const pick=R=>(UV.rg==="all"||R.rg===UV.rg)&&(UV.g==="메디컬 전체"?R.g!=="일반":R.g===UV.g)&&(UV.tp==="all"||R.tp===UV.tp);
+  const RN=UV.g==="일반"?RG_NAME:RG_MED;const RO={top:0,etc:1,nat:2};
+  const UF=new Map();UNIV_RULES.forEach((r,i)=>{if(!UF.has(r.u))UF.set(r.u,i)});
+  NAT_ORDER.forEach((u,i)=>UF.set(u,-100+i));
+  let rules=UNIV_RULES.filter(pick).map((r,i)=>[r,i]).sort((a,b)=>RO[a[0].rg]-RO[b[0].rg]||UF.get(a[0].u)-UF.get(b[0].u)||a[1]-b[1]).map(x=>x[0]);
+  const univs=[...new Set(rules.map(r=>r.u))];if(UV.u!=="all"&&!univs.includes(UV.u))UV.u="all";
+  if(UV.u!=="all")rules=rules.filter(r=>r.u===UV.u);
+  /* 같은 대학에서 판정 규칙이 완전히 같으면 전형·모집단위·계열이 달라도 한 줄로 통합 */
+  const keyOf=R=>JSON.stringify([R.rg,R.u,R.kind,R.n,R.max,R.pool,R.tam,R.must,R.eng,R.hist,R.alts||null,R.lab]);
+  const merged=[];const byKey=new Map();
+  for(const R of rules){const k=keyOf(R);let m=byKey.get(k);
+    if(!m){m={R,nms:[],units:[],gs:[],warn:new Set(),info:new Set()};byKey.set(k,m);merged.push(m)}
+    if(!m.nms.includes(R.nm))m.nms.push(R.nm);if(!m.units.includes(R.unit))m.units.push(R.unit);if(!m.gs.includes(R.g))m.gs.push(R.g);(R.warn||[]).forEach(w=>m.warn.add(w));if(R.info)m.info.add(R.info)}
+  const res=merged.map(m=>({...m,cells:M.map(x=>evalRule(m.R,x.areas))}));
+  const shown=UV.only?res.filter(x=>x.cells.some(c=>c.st==="ok")):res;
+  const opt=(v,c,l)=>`<option value="${esc(v)}"${String(v)===String(c)?" selected":""}>${esc(l)}</option>`;
+  const lastOk=res.filter(x=>x.cells.length&&x.cells[x.cells.length-1].st==="ok").length;
+  const wl=c=>c.why.map(w=>`<span class="${w.bad?"bad":""}">${esc(w.t)}</span>`).join("");
+  const cell=c=>c.st==="ok"?`<td class="uv-c ok"><b>충족</b>${wl(c)}</td>`:c.st==="no"?`<td class="uv-c no"><b>미충족</b>${wl(c)}</td>`:c.st==="na"?`<td class="uv-c na">개별 확인</td>`:`<td class="uv-c na">성적 없음</td>`;
+  /* 대학별 묶음: 대학 칸은 rowspan + 안쪽 글자를 sticky로 두어 스크롤해도 대학명이 보이게 */
+  const blocks=[];for(const x of shown){const last=blocks[blocks.length-1];if(last&&last.u===x.R.u&&last.rg===x.R.rg)last.rows.push(x);else blocks.push({u:x.R.u,rg:x.R.rg,rows:[x]})}
+  let body="",prevRg=null;
+  for(const bk of blocks){
+    if(UV.rg==="all"&&bk.rg!==prevRg){body+=`<tr class="uv-sec"><td colspan="${4+M.length}">${RN[bk.rg]}</td></tr>`;prevRg=bk.rg}
+    bk.rows.forEach((x,i)=>{const R=x.R;
+      const okN=x.cells.filter(c=>c.st==="ok").length,calc=x.cells.filter(c=>c.st==="ok"||c.st==="no").length;
+      const chips=ruleChips(R).map(t=>`<span class="uv-chip${/필수|이내/.test(t)?" key":""}">${esc(t)}</span>`).join("");
+      const warn=x.warn.size?`<span class="uv-warn" title="${esc([...x.warn].join(" / "))}">확인 필요</span>`:"";
+      const unitTxt=(x.gs.some(g=>g!=="일반")?x.gs.join("·")+" · ":"")+x.units.join(" / ");
+      body+=`<tr${i===0?' class="uv-first"':""}>${i===0?`<td class="uv-u" rowspan="${bk.rows.length}"><div class="uv-stick">${esc(bk.u)}<small>${bk.rows.length}개</small></div></td>`:""}<td class="uv-t">${x.nms.map(n=>`<b>${esc(n)}</b>`).join("")}<span title="${esc(unitTxt)}">${esc(unitTxt.length>60?unitTxt.slice(0,60)+"…":unitTxt)}</span></td><td class="uv-k"><b>${esc(R.lab)}</b><div class="uv-chips">${chips}${warn}</div>${[...x.info].map(t=>`<div class="uv-info">${esc(t)}</div>`).join("")}</td>${x.cells.map(cell).join("")}<td class="uv-n${okN?" ok":""}">${okN}/${calc}</td></tr>`})}
+  box.innerHTML=`<div class="ctrl one">
+      <label for="uvR">권역<select id="uvR">${opt("top",UV.rg,RN.top)}${opt("etc",UV.rg,RN.etc)}${opt("nat",UV.rg,RN.nat)}${opt("all",UV.rg,"전체")}</select></label>
+      <label for="uvG">계열<select id="uvG">${groups.map(g=>opt(g,UV.g,g)).join("")}</select></label>
+      <label for="uvT">전형<select id="uvT">${opt("all",UV.tp,"전체")}${opt("학생부교과",UV.tp,"학생부교과")}${opt("학생부종합",UV.tp,"학생부종합")}${opt("실기/실적",UV.tp,"실기/실적")}</select></label>
+      <label for="uvU">대학<select id="uvU">${opt("all",UV.u,"전체")}${univs.map(u=>opt(u,UV.u,u)).join("")}</select></label>
+      <label class="chk" for="uvO"><input id="uvO" type="checkbox"${UV.only?" checked":""}>1회 이상 충족만</label></div>
+    <div class="verdict"><span>${UV.rg==="all"?"전체 권역":RN[UV.rg]} · ${esc(UV.g)} · 기준 ${merged.length}개 <span class="muted">(전형·모집단위 ${rules.length}개를 같은 기준끼리 통합)</span></span>${M.length?`<span>최근 회차(${esc(M[M.length-1].label)}) 충족 <b class="mk-ok">${lastOk}</b> / ${merged.length}</span>`:""}${UV.only?`<span>표시 ${shown.length}개</span>`:""}</div>
+    ${M.length?`<div class="tw rk-wrap"><table class="mtab uvtab"><thead><tr><th>대학</th><th style="text-align:left">전형 · 모집단위 (같은 기준 통합)</th><th style="text-align:left">기준</th>${M.map(x=>`<th>${esc(x.label)}</th>`).join("")}<th>충족</th></tr></thead><tbody>${body||`<tr><td colspan="${4+M.length}" class="muted">조건에 맞는 전형이 없습니다.</td></tr>`}</tbody></table></div>`:`<p class="msg">입력된 모의고사 성적이 없습니다.</p>`}
+    <p class="note">자료: 「2028학년도 수시 수능최저학력기준 대학별 공식 시행계획 재검증표」(작성 기준일 2026-10-10, 시행계획 기준이므로 2027년 수시모집요강에서 최종 확인 필요). 지역인재 등 지역 한정 전형과 논술·정시는 제외되어 있습니다. 서울대·동국대·상명대는 수시 학생부교과·종합·실기 전형에 수능최저가 없어 표에 나오지 않습니다. 판정은 학생의 모의고사 등급(국어·수학·영어·한국사·통합사회·통합과학)에 각 전형의 반영 영역·필수 영역·영어/한국사 별도 기준·탐구 반영 방식을 적용한 결과이며, 미충족 칸에는 합계나 미달 조건을 표시합니다. 탐구 2과목 평균은 원표에 처리 방식이 따로 없으면 평균 후 절사로, '절사 없음'이 명시된 전형만 소수 그대로 계산합니다. 같은 전형이라도 모집단위별 필수 영역이 다르면 행을 나누었고, 경북대 학생부종합(일반학생)은 교과우수자전형 모집단위별 기준에 1등급을 더해 판정합니다.</p>`;
+  const upd=()=>{UV={rg:$("#uvR").value,g:$("#uvG").value,tp:$("#uvT").value,u:$("#uvU").value,only:$("#uvO").checked};try{localStorage.setItem("gw.univ",JSON.stringify(UV))}catch(e){}const f=document.activeElement&&document.activeElement.id;renderUniv(box,A);if(f&&$("#"+f))$("#"+f).focus()};
+  const th=box.querySelector(".uvtab thead");if(th)box.querySelector(".uvtab").style.setProperty("--uvh",th.offsetHeight+"px");
+  ["uvR","uvG","uvT","uvU","uvO"].forEach(id=>$("#"+id).onchange=upd)}
+
+/* 최저기준 분석 */
+function paneMin(p,A){
+  const M=A.mocks;
+  const ctrl=`<div class="ctrl"><label for="tN">기준<select id="tN">${[2,3,4].map(n=>`<option value="${n}"${T.n===n?" selected":""}>${n}합</option>`).join("")}</select></label>
+    <label for="tG">목표 (이하)<input id="tG" type="number" min="2" max="36" step="1" value="${T.goal}" inputmode="numeric"></label></div>
+    <p class="note">탐구1(통합사회·통합과학 중 좋은 1과목)과 탐구2(두 과목 평균 후 절사) 기준을 모두 판정합니다. 등급 합은 작을수록 좋으므로 학생의 합 ≤ 목표이면 충족입니다. 이 설정은 이 브라우저에만 기억됩니다.</p>`;
+  const J={t1:M.map(x=>judge(x,"t1")),t2:M.map(x=>judge(x,"t2"))};
+  const sumOf=m=>{const js=J[m],calc=js.filter(Boolean);if(!calc.length)return"";const sk=streak(A,m);
+    return`<div class="verdict"><b class="mlab ${m}">${mName(m)}</b>${sk>=2?`<span class="chip good">최근 ${sk}회 연속 충족</span>`:sk===1?`<span class="chip good">최근 회차 충족</span>`:js[js.length-1]?`<span class="chip bad">최근 회차 미충족</span>`:""}<span>계산 가능한 <b>${calc.length}회</b> 중 <b>${calc.filter(j=>j.ok).length}회</b> 충족</span></div>`};
+  const sumLine=sumOf("t1")+sumOf("t2");
+  const rc=j=>j?`<td class="num"><b>${j.v}</b></td><td style="text-align:left"><span class="chip ${j.ok?"good":"bad"}">${j.ok?"✓ 충족":"✕ 미충족"}</span></td>`:`<td>–</td><td></td>`;
+  const resT=M.length?`<div class="tw"><table class="mtab"><thead><tr><th rowspan="2">회차</th><th rowspan="2">목표</th><th colspan="2" class="grp t1 gs">탐구1 기준 <small>좋은 1과목</small></th><th colspan="2" class="grp t2 gs">탐구2 기준 <small>평균 후 절사</small></th></tr>
+    <tr><th class="t1 gs">${T.n}합</th><th class="t1">결과</th><th class="t2 gs">${T.n}합</th><th class="t2">결과</th></tr></thead><tbody>${M.map((x,i)=>{const a=J.t1[i],b=J.t2[i];
+      if(!a)return`<tr><td>${esc(x.label)}</td><td class="muted">${T.n}합 ${T.goal}</td><td colspan="4" class="muted gs" style="text-align:left">계산 불가 (${esc(x.min.miss.join(", "))} 없음)</td></tr>`;
+      return`<tr><td>${esc(x.label)}</td><td class="muted">${T.n}합 ${T.goal}</td><td class="mt t1 gs tg ${a.ok?"ok":"no"}">${a.v}</td><td class="t1" style="text-align:left">${a.ok?"충족":"미충족"}</td><td class="mt t2 gs tg ${b.ok?"ok":"no"}">${b.v}</td><td class="t2" style="text-align:left">${b.ok?"충족":"미충족"}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="msg">입력된 모의고사 성적이 없습니다.</p>`;
+  /* 영역 원등급 | 탐구1 기준(탐구·2·3·4합) | 탐구2 기준(탐구·2·3·4합) — 방식별로 묶고 색 띠로 구분, 현재 목표 칸은 충족 여부로 표시 */
+  const sumCell=(n,m,k)=>{const v=n.S[m][k];const tgt=T.n===k;return`<td class="mt ${m}${tgt?(v<=T.goal?" tg ok":" tg no"):""}"${tgt?` title="목표 ${T.n}합 ${T.goal} 이하 · ${v<=T.goal?"충족":"미충족"}"`:""}>${v}</td>`};
+  const full=M.length?`<div class="tw"><table class="mtab"><thead>
+    <tr><th rowspan="2" class="gs0">회차</th><th colspan="5" class="grp g0">영역별 등급</th><th colspan="4" class="grp t1 gs">탐구1 기준 <small>좋은 1과목</small></th><th colspan="4" class="grp t2 gs">탐구2 기준 <small>평균 후 절사</small></th></tr>
+    <tr><th>국어</th><th>수학</th><th>영어</th><th>통합사회</th><th>통합과학</th><th class="t1 gs">탐구</th><th class="t1">2합</th><th class="t1">3합</th><th class="t1">4합</th><th class="t2 gs">탐구</th><th class="t2">2합</th><th class="t2">3합</th><th class="t2">4합</th></tr></thead>
+    <tbody>${M.map(x=>{const n=x.min;const G=a=>x.areas.get(a)?.g??"–";const W=v=>`<td${typeof v==="number"&&v>=5?' class="warn5" title="5등급 이하"':""}>${v}</td>`;
+      if(n.miss)return`<tr><td>${esc(x.label)}</td>${["국어","수학","영어","통합사회","통합과학"].map(a=>W(G(a))).join("")}<td colspan="8" class="muted gs" style="text-align:left">${esc(n.miss.join(", "))} 등급 없음 · 계산 불가</td></tr>`;
+      return`<tr><td>${esc(x.label)}</td>${[n.k,n.m,n.e,n.s,n.c].map(W).join("")}<td class="mt t1 gs tq">${n.t1}</td>${[2,3,4].map(k=>sumCell(n,"t1",k)).join("")}<td class="mt t2 gs tq">${n.t2}</td>${[2,3,4].map(k=>sumCell(n,"t2",k)).join("")}</tr>`}).join("")}</tbody></table></div>
+    <p class="note">테두리 칸은 목표 ${T.n}합 ${T.goal} 이하를 탐구1·탐구2 각각에 적용한 결과입니다(초록 충족 · 빨강 미충족). 영역별 등급의 빨간 테두리는 5등급 이하입니다.</p>`:"";
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+    <section class="card"><h2>목표 최저기준 <small>최근 ${MOCK_LIMIT}회 기준</small></h2>${ctrl}${sumLine}${resT}${olderNote(A)}</section>
+    <section class="card"><h2>회차별 2합·3합·4합 계산</h2>${full}</section>
+    <section class="card"><h2>대학 권역별 최저 충족 <small>2028학년도 시행계획 기준 · 최근 ${MOCK_LIMIT}회 모의고사</small></h2><div id="univBox" style="display:flex;flex-direction:column;gap:12px"></div></section></div>`;
+  renderUniv($("#univBox"),A);
+  const upd=()=>{const g=parseInt($("#tG").value,10);T={method:"t1",n:+$("#tN").value,goal:isFinite(g)&&g>0?g:T.goal};saveT();const f=document.activeElement&&document.activeElement.id;paneMin(p,A);if(f&&$("#"+f))$("#"+f).focus()};
+  $("#tN").onchange=upd;$("#tG").onchange=upd}
+
+/* ───────── 학급별 최저현황 (학년 단위) ───────── */
+let RK={cls:"all",grade:null,m:"t1",g:{2:4,3:7,4:10},mock:"all",flt:"all",basis:"last"};
+try{const s=JSON.parse(localStorage.getItem("gw.rank")||"null");if(s){RK={...RK,...s,grade:null};if(!["last","any","all"].includes(RK.basis))RK.basis="last"}}catch(e){}
+function saveRK(){try{localStorage.setItem("gw.rank",JSON.stringify({...RK,grade:null}))}catch(e){}}
+let RCACHE=null;
+function rankData(){
+  if(RCACHE&&RCACHE.db===DB)return RCACHE.rows;
+  const rows=[];for(const s of DB.students.values()){const A=analyze(s.id);if(!A.allGraded.length)continue;
+    rows.push({s,A,cum:wavg(A.allGraded),grade:cur(s).grade,nsem:A.semsV.length})}
+  RCACHE={db:DB,rows};return rows}
+function paneRank(p){
+  const all=rankData();
+  const grades=[...new Set(all.map(r=>r.grade).filter(g=>g!=null))].sort();
+  if(!all.length){p.innerHTML=`<div style="padding-top:16px"><p class="msg">석차등급이 있는 내신 성적이 없어 순위를 만들 수 없습니다.</p></div>`;return}
+  if(RK.grade==null||!grades.includes(RK.grade)){const cg=CUR?cur(DB.students.get(CUR)).grade:null;RK.grade=grades.includes(cg)?cg:grades[0]}
+  let pool=all.filter(r=>r.grade===RK.grade&&(!r.s.status||r.s.status==="재학")).sort((a,b)=>r2(a.cum)-r2(b.cum)||a.s.name.localeCompare(b.s.name,"ko"));
+  pool.forEach((r,i)=>{r.rank=i>0&&r2(r.cum)===r2(pool[i-1].cum)?pool[i-1].rank:i+1});
+  const m=RK.m;
+  /* 상위 30등 초과는 조건 충족 학생만, 충족 회차만 표시 */
+  /* 최근 계산 가능 회차 기준 n합 충족 여부 */
+  const lastOk=(r,k)=>{const x=[...r.A.mocks].reverse().find(x=>x.min&&!x.min.miss);return x?x.min.S[m][k]<=RK.g[k]:null};
+  const classes=[...new Set(pool.map(r=>cur(r.s).cls).filter(c=>c!=null))].sort((a,b)=>a-b);
+  if(RK.cls!=="all"&&RK.cls!=="top30"&&!classes.includes(+RK.cls))RK.cls="all";
+  const isCls=RK.cls!=="all"&&RK.cls!=="top30";
+  const topN=RK.cls==="all"?pool:RK.cls==="top30"?pool.filter(r=>r.rank<=30):pool.filter(r=>cur(r.s).cls===+RK.cls);
+  topN.forEach((r,i)=>{r.crank=i>0&&r2(r.cum)===r2(topN[i-1].cum)?topN[i-1].crank:i+1});
+  /* 최근 4회 중 계산 가능한 회차의 n합 충족 횟수 */
+  const okCnt=(r,k)=>{const c=r.A.mocks.filter(x=>x.min&&!x.min.miss);return{ok:c.filter(x=>x.min.S[m][k]<=RK.g[k]).length,n:c.length}};
+  const fk=RK.flt==="all"?null:+RK.flt.split(":")[0],fw=RK.flt==="all"?null:RK.flt.split(":")[1];
+  const pass=r=>{
+    if(RK.basis!=="last"){const ks=fk?[fk]:[2,3,4];const hit=ks.some(k=>{const c=okCnt(r,k);return RK.basis==="any"?c.ok>0:c.n>0&&c.ok===c.n});return fw==="no"?!hit:hit}
+    if(!fk)return true;const o=lastOk(r,fk);return fw==="ok"?o===true:o===false};
+  const list=topN.filter(pass);
+  const cell=(n,k)=>{const v=n.S[m][k],ok=v<=RK.g[k];return`<td class="rk-s ${ok?"ok":"no"}" title="${k}합 ${v} · 목표 ${RK.g[k]} 이하 ${ok?"충족":"미충족"}">${v}<span>${ok?"✓":"✕"}</span></td>`};
+  const W=v=>`<td${typeof v==="number"&&v>=5?' class="warn5"':""}>${v??"–"}</td>`;
+  let body="";let cnt={2:0,3:0,4:0,n:0};
+  for(const r of list){let M=r.A.mocks;
+    if(RK.mock==="last")M=M.slice(-1);
+    const head=(span)=>`<td rowspan="${span}" class="rk-r">${!isCls?r.rank:`${r.crank}<span class="sub">전체 ${r.rank}</span>`}</td><td rowspan="${span}" class="rk-n"><button type="button" class="linkbtn" data-id="${esc(r.s.id)}">${esc(r.s.name)}</button><span>${esc(where(r.s).split(" · ")[0])}</span>${fk||RK.basis!=="last"?`<span class="rk-cnt">${(fk?[fk]:[2,3,4]).map(k=>{const c=okCnt(r,k);return`<b class="${c.ok?"ok":"no"}">${k}합 ${c.ok}/${c.n}회</b>`}).join(" ")}</span>`:""}</td><td rowspan="${span}" class="rk-c">${f2(r.cum)}<span>${r.nsem}개 학기</span></td>`;
+    if(!M.length){body+=`<tr class="rk-first">${head(1)}<td colspan="9" class="muted" style="text-align:left">입력된 모의고사 성적 없음</td></tr>`;continue}
+    M.forEach((x,i)=>{const n=x.min;const G=a=>x.areas.get(a)?.g??null;
+      const tail=n&&!n.miss?[2,3,4].map(k=>cell(n,k)).join(""):`<td colspan="3" class="muted">계산 불가</td>`;
+      if(i===M.length-1&&n&&!n.miss){cnt.n++;for(const k of [2,3,4])if(n.S[m][k]<=RK.g[k])cnt[k]++}
+      body+=`<tr${i===0?' class="rk-first"':""}>${i===0?head(M.length):""}<td class="rk-m">${esc(x.label)}</td>${["국어","수학","영어","통합사회","통합과학"].map(a=>W(G(a))).join("")}${tail}</tr>`})}
+  const opt=(v,cur,l)=>`<option value="${v}"${String(v)===String(cur)?" selected":""}>${l}</option>`;
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <section class="card"><h2>학급별 최저현황 <small>누적 평균내신 순 · 모의고사 최근 ${MOCK_LIMIT}회</small><label class="h2chk" for="rkB">판정 기준<select id="rkB">${opt("last",RK.basis,"최근 회차")}${opt("any",RK.basis,"최근 "+MOCK_LIMIT+"회 중 1회 이상")}${opt("all",RK.basis,"최근 "+MOCK_LIMIT+"회 모두 충족")}</select></label></h2>
+    <div class="ctrl one">
+      <label for="rkG">학년<select id="rkG">${grades.map(g=>opt(g,RK.grade,g+"학년")).join("")}</select></label>
+      <label for="rkC">학급<select id="rkC">${opt("all",RK.cls,"전체")}${opt("top30",RK.cls,"상위 30명")}${classes.map(c=>opt(c,RK.cls,c+"반")).join("")}</select></label>
+      <label for="rkM">탐구 반영<select id="rkM">${opt("t1",RK.m,"탐구1")}${opt("t2",RK.m,"탐구2")}</select></label>
+      <label for="rkV">회차<select id="rkV">${opt("all",RK.mock,"전체")}${opt("last",RK.mock,"최근만")}</select></label>
+      <label for="rk2">2합 ≤<input id="rk2" type="number" min="2" max="18" value="${RK.g[2]}"></label>
+      <label for="rk3">3합 ≤<input id="rk3" type="number" min="3" max="27" value="${RK.g[3]}"></label>
+      <label for="rk4">4합 ≤<input id="rk4" type="number" min="4" max="36" value="${RK.g[4]}"></label>
+      <label for="rkF">최저 필터<select id="rkF">${opt("all",RK.flt,"전체 학생")}${[2,3,4].map(k=>opt(k+":ok",RK.flt,k+"합 충족")).join("")}${[2,3,4].map(k=>opt(k+":no",RK.flt,k+"합 미충족")).join("")}</select></label></div>
+    <div class="verdict"><span>${RK.grade}학년 재학생 ${pool.length}명${RK.cls==="all"?"":RK.cls==="top30"?` 중 내신 1~30등 <b>${topN.length}명</b>${topN.length>30?" (동점 포함)":""}`:` 중 ${RK.cls}반 <b>${topN.length}명</b>`}${RK.basis!=="last"?` → 최근 ${MOCK_LIMIT}회 ${fk?fk+"합":"2·3·4합 중 하나라도"} ${RK.basis==="any"?(fw==="no"?"한 번도 충족 못함":"1회 이상 충족"):(fw==="no"?"모두 충족은 아님":"모든 회차 충족")} <b>${list.length}명</b>`:fk?` → 최근 회차 ${fk}합 ${fw==="ok"?"충족":"미충족"} <b>${list.length}명</b>`:""}</span><span>최근 회차 충족: 2합 <b>${cnt[2]}</b> · 3합 <b>${cnt[3]}</b> · 4합 <b>${cnt[4]}</b> / ${cnt.n}명</span></div>
+    <div class="tw rk-wrap"><table class="mtab rktab"><thead><tr><th>${isCls?"반 순위":"순위"}</th><th style="text-align:left">이름</th><th>누적내신</th><th>회차</th><th>국어</th><th>수학</th><th>영어</th><th>통합사회</th><th>통합과학</th><th class="${m} gs">2합</th><th class="${m}">3합</th><th class="${m}">4합</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="note">누적내신은 입학 후 등급이 있는 전 과목의 학점 가중 평균이며, 같은 값은 같은 순위입니다. 2·3·4합은 국어·수학·영어·탐구(${mName(m)}) 기준이고 ✓는 목표 이하(충족)입니다. 빨간 테두리는 5등급 이하입니다. 이름을 누르면 그 학생의 분석 화면으로 이동합니다. 이 표는 학생 간 순위를 보여 주므로 교사 확인용으로만 사용하세요.</p>
+  </section></div>`;
+  const upd=()=>{RK.grade=+$("#rkG").value;RK.cls=$("#rkC").value;RK.m=$("#rkM").value;RK.mock=$("#rkV").value;RK.flt=$("#rkF").value;RK.basis=$("#rkB").value;
+    for(const k of [2,3,4]){const v=parseInt($("#rk"+k).value,10);if(v>0)RK.g[k]=v}saveRK();const f=document.activeElement&&document.activeElement.id;paneRank(p);if(f&&$("#"+f))$("#"+f).focus()};
+  ["rkG","rkC","rkM","rkV","rk2","rk3","rk4","rkF","rkB"].forEach(id=>$("#"+id).onchange=upd);
+  p.querySelectorAll(".linkbtn").forEach(b=>b.onclick=()=>{TAB="sum";select(b.dataset.id)})}
+
+/* ───────── 최저 인원 변화 (학년 단위, 회차별) ───────── */
+let CN={grade:null,m:"t1",g:{2:4,3:7,4:10},k:"all"};
+try{const s=JSON.parse(localStorage.getItem("gw.cnt")||"null");if(s)CN={...CN,...s,grade:null}}catch(e){}
+function saveCN(){try{localStorage.setItem("gw.cnt",JSON.stringify({...CN,grade:null}))}catch(e){}}
+function paneCnt(p){
+  const studs=[...DB.students.values()].filter(s=>!s.status||s.status==="재학");
+  const grades=[...new Set(studs.map(s=>cur(s).grade).filter(g=>g!=null))].sort();
+  if(!grades.length||!DB.mocks.length){p.innerHTML=`<div style="padding-top:16px"><p class="msg">모의고사 성적이 없어 충족 인원을 계산할 수 없습니다.</p></div>`;return}
+  if(CN.grade==null||!grades.includes(CN.grade)){const cg=CUR?cur(DB.students.get(CUR)).grade:null;CN.grade=grades.includes(cg)?cg:grades[0]}
+  const ids=studs.filter(s=>cur(s).grade===CN.grade).map(s=>s.id);const m=CN.m;
+  /* 회차별: 5개 영역 등급이 모두 있는 학생을 응시자로 보고 충족 인원 집계 */
+  const rows=[];
+  for(const mk of DB.mocks){let n=0,inp=0;const ok={2:0,3:0,4:0};
+    for(const id of ids){const am=mk.rows.get(id);if(!am||![...am.values()].some(v=>v.g!=null))continue;inp++;const mc=minCalc(am);if(mc.miss)continue;n++;for(const k of [2,3,4])if(mc.S[m][k]<=CN.g[k])ok[k]++}
+    if(n)rows.push({mk,n,inp,ok,label:mk.month!=null?`${mk.month}월`:mk.sheet,year:mk.year??"연도 미상"})}
+  const ks=CN.k==="all"?[2,3,4]:[+CN.k];
+  const pct=(a,b)=>b?(a/b*100).toFixed(1):"0.0";
+  const opt=(v,c,l)=>`<option value="${v}"${String(v)===String(c)?" selected":""}>${l}</option>`;
+  const years=[...new Set(rows.map(r=>r.year))];
+  let tb="";rows.forEach((r,i)=>{const pv=rows[i-1];
+    tb+=`<tr${i===0||rows[i-1].year!==r.year?' class="rk-first"':""}><td>${esc(String(r.year))}</td><td>${esc(r.label)}</td><td>${r.n}${r.inp>r.n?`<span class="sub">입력 ${r.inp}</span>`:""}</td>${ks.map(k=>{const d=pv?r.ok[k]-pv.ok[k]:null;
+      return`<td class="cn-v ${CN.m}"><b>${r.ok[k]}명</b><span class="sub">${pct(r.ok[k],r.n)}%${d==null?"":d>0?` · <em class="up">▲${d}</em>`:d<0?` · <em class="down">▼${-d}</em>`:" · 변동 없음"}</span></td>`}).join("")}</tr>`});
+  p.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding-top:16px">
+  <section class="card"><h2>최저 인원 변화 <small>${CN.grade}학년 재학생 · 회차별 응시자 기준</small></h2>
+    <div class="ctrl one">
+      <label for="cnG">학년<select id="cnG">${grades.map(g=>opt(g,CN.grade,g+"학년")).join("")}</select></label>
+      <label for="cnM">탐구 반영<select id="cnM">${opt("t1",CN.m,"탐구1")}${opt("t2",CN.m,"탐구2")}</select></label>
+      <label for="cn2">2합 ≤<input id="cn2" type="number" min="2" max="18" value="${CN.g[2]}"></label>
+      <label for="cn3">3합 ≤<input id="cn3" type="number" min="3" max="27" value="${CN.g[3]}"></label>
+      <label for="cn4">4합 ≤<input id="cn4" type="number" min="4" max="36" value="${CN.g[4]}"></label>
+      <label for="cnK">최저 기준<select id="cnK">${opt("all",CN.k,"2·3·4합 모두")}${[2,3,4].map(k=>opt(k,CN.k,k+"합")).join("")}</select></label></div>
+    ${rows.length?`<div class="tw"><table class="mtab cntab"><thead><tr><th>연도</th><th>회차</th><th>응시자</th>${ks.map(k=>`<th class="${CN.m}">${k}합 충족 <small>(≤${CN.g[k]})</small></th>`).join("")}</tr></thead><tbody>${tb}</tbody></table></div>`:`<p class="msg">${CN.grade}학년 학생의 모의고사 성적이 없습니다.</p>`}
+    <p class="note">응시자는 그 회차에 국어·수학·영어·통합사회·통합과학 등급이 모두 입력된 재학생입니다(일부만 입력된 학생은 '입력' 수로 따로 표시). 충족은 국어·수학·영어·탐구(${mName(CN.m)}) 등급 합이 목표 이하인 경우이며, ▲▼는 직전 회차 대비 충족 인원 변동입니다. 이 탭은 성적이 입력된 모든 회차를 보여 줍니다.</p></section>
+  ${years.map((y,i)=>`<section class="card"><h2>${esc(String(y))}${typeof y==="number"?"년":""} 충족 인원 변동 <small>기준별 그래프 · 세로 눈금은 그래프마다 다름 · 응시자 수는 위 표 참고</small></h2><div class="cn-grid${ks.length===1?" one":""}">${ks.map(k=>`<div class="cn-mini"><h3><span class="sw" style="background:var(--s${k===2?1:k===3?2:3})"></span>${k}합 충족 <small>≤${CN.g[k]}</small></h3><div class="chart" id="cnc${i}_${k}"></div></div>`).join("")}</div></section>`).join("")}</div>`;
+  /* 2·3·4합 인원 차이가 커도 작은 값의 변동이 보이도록 기준별 그래프(작은 그래프 여러 개) + 각자 세로 눈금 */
+  const nice=mx=>{const st=mx<=5?1:mx<=10?2:mx<=25?5:mx<=60?10:mx<=150?25:50;const top=Math.max(st,Math.ceil((mx*1.15+0.01)/st)*st);return{st,top}};
+  years.forEach((y,i)=>{const R=rows.filter(r=>r.year===y);
+    for(const k of ks){const vals=R.map(r=>r.ok[k]);const{st,top}=nice(Math.max(1,...vals));
+      chart($(`#cnc${i}_${k}`),{cats:R.map(r=>r.label),series:[{name:`${k}합 충족`,color:`var(--s${k===2?1:k===3?2:3})`,values:vals}],labels:true,
+        yMin:0,yMax:top,invert:false,ticks:Array.from({length:Math.round(top/st)+1},(_,j)=>j*st),fmt:v=>v+"명",height:220,aria:`${y}년 ${k}합 충족 인원 변동`})}});
+  const upd=()=>{CN.grade=+$("#cnG").value;CN.m=$("#cnM").value;CN.k=$("#cnK").value;for(const k of [2,3,4]){const v=parseInt($("#cn"+k).value,10);if(v>0)CN.g[k]=v}saveCN();const f=document.activeElement&&document.activeElement.id;paneCnt(p);if(f&&$("#"+f))$("#"+f).focus()};
+  ["cnG","cnM","cn2","cn3","cn4","cnK"].forEach(id=>$("#"+id).onchange=upd)}
+
+/* ───────── 파일 불러오기 ───────── */
+function loadFile(f){
+  if(!f)return;const rd=new FileReader();
+  $("#report").innerHTML=`<span>${esc(f.name)} 읽는 중…</span>`;
+  rd.onload=e=>{try{
+      if(typeof XLSX==="undefined")throw new Error("엑셀 해석 도구를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 페이지를 새로 고쳐 주세요.");
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});const sh={};
+      for(const n of wb.SheetNames)sh[n]=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null,raw:true,blankrows:false});
+      DB=build(sh,f.name,false);RCACHE=null;CUR=null;SEL=null;$("#q").value="";renderReport();renderResults();renderMain();$("#q").focus()
+    }catch(err){$("#report").innerHTML=`<p class="err">파일을 읽지 못했습니다. ${esc(err.message||err)}</p>`;if(DB)setTimeout(renderReport,6000)}};
+  rd.readAsArrayBuffer(f)}
+$("#drop").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{loadFile(e.target.files[0]);e.target.value=""};
+const dz=$("#drop");
+["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("over")}));
+["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("over")}));
+dz.addEventListener("drop",e=>loadFile(e.dataTransfer.files[0]));
+document.addEventListener("dragover",e=>e.preventDefault());document.addEventListener("drop",e=>e.preventDefault());
+$("#q").addEventListener("input",renderResults);
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter"){const b=$("#results button");if(b)b.click()}});
+
+/* ───────── 예시 데이터 (가상 학생 2명, 실제 파일과 같은 시트 구조) ───────── */
+function sample(){
+  const SUBJ=[["국어","공통국어1"],["국어","공통국어2"],["국어","문학"],["국어","화법과 언어"],["국어","독서와 작문"],["수학","공통수학1"],["수학","공통수학2"],["수학","대수"],["수학","미적분Ⅰ"],["수학","확률과 통계"],["영어","공통영어1"],["영어","공통영어2"],["영어","영어Ⅰ"],["영어","영어Ⅱ"],["사회","통합사회1"],["사회","통합사회2"],["사회","사회와 문화"],["사회","현대사회와 윤리"],["사회","한국사1"],["사회","한국사2"],["과학","통합과학1"],["과학","통합과학2"],["과학","물리학"],["과학","화학"],["과학","생명과학"],["과학","지구과학"],["생활교양","정보"],["생활교양","기술·가정"],["생활교양","한문"],["예체능","체육1"],["예체능","체육2"],["예체능","음악"],["예체능","미술"],["교양","진로와 직업"]];
+  const G=["국어","수학","영어","사회","과학","예체능","교양","생활교양","기타"];
+  const list=[["교과군",null,"교과군","과목명"]];for(let i=0;i<Math.max(G.length,SUBJ.length);i++)list.push([G[i]??null,null,SUBJ[i]?.[0]??null,SUBJ[i]?.[1]??null]);
+  const grp=Object.fromEntries(SUBJ.map(([g,s])=>[s,g]));
+  const ach=g=>g==null?"A":g<=2?"A":g===3?"B":g===4?"C":"D";
+  const N=[["학년도","학기","학년","반","번호","이름","교과군","과목명","학점","원점수","성취도","등급","학생ID","입력확인"]];
+  const add=(id,nm,yr,gr,se,cl,no,arr)=>arr.forEach(([s,c,g,a])=>N.push([yr,se,gr,cl,no,nm,grp[s],s,c,({1:94,2:87,3:79,4:70,5:58})[g]??(a==="A"?92:a==="B"?84:75),a||ach(g),g,id,"정상"]));
+  add("EX-001","예시학생A",2025,1,1,4,12,[["공통국어1",4,3],["공통수학1",4,2],["공통영어1",4,2],["통합사회1",4,3],["통합과학1",4,2],["한국사1",3,3],["체육1",2,null,"A"],["기술·가정",3,2]]);
+  add("EX-001","예시학생A",2025,1,2,4,12,[["공통국어2",4,3],["공통수학2",4,2],["공통영어2",4,2],["통합사회2",4,2],["통합과학2",4,3],["한국사2",3,2],["체육2",2,null,"A"],["한문",3,2]]);
+  add("EX-001","예시학생A",2026,2,1,3,7,[["문학",3,2],["독서와 작문",2,3],["대수",4,2],["영어Ⅰ",4,2],["사회와 문화",3,2],["물리학",3,3],["음악",2,null,"B"],["정보",3,1]]);
+  add("EX-002","예시학생B",2026,1,1,2,15,[["공통국어1",4,2],["공통수학1",4,4],["공통영어1",4,3],["통합사회1",4,2],["통합과학1",4,3],["한국사1",3,2],["체육1",2,null,"A"],["한문",3,3]]);
+  const MH=["시행연도","시행월","학년","반","번호","이름","영역","원점수","표준점수","백분위","등급","학생ID","입력확인"];
+  const P={1:97,2:91,3:81,4:66,5:47,6:30,7:16,8:6,9:2};
+  const mrow=(yr,mo,gr,cl,no,nm,id,a,g,i)=>{const hasStd=["국어","수학","통합사회","통합과학"].includes(a);const pc=g==null?null:Math.round((P[g]-(i%3)*1.7)*100)/100;
+    const raw=g==null?null:(a==="영어"||a==="한국사")?Math.max(10,(a==="한국사"?50:100)-(g-1)*(a==="한국사"?5:10)-3):Math.round(100-g*9-(i%4));
+    return[yr,mo,gr,cl,no,nm,a,raw,hasStd&&g!=null?Math.round(100+(pc-50)*0.42):null,hasStd?pc:null,g,id,"정상"]};
+  const A=[[5,3,3,4,3,4],[4,3,2,3,2,3],[4,2,2,3,2,3],null];
+  const B=[[2,4,3,2,3,3],[3,4,3,2,2,4],null,null];
+  const mon=[3,6,9,10];const sheets={"학생정보":[["학생ID","이름","기준학년도","현재학년","현재반","현재번호","재학상태"],["EX-001","예시학생A",2025,2,3,7,"재학"],["EX-002","예시학생B",2026,1,2,15,"재학"]],
+    "재학이력":[["학년도","학년","이름","반","번호","학생ID","입력확인"],[2025,1,"예시학생A",4,12,"EX-001","정상"],[2026,2,"예시학생A",3,7,"EX-001","정상"],[2026,1,"예시학생B",2,15,"EX-002","정상"]],
+    "내신":N};
+  mon.forEach((mo,k)=>{const rows=[MH];AREA_ORDER.forEach((a,j)=>{rows.push(mrow(2026,mo,2,3,7,"예시학생A","EX-001",a,A[k]?A[k][j]:null,j+k));rows.push(mrow(2026,mo,1,2,15,"예시학생B","EX-002",a,B[k]?B[k][j]:null,j+k+1))});sheets[`모의_0${k+1}`]=rows});
+  sheets["과목목록"]=list;return sheets}
+
+DB=build(sample(),"예시 데이터",true);CUR="EX-001";
+renderReport();renderResults();renderMain();
+</script>
+
+</body></html>

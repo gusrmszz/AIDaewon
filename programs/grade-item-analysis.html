@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>모의고사 문항분석</title>
+<style>
+/* 화면: 어두운 배경 고정(참고 위젯 「내신-모의고사 성적 분석 상담기」 디자인 체계 적용)
+   인쇄(PDF): 흰 종이용 밝은 색을 .rp 규칙에서 별도로 지정 */
+:root{
+  color-scheme: dark;
+  --bg:#0f141a; --surface:#171d25; --surface-2:#1f2731; --surface-3:#26303c;
+  --ink:#e8edf3; --ink-2:#aab4c1; --ink-3:#808b99;
+  --line:#2c3541; --line-2:#3a4552;
+  --accent:#86b6ef; --accent-ink:#0f141a; --accent-soft:#1b2a3f;
+  --good:#5cc98a; --good-soft:#132f20; --bad:#f08a80; --bad-soft:#3a1a17; --warn:#e3a948; --warn-soft:#382810;
+  --hi:#7fb0ff; --hi-soft:#16284a; --bitsol:#b3a8f2; --bitsol-soft:#272347;
+  /* 정오 */
+  --ok-bg:#163a26; --ok-ink:#7fe0a6; --ok-line:#5cc98a;
+  --x-bg:#46201c; --x-ink:#ffaaa1; --xnr-bg:#2f2226; --xnr-ink:#e8a49c;
+  --nr-bg:#252d37; --nr-ink:#aab4c1;
+  /* 정답률 구간 (낮을수록 강조) */
+  --b0-bg:#4a1d1a; --b0-ink:#ff9b91;
+  --b1-bg:#3d2715; --b1-ink:#f2ad6e;
+  --b2-bg:#352d16; --b2-ink:#e6c766;
+  --b3-bg:#14301f; --b3-ink:#6fd39a;
+  --pos:#6cb6ff; --neg:#ff7b72;
+  --r:10px;
+  --f-body:"IBM Plex Sans KR","Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --f-display:"Nanum Myeongjo","나눔명조","AppleMyungjo","Batang","바탕",serif;
+  --font:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Nanum Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-0.01em}
+.muted{color:var(--ink-3)}
+.small{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.nowrap{white-space:nowrap}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
+select option{background:var(--surface);color:var(--ink)}
+
+/* ---------- 상단 ---------- */
+.topbar{background:var(--bg)}
+.topbar-in{max-width:1440px;margin:0 auto;padding:16px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;gap:4px}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1.2}
+.exam-meta{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:14.5px;color:var(--ink-2)}
+.exam-meta b{color:var(--ink);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 13px;font-size:14.5px;font-weight:600;line-height:1.3;white-space:nowrap;color:var(--ink)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn[disabled]:hover{border-color:var(--line);color:inherit}
+.btn.sm{padding:3px 8px;font-size:13px}
+.file-btn input{display:none}
+.vbadge{border-radius:99px;padding:6px 13px;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}
+.vbadge.ok{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.vbadge.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.vbadge.err{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.vbadge:not([disabled]):hover{filter:brightness(1.15)}
+
+.navbar{background:var(--bg)}
+.navbar-in{max-width:1440px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between}
+.nav-label{font-size:14px;color:var(--ink-3);margin-right:8px;font-weight:600}
+.seg{display:inline-flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.seg button{flex:none}
+.seg button{border:0;background:var(--surface);padding:7px 15px;font-size:14.5px;border-right:1px solid var(--line);color:var(--ink-2);font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button:hover:not(.on):not([disabled]){background:var(--surface-2);color:var(--ink)}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.seg button[disabled]{color:var(--ink-3);opacity:.5;cursor:not-allowed}
+.seg.small button{padding:5px 12px;font-size:14px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;flex:1 1 100%}
+.tabs button{border:0;background:none;padding:10px 16px;font-weight:700;font-size:15.5px;color:var(--ink-3);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+main{max-width:1440px;margin:0 auto;padding:16px 16px 60px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px;min-width:0}
+.panel-h{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-h h2{font-size:17.5px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel-h .sub{font-size:14px;color:var(--ink-3);font-weight:400}
+.tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tools label{font-size:14px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center;font-weight:600}
+.tools select,.tools input[type=number],.tools input[type=text]{border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--surface-2);font-size:14px;font-weight:500}
+.tools input[type=number]{width:70px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.dlg-b .card{background:var(--surface-2);border-color:transparent}
+.card .k{font-size:14px;color:var(--ink-2)}
+.card .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.card .d{font-size:13.5px;color:var(--ink-3)}
+.card .v.pos{color:var(--pos)} .card .v.neg{color:var(--neg)}
+
+/* ---------- 표 ---------- */
+.tbl-wrap{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:8px}
+table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+table.t th,table.t td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+table.t thead th{background:var(--surface-2);font-weight:600;color:var(--ink-2);font-size:14px;position:sticky;top:0;z-index:2;box-shadow:inset 0 -1px 0 var(--line)}
+table.t tbody tr:hover td{background-color:var(--surface-2)}
+table.t tbody tr:hover td.rate{filter:brightness(1.12)}
+table.t td.l,table.t th.l{text-align:left}
+table.t tr.foot td,table.t tr.foot th{background:var(--surface-2);font-weight:700}
+.tbl-scroll{max-height:600px}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--accent)}
+.qlink{color:var(--accent);cursor:pointer;font-weight:700;text-decoration:none;border:0;background:none;padding:0;font-size:inherit}
+.qlink:hover{text-decoration:underline;text-underline-offset:3px}
+.rate.b0{background:var(--b0-bg);color:var(--b0-ink);font-weight:700}
+.rate.b1{background:var(--b1-bg);color:var(--b1-ink);font-weight:700}
+.rate.b2{background:var(--b2-bg);color:var(--b2-ink);font-weight:600}
+.rate.b3{background:var(--b3-bg);color:var(--b3-ink);font-weight:600}
+.rate.na{color:var(--ink-3)}
+.diff.pos{color:var(--pos);font-weight:700}
+.diff.neg{color:var(--neg);font-weight:700}
+.flag{display:inline-block;font-size:12px;line-height:1;padding:3px 6px;border-radius:5px;background:var(--warn-soft);color:var(--warn);margin-left:5px;font-weight:700;vertical-align:1px}
+.flag.err{background:var(--bad-soft);color:var(--bad)}
+.tag{display:inline-block;font-size:12.5px;line-height:1.25;padding:2px 8px;border-radius:99px;background:var(--surface-3);color:var(--ink-2);margin-left:5px;white-space:nowrap;font-weight:600}
+.tag.bitsol{background:var(--bitsol-soft);color:var(--bitsol)}
+.tag.ex{background:var(--bad-soft);color:var(--bad)}
+.tag.t-p{background:var(--bad-soft);color:var(--bad)}
+.tag.t-c{background:var(--warn-soft);color:var(--warn)}
+.tag.t-s{background:var(--hi-soft);color:var(--hi)}
+.tag.t-ok{background:var(--good-soft);color:var(--good)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink-2);align-items:center}
+.legend i{display:inline-block;width:14px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+td.oxc{font-weight:800}
+td.oxc.o{background:var(--ok-bg);color:var(--ok-ink)}
+td.oxc.x{background:var(--x-bg);color:var(--x-ink)}
+
+/* ---------- 차트 ---------- */
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;min-width:560px;width:100%;height:auto}
+.chart .bar{cursor:pointer}
+.chart .bar:hover .hit{fill:var(--surface-2)}
+.chart .bar:hover rect.b{filter:brightness(1.15)}
+.chart .grid{stroke:var(--line)}
+.chart text.ax{fill:var(--ink-3)}
+.chart text.qn{fill:var(--ink-2)}
+.chart text.qn.sa{fill:var(--bitsol)}
+.chart line.cmp{stroke:var(--ink)}
+
+/* ---------- 히트맵 ---------- */
+table.heat td.hc{min-width:62px;cursor:pointer;font-weight:600;color:var(--ink)}
+table.heat td.hc.correct{box-shadow:inset 0 0 0 2px var(--ok-line);background:var(--ok-bg);color:var(--ok-ink);font-weight:800}
+table.heat td.hc.nr{background:var(--nr-bg);color:var(--nr-ink);font-weight:500}
+table.heat td.hc.zero{color:#56606d;font-weight:400}
+table.heat td.sa{color:var(--ink-2);text-align:left;font-size:14px}
+.heat-info{margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:14.5px;min-height:20px;color:var(--ink-2)}
+.heat-info b{color:var(--ink)}
+
+/* ---------- 정오 매트릭스 ---------- */
+.mx-wrap{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:8px;position:relative}
+table.mx{border-collapse:separate;border-spacing:0;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.mx th,table.mx td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;text-align:center;white-space:nowrap}
+table.mx thead th{position:sticky;top:0;z-index:3;background:var(--surface-2);font-weight:600;color:var(--ink-2);height:34px;padding:0 4px}
+table.mx td.c{width:32px;min-width:32px;height:28px;cursor:pointer;font-weight:700}
+table.mx td.c.o{background:var(--ok-bg);color:var(--ok-ink)}
+table.mx td.c.x{background:var(--x-bg);color:var(--x-ink)}
+table.mx td.c.x.nr{background:var(--xnr-bg);color:var(--xnr-ink);font-style:italic}
+table.mx td.c:hover{outline:2px solid var(--accent);outline-offset:-2px}
+table.mx .stk{position:sticky;z-index:2;background:var(--surface);text-align:left;padding:0 8px}
+table.mx thead .stk{z-index:4;background:var(--surface-2)}
+table.mx tr.foot .stk{background:var(--surface-2)}
+table.mx .s1{left:0;min-width:70px;width:70px}
+table.mx .s2{left:70px;min-width:84px;width:84px;font-weight:600}
+table.mx .s3{left:154px;min-width:76px;width:76px;border-right:2px solid var(--line-2);color:var(--ink-3)}
+table.mx td.sum{padding:0 8px;background:var(--surface-2);font-weight:700}
+table.mx tr.foot td{background:var(--surface-2);font-weight:700;height:28px}
+table.mx th.qh{cursor:pointer;min-width:32px}
+table.mx th.qh:hover{color:var(--accent)}
+table.mx th.qh .qr{display:block;font-size:11px;font-weight:600;line-height:1;color:var(--bitsol)}
+table.mx tbody tr:hover td.stk{background:var(--accent-soft);color:var(--ink)}
+table.mx sup{font-size:10px;color:var(--warn)}
+@media (max-width:640px){
+  table.mx td.c{width:26px;min-width:26px;height:26px;font-size:12px}
+  table.mx th.qh{min-width:26px}
+  table.mx .s1{min-width:58px;width:58px} table.mx .s2{left:58px;min-width:68px;width:68px} table.mx .s3{display:none}
+}
+
+/* ---------- 학급 선택 · 검색 ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:99px;padding:6px 16px;font-size:14.5px;font-weight:600;color:var(--ink-2)}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.bitsol{border-color:#4b4380;color:var(--bitsol)}
+.chip.bitsol.on{background:var(--bitsol);border-color:var(--bitsol);color:#17132e}
+.search{display:flex;gap:8px;flex-wrap:wrap}
+.search input{flex:1 1 260px;border:1px solid var(--line);border-radius:8px;padding:10px 13px;font-size:15.5px;background:var(--surface-2)}
+.search input::placeholder{color:var(--ink-3)}
+.results{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px}
+.res{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--surface-2);text-align:left;color:var(--ink-2);font-size:14.5px}
+.res:hover{border-color:var(--accent);background:var(--accent-soft)}
+.res b{font-size:15.5px;color:var(--ink)}
+.prof{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;color:var(--ink-2)}
+.prof b{color:var(--ink)}
+.prof .nm{font-family:var(--f-display);font-size:30px;font-weight:800;color:var(--ink);line-height:1.2}
+.cls-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.cls-box{border-radius:8px;padding:12px 14px;background:var(--surface-2);border-left:3px solid var(--line-2)}
+.cls-box h4{font-size:15.5px;margin-bottom:4px}
+.cls-box .small{color:var(--ink-3);margin-bottom:6px}
+.cls-box.p{border-left-color:var(--bad)} .cls-box.p h4{color:var(--bad)}
+.cls-box.c{border-left-color:var(--warn)} .cls-box.c h4{color:var(--warn)}
+.cls-box.s{border-left-color:var(--hi)} .cls-box.s h4{color:var(--hi)}
+.cls-box .q{display:inline-block;margin:3px 5px 3px 0;padding:3px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--line);font-size:14px;cursor:pointer;font-variant-numeric:tabular-nums}
+.cls-box .q:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- 시작 화면 ---------- */
+.drop{border:1.5px dashed var(--line-2);border-radius:12px;background:var(--surface);padding:44px 20px;text-align:center}
+.drop.drag{border-color:var(--accent);background:var(--accent-soft)}
+.drop h2{font-family:var(--f-display);font-size:24px;font-weight:800;margin-bottom:8px}
+.drop ul{text-align:left;display:inline-block;margin:16px auto 0;color:var(--ink-2);font-size:14.5px;max-width:760px;line-height:1.7}
+.drop ul b{color:var(--ink)}
+.note{font-size:14px;color:var(--ink-2);background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.loading{padding:30px;text-align:center;color:var(--ink-2)}
+details summary{cursor:pointer;color:var(--ink-2)}
+details summary b{color:var(--ink)}
+
+/* ---------- 대화상자 ---------- */
+dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:min(1100px,96vw);width:96vw;max-height:92vh;background:var(--surface);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(5,8,12,.72)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:5}
+.dlg-h h3{font-size:17.5px}
+.dlg-b{padding:16px 18px;overflow:auto;max-height:calc(92vh - 58px)}
+.dlg-b .panel{padding:14px;background:var(--surface);border-color:var(--line)}
+.dlg-b h3{color:var(--ink)}
+.xbtn{border:0;background:none;font-size:26px;line-height:1;padding:2px 8px;color:var(--ink-2)}
+.xbtn:hover{color:var(--ink)}
+.dist-row{display:grid;grid-template-columns:90px minmax(0,1fr) 260px;gap:10px;align-items:center;font-size:14px;margin:4px 0;color:var(--ink-2)}
+.dist-row b{color:var(--ink)}
+.dist-row .track{background:var(--surface-2);border-radius:5px;height:20px;position:relative;overflow:hidden}
+.dist-row .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+@media (max-width:640px){.dist-row{grid-template-columns:70px minmax(0,1fr);}.dist-row > div:last-child{grid-column:1 / -1}}
+.form-grid{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px 14px;align-items:start;font-size:14.5px}
+.form-grid > label{font-weight:600;color:var(--ink-2);padding-top:4px}
+.form-grid .opts{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.form-grid .opts label{display:inline-flex;gap:6px;align-items:center}
+.form-grid select,.form-grid input[type=number]{border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--surface-2)}
+.form-grid .opts label.dis{color:var(--ink-3);opacity:.6}
+.note.danger{background:var(--bad-soft);color:var(--ink)}
+@media (max-width:640px){.form-grid{grid-template-columns:minmax(0,1fr)}}
+.lv{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12.5px;font-weight:700}
+.lv.error{background:var(--bad-soft);color:var(--bad)}
+.lv.warn{background:var(--warn-soft);color:var(--warn)}
+.lv.info{background:var(--hi-soft);color:var(--hi)}
+.err-panel{border-color:#6b2a25 !important;background:var(--bad-soft) !important}
+.err-panel h2{color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+#print-root{display:none}
+
+/* ---------- print ---------- */
+@page{size:A4 portrait;margin:13mm 11mm 15mm;
+  @bottom-center{content:counter(page) " / " counter(pages);font-size:8.5pt;color:#555}}
+@page wide{size:A4 landscape;margin:11mm 10mm 14mm;
+  @bottom-center{content:counter(page) " / " counter(pages);font-size:8.5pt;color:#555}}
+@media print{
+  :root{color-scheme:light}
+  html,body{background:#fff !important;color:#111 !important}
+  body > *:not(#print-root){display:none !important}
+  #print-root{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.rp{font-size:9.5pt;color:#111;font-family:var(--font)}
+.rp h1{font-size:15pt;margin:0 0 2mm}
+.rp h2{font-size:11.5pt;margin:5mm 0 2mm;padding-bottom:1mm;border-bottom:1.5px solid #333;break-after:avoid}
+.rp h3{font-size:10pt;margin:3mm 0 1.5mm;break-after:avoid}
+.rp .sec{break-inside:auto}
+.rp .pb{break-before:page}
+.rp .wide{page:wide}
+.rp table{border-collapse:collapse;width:100%;font-size:8.3pt;font-variant-numeric:tabular-nums;margin-bottom:2mm}
+.rp th,.rp td{border:0.6pt solid #9a9a9a;padding:1.1mm 1.4mm;text-align:center}
+.rp thead{display:table-header-group}
+.rp tr{break-inside:avoid}
+.rp thead th{background:#ecebe7;font-weight:700}
+.rp td.l,.rp th.l{text-align:left}
+.rp .meta td{text-align:left}
+.rp .meta th{width:32mm;background:#f2f1ee;text-align:left}
+.rp .crit{font-size:8pt;color:#333;border:0.6pt solid #bbb;padding:2mm 3mm;margin:2mm 0;background:#fafaf8}
+.rp .crit li{margin:0.4mm 0}
+.rp .warnline{font-size:8pt;color:#7a1d1d;border:0.8pt solid #d9a7a2;background:#fdf0ee;padding:1.5mm 3mm;margin:2mm 0}
+.rp table.pmx td,.rp table.pmx th{padding:0.8mm 0.4mm;font-size:7.6pt;border-color:#b5b5b5}
+.rp table.pmx td.c{width:7.2mm}
+.rp table.pmx td.o{background:#dcefdc;color:#1d5e1d;font-weight:700}
+.rp table.pmx td.x{background:#f6d3cf;color:#8f1a1a;font-weight:700}
+.rp table.pmx .nm{text-align:left;padding-left:1.2mm;white-space:nowrap}
+.rp .chartbox svg{width:100%;height:auto;display:block}
+.rp .rate.b0{background:#f8cdc9;color:#7f1717;font-weight:700}
+.rp .rate.b1{background:#fde0c6;color:#80420a;font-weight:700}
+.rp .rate.b2{background:#fbf0c2;color:#62510a}
+.rp .rate.b3{background:#e6f1e6;color:#265f26}
+.rp td.hc.correct{background:#dcefdc;color:#1d5e1d;font-weight:700;outline:1.4pt solid #2e8b2e;outline-offset:-1.4pt}
+.rp td.hc.nr{background:#eeede9}
+.rp .foot td{background:#f3f2ee;font-weight:700}
+.rp .small{font-size:7.8pt}
+.rp .hdr-band{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.2pt solid #1b1b1a;padding-bottom:1.5mm;margin-bottom:3mm}
+.rp .hdr-band .r{font-size:8pt;color:#444;text-align:right}
+.rp .two{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-in">
+  <div class="brand"><h1>모의고사 문항분석</h1><div class="exam-meta" id="examMeta"></div></div>
+  <div class="actions">
+    <label class="btn file-btn" title="문항분석 로우데이터 엑셀(.xlsx) 업로드">엑셀 업로드<input type="file" accept=".xlsx,.xlsm" data-file></label>
+    <button class="vbadge" id="btnValid" data-act="openvalid" disabled>데이터 검증: –</button>
+    <button class="btn" id="btnSettings" data-act="opensettings" disabled>기준 설정</button>
+    <button class="btn primary" id="btnPdf" data-act="openpdf" disabled>PDF 보고서</button>
+  </div>
+</div></header>
+<nav class="navbar"><div class="navbar-in" id="navIn"></div></nav>
+<main id="main"></main>
+<dialog id="dlg"></dialog>
+<div id="print-root"></div>
+<style id="pageStyle">@page{size:A4 portrait} @page wide{size:A4 landscape}</style>
+<script>
+'use strict';
+/* =====================================================================
+   모의고사 문항분석 위젯 v2.0
+   계층: [1] XLSX 리더 → [2] v1 양식 로더·정규화·검증 → [3] 통계 엔진
+         → [4] 화면 → [5] PDF(인쇄) 보고서
+   - 모든 통계는 입력 시트의 원본 응답·정오에서 직접 계산 (엑셀 수식 결과 미사용)
+   - 외부 통신 없음 (CSP connect-src 'none'), 외부 라이브러리 없음
+   ===================================================================== */
+
+const APP_VERSION = '2.1.0';
+const SUBJECTS = ['국어', '수학', '영어', '통합사회', '통합과학'];
+const IGNORED_SUBJECTS = ['한국사'];
+const MAX_Q = 45;
+
+/* ---- v1 양식 정의: 양식이 바뀌면 이 객체만 수정 ---- */
+const LAYOUT_V1 = {
+  name: '문항분석 로우데이터 양식(v.1)',
+  sheets: { exam: '시험정보', student: '학생정보', question: '문항정보', input: '입력' },
+  exam: { schoolYear: 'B4', grade: 'B5', examMonth: 'B6', examDate: 'B7' },
+  student: { headerRow: 3, firstRow: 4, cols: { id: 0, cls: 1, no: 2, name: 3, bitsol: 4, status: 5, date: 6, note: 7 },
+             expect: { 0: '학생ID', 1: '학급', 2: '번호', 3: '이름', 4: '빛솔', 5: '학적상태', 6: '변동일자' } },
+  question: { headerRow: 4, firstRow: 5, cols: { subject: 0, qno: 1, type: 2 },
+              expect: { 0: '과목', 1: '문항번호', 2: '문항형태' } },
+  input: { headerRow: 4, firstRow: 5, cols: { id: 0, subject: 1, resp0: 13, ox0: 58 },
+           expect: { 0: '학생ID', 1: '과목', 13: 1, 57: 45, 58: 1, 102: 45 } }
+};
+
+/* =====================================================================
+   [1] XLSX 리더 (ZIP + DEFLATE 해제 + XML 파싱, 브라우저 내장 기능만 사용)
+   ===================================================================== */
+const XLSX = (() => {
+  async function inflateRaw(bytes) {
+    if (typeof DecompressionStream === 'undefined')
+      throw new Error('이 브라우저는 압축 해제 기능(DecompressionStream)을 지원하지 않습니다. 최신 Chrome 또는 Edge를 사용하세요.');
+    const ds = new DecompressionStream('deflate-raw');
+    const stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+  function openZip(buf) {
+    const u8 = new Uint8Array(buf), dv = new DataView(buf);
+    if (u8.length >= 4 && u8[0] === 0xD0 && u8[1] === 0xCF && u8[2] === 0x11 && u8[3] === 0xE0)
+      throw new Error('암호가 설정된 엑셀 파일이거나 구형 .xls 형식입니다. 암호를 해제한 .xlsx 파일로 저장한 뒤 다시 업로드하세요.');
+    let eocd = -1;
+    for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
+      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('xlsx(ZIP) 구조를 찾을 수 없습니다. 올바른 .xlsx 파일인지 확인하세요.');
+    const count = dv.getUint16(eocd + 10, true);
+    let off = dv.getUint32(eocd + 16, true);
+    const entries = new Map();
+    const td = new TextDecoder('utf-8');
+    for (let k = 0; k < count; k++) {
+      if (dv.getUint32(off, true) !== 0x02014b50) throw new Error('ZIP 중앙 디렉터리가 손상되었습니다.');
+      const method = dv.getUint16(off + 10, true);
+      const csize = dv.getUint32(off + 20, true);
+      const nlen = dv.getUint16(off + 28, true), xlen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true);
+      const lho = dv.getUint32(off + 42, true);
+      const name = td.decode(u8.subarray(off + 46, off + 46 + nlen));
+      entries.set(name, { method, csize, lho });
+      off += 46 + nlen + xlen + clen;
+    }
+    return {
+      has: n => entries.has(n),
+      async text(name) {
+        const e = entries.get(name);
+        if (!e) return null;
+        const ln = dv.getUint16(e.lho + 26, true), lx = dv.getUint16(e.lho + 28, true);
+        const start = e.lho + 30 + ln + lx;
+        const data = u8.subarray(start, start + e.csize);
+        let out;
+        if (e.method === 0) out = data;
+        else if (e.method === 8) out = await inflateRaw(data);
+        else throw new Error('지원하지 않는 ZIP 압축 방식(' + e.method + ')입니다.');
+        return td.decode(out);
+      }
+    };
+  }
+  function parseXml(text) {
+    const doc = new DOMParser().parseFromString(text, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length) throw new Error('엑셀 내부 XML을 해석하지 못했습니다.');
+    return doc;
+  }
+  function kids(el, name) { const out = []; for (let c = el.firstElementChild; c; c = c.nextElementSibling) if (c.localName === name) out.push(c); return out; }
+  function textOfRich(el) { // <si>/<is> : <t> 또는 <r><t>, 발음기호 <rPh>는 제외
+    let s = '';
+    for (let c = el.firstElementChild; c; c = c.nextElementSibling) {
+      if (c.localName === 't') s += c.textContent;
+      else if (c.localName === 'r') { for (const t of kids(c, 't')) s += t.textContent; }
+    }
+    return s;
+  }
+  function colIndex(letters) { let n = 0; for (const ch of letters) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+  function colName(idx) { let s = ''; idx += 1; while (idx > 0) { const m = (idx - 1) % 26; s = String.fromCharCode(65 + m) + s; idx = Math.floor((idx - 1) / 26); } return s; }
+  function resolvePath(target) {
+    let t = target.replace(/^\/+/, '');
+    if (!t.startsWith('xl/')) t = 'xl/' + t;
+    const parts = []; for (const p of t.split('/')) { if (p === '..') parts.pop(); else if (p !== '.') parts.push(p); }
+    return parts.join('/');
+  }
+  async function read(buf) {
+    const zip = openZip(buf);
+    const wbText = await zip.text('xl/workbook.xml');
+    if (!wbText) throw new Error('xl/workbook.xml이 없습니다. 엑셀 통합문서(.xlsx)가 아닙니다.');
+    const wb = parseXml(wbText);
+    const pr = wb.getElementsByTagName('workbookPr')[0];
+    const date1904 = !!(pr && /^(1|true)$/i.test(pr.getAttribute('date1904') || ''));
+    const relDoc = parseXml(await zip.text('xl/_rels/workbook.xml.rels') || '<Relationships/>');
+    const rels = {};
+    for (const r of relDoc.getElementsByTagName('Relationship')) rels[r.getAttribute('Id')] = r.getAttribute('Target');
+    let sst = [];
+    const sstText = await zip.text('xl/sharedStrings.xml');
+    if (sstText) { const d = parseXml(sstText); sst = Array.from(d.getElementsByTagName('si')).map(textOfRich); }
+    const sheetEls = wb.getElementsByTagName('sheet');
+    const sheets = {};
+    for (const s of sheetEls) {
+      const name = s.getAttribute('name');
+      const rid = s.getAttribute('r:id') || s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+      const target = rels[rid];
+      if (!target) continue;
+      sheets[name] = { path: resolvePath(target), rows: null };
+    }
+    async function loadSheet(name) {
+      const sh = sheets[name];
+      if (!sh) return null;
+      if (sh.rows) return sh.rows;
+      const txt = await zip.text(sh.path);
+      if (!txt) return null;
+      const doc = parseXml(txt);
+      const rows = new Map();
+      let autoRow = 0;
+      for (const rowEl of doc.getElementsByTagName('row')) {
+        const rAttr = rowEl.getAttribute('r');
+        const rn = rAttr ? parseInt(rAttr, 10) : autoRow + 1;
+        autoRow = rn;
+        const arr = [];
+        let autoCol = -1;
+        for (const c of kids(rowEl, 'c')) {
+          const ref = c.getAttribute('r');
+          let ci;
+          if (ref) { const m = /^([A-Z]+)/.exec(ref); ci = colIndex(m[1]); } else ci = autoCol + 1;
+          autoCol = ci;
+          const t = c.getAttribute('t') || 'n';
+          const vEl = kids(c, 'v')[0];
+          let val = null;
+          if (t === 's') { if (vEl) val = sst[parseInt(vEl.textContent, 10)]; if (val === undefined) val = null; }
+          else if (t === 'inlineStr') { const is = kids(c, 'is')[0]; val = is ? textOfRich(is) : null; }
+          else if (t === 'str') { val = vEl ? vEl.textContent : null; }
+          else if (t === 'b') { val = vEl ? vEl.textContent === '1' : null; }
+          else if (t === 'e') { val = vEl ? { error: vEl.textContent } : null; }
+          else if (t === 'd') { val = vEl ? { isoDate: vEl.textContent } : null; }
+          else { if (vEl && vEl.textContent !== '') { const n = Number(vEl.textContent); val = Number.isFinite(n) ? n : vEl.textContent; } }
+          arr[ci] = val;
+        }
+        rows.set(rn, arr);
+      }
+      sh.rows = rows;
+      return rows;
+    }
+    return { sheetNames: Object.keys(sheets), date1904, loadSheet, colName };
+  }
+  function addrToRC(addr) { const m = /^([A-Z]+)(\d+)$/.exec(addr); return { r: parseInt(m[2], 10), c: colIndex(m[1]) }; }
+  return { read, colName, colIndex, addrToRC };
+})();
+
+/* =====================================================================
+   공통 유틸
+   ===================================================================== */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const isBlank = v => v === null || v === undefined || (typeof v === 'string' && v.trim() === '');
+const cellAddr = (r, c) => XLSX.colName(c) + r;
+const CIRCLED = ['', '①', '②', '③', '④', '⑤'];
+const CIRCLED_IN = { '①': 1, '②': 2, '③': 3, '④': 4, '⑤': 5 };
+function numStr(n) { return Number.isInteger(n) ? String(n) : String(+n.toPrecision(15)); }
+function round1(x) { return Math.round(x * 10 + (x >= 0 ? 1e-9 : -1e-9)) / 10; }
+function fmtPct(x) { return x === null || x === undefined || !Number.isFinite(x) ? '분석 불가' : round1(x).toFixed(1) + '%'; }
+function fmtPctShort(x) { return x === null || x === undefined || !Number.isFinite(x) ? '–' : round1(x).toFixed(1); }
+function fmtDiff(x) { if (x === null || x === undefined || !Number.isFinite(x)) return '–'; const r = round1(x); return (r > 0 ? '+' : r < 0 ? '−' : '±') + Math.abs(r).toFixed(1) + '%p'; }
+function cmpNatural(a, b) {
+  const na = Number(a), nb = Number(b);
+  if (Number.isFinite(na) && Number.isFinite(nb) && String(a).trim() !== '' && String(b).trim() !== '') return na - nb;
+  return String(a).localeCompare(String(b), 'ko', { numeric: true });
+}
+function excelSerialToISO(serial, date1904) {
+  if (!Number.isFinite(serial)) return null;
+  const base = date1904 ? Date.UTC(1904, 0, 1) : Date.UTC(1899, 11, 30);
+  const ms = base + Math.round(serial * 86400000);
+  const d = new Date(ms);
+  return d.toISOString().slice(0, 10);
+}
+function toISODate(v, date1904) {
+  if (isBlank(v)) return { iso: null };
+  if (typeof v === 'number') return { iso: excelSerialToISO(v, date1904) };
+  if (v && typeof v === 'object' && v.isoDate) return { iso: v.isoDate.slice(0, 10) };
+  const s = String(v).trim();
+  let m = /^(\d{4})[-./\s]+(\d{1,2})[-./\s]+(\d{1,2})\.?$/.exec(s) || /^(\d{4})(\d{2})(\d{2})$/.exec(s);
+  if (m) {
+    const y = +m[1], mo = +m[2], d = +m[3];
+    const dt = new Date(Date.UTC(y, mo - 1, d));
+    if (dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d) return { iso: dt.toISOString().slice(0, 10) };
+  }
+  return { iso: null, invalid: true, raw: s };
+}
+function classLabel(c) { const s = String(c).trim(); return /^\d+$/.test(s) ? s + '반' : s; }
+
+/* =====================================================================
+   [2] v1 양식 로더 · 정규화 · 검증
+   ===================================================================== */
+function normOX(v) {
+  if (isBlank(v)) return { ox: null };
+  if (typeof v === 'object' && v && v.error) return { ox: null, invalid: true, raw: v.error };
+  const s = String(v).trim().toUpperCase();
+  if (s === 'O') return { ox: 'O' };
+  if (s === 'X') return { ox: 'X' };
+  return { ox: null, invalid: true, raw: String(v).trim() };
+}
+/* 응답 정규화 규칙
+   - 공란: null, 빈 문자열, 공백만 있는 문자열
+   - NR: 앞뒤 공백 제거 후 대소문자 무시 'NR'
+   - 객관식: 숫자 1~5, 문자 '1'~'5', ①~⑤ → 동일 선택지. 그 밖의 값은 '범위 오류'
+   - 주관식: 앞뒤 공백만 제거하고 원본 표현 보존 ('001','01','1'은 서로 다른 답안) */
+function normResp(v, type) {
+  if (isBlank(v)) return { kind: 'blank' };
+  if (typeof v === 'object' && v && v.error) return { kind: 'invalid', raw: v.error };
+  if (typeof v === 'boolean') return { kind: 'invalid', raw: v ? 'TRUE' : 'FALSE' };
+  const s = typeof v === 'number' ? numStr(v) : String(v).trim();
+  if (s.toUpperCase() === 'NR') return { kind: 'nr', raw: 'NR' };
+  if (type === 'objective') {
+    let n = null;
+    if (typeof v === 'number') { if (Number.isInteger(v) && v >= 1 && v <= 5) n = v; }
+    else if (/^[1-5]$/.test(s)) n = +s;
+    else if (CIRCLED_IN[s]) n = CIRCLED_IN[s];
+    return n ? { kind: 'choice', choice: n, raw: s } : { kind: 'invalid', raw: s };
+  }
+  return { kind: 'value', value: s, raw: s };
+}
+function respKey(resp, type) {
+  if (resp.kind === 'nr' || resp.kind === 'blank') return 'NR';
+  if (type === 'objective') return resp.kind === 'choice' ? String(resp.choice) : 'ETC';
+  return resp.kind === 'value' ? resp.value : 'ETC';
+}
+function respDisplay(resp) {
+  if (resp.kind === 'choice') return CIRCLED[resp.choice];
+  if (resp.kind === 'nr') return 'NR';
+  if (resp.kind === 'blank') return '–';
+  if (resp.kind === 'value') return resp.value;
+  return resp.raw;
+}
+
+async function loadWorkbook(buf, fileName, layout = LAYOUT_V1) {
+  const issues = [];
+  const add = (level, category, loc, msg) => issues.push(Object.assign({ level, category, msg }, loc || {}));
+  const book = await XLSX.read(buf);
+  const missing = Object.values(layout.sheets).filter(n => !book.sheetNames.includes(n));
+  if (missing.length) {
+    throw new Error('필수 시트가 없습니다: ' + missing.join(', ') + '\n현재 파일의 시트: ' + book.sheetNames.join(', ') + '\n(' + layout.name + ' 양식의 4개 시트가 필요합니다)');
+  }
+  const SN = layout.sheets;
+  const [exRows, stRows, qRows, inRows] = await Promise.all([book.loadSheet(SN.exam), book.loadSheet(SN.student), book.loadSheet(SN.question), book.loadSheet(SN.input)]);
+  const get = (rows, r, c) => { const a = rows.get(r); return a ? a[c] : undefined; };
+  const getA = (rows, addr) => { const { r, c } = XLSX.addrToRC(addr); return get(rows, r, c); };
+
+  // ---- 헤더 검증(양식 일치 여부)
+  const checkHeader = (rows, sheet, spec) => {
+    for (const [ci, exp] of Object.entries(spec.expect)) {
+      const v = get(rows, spec.headerRow, +ci);
+      const ok = typeof exp === 'number' ? Number(v) === exp : String(v == null ? '' : v).trim() === exp;
+      if (!ok) add('error', '양식 불일치', { sheet, cell: cellAddr(spec.headerRow, +ci) }, `머리글이 예상(${exp})과 다릅니다(현재: ${v == null ? '빈칸' : v}). 열 위치가 바뀌었다면 분석 결과가 틀릴 수 있습니다.`);
+    }
+  };
+  checkHeader(stRows, SN.student, layout.student);
+  checkHeader(qRows, SN.question, layout.question);
+  checkHeader(inRows, SN.input, layout.input);
+
+  // ---- 시험정보
+  const E = layout.exam;
+  const exam = {};
+  const intOrNull = v => (typeof v === 'number' ? v : (isBlank(v) ? null : (Number.isFinite(Number(String(v).trim())) ? Number(String(v).trim()) : null)));
+  exam.schoolYear = intOrNull(getA(exRows, E.schoolYear));
+  exam.grade = intOrNull(getA(exRows, E.grade));
+  exam.examMonth = intOrNull(getA(exRows, E.examMonth));
+  const dRaw = getA(exRows, E.examDate);
+  const dParsed = toISODate(dRaw, book.date1904);
+  exam.examDate = dParsed.iso;
+  for (const [k, label] of [['schoolYear', '학년도'], ['grade', '학년'], ['examMonth', '시험월']]) {
+    if (exam[k] === null) add('warn', '시험정보', { sheet: SN.exam, cell: E[k] }, `${label} 값이 비어 있거나 숫자가 아닙니다.`);
+  }
+  if (!exam.examDate) add('error', '시험정보', { sheet: SN.exam, cell: E.examDate }, dParsed.invalid ? `시험일 형식을 해석할 수 없습니다(${dParsed.raw}). 학적변동 학생의 집계 여부를 판정할 수 없습니다.` : '시험일(학적 기준일)이 비어 있습니다. 학적변동 학생의 집계 여부를 판정할 수 없습니다.');
+  exam.examName = `${exam.schoolYear ?? '?'}학년도 ${exam.grade ?? '?'}학년 ${exam.examMonth ?? '?'}월 전국연합학력평가`;
+
+  // ---- 학생정보
+  const SC = layout.student.cols;
+  const students = [];
+  const idCount = new Map();
+  const maxSt = Math.max(0, ...stRows.keys());
+  for (let r = layout.student.firstRow; r <= maxSt; r++) {
+    const row = stRows.get(r); if (!row) continue;
+    const idRaw = row[SC.id];
+    const restHas = [SC.cls, SC.no, SC.name].some(c => !isBlank(row[c]));
+    if (isBlank(idRaw)) {
+      if (restHas) add('error', '학생정보', { sheet: SN.student, cell: cellAddr(r, SC.id) }, `학생ID가 비어 있습니다(이름: ${row[SC.name] ?? ''}). 이 학생은 분석에서 제외됩니다.`);
+      continue;
+    }
+    const studentId = typeof idRaw === 'number' ? numStr(idRaw) : String(idRaw).trim();
+    const st = {
+      studentId, row: r,
+      classNo: isBlank(row[SC.cls]) ? '' : (typeof row[SC.cls] === 'number' ? numStr(row[SC.cls]) : String(row[SC.cls]).trim()),
+      studentNo: isBlank(row[SC.no]) ? '' : (typeof row[SC.no] === 'number' ? numStr(row[SC.no]) : String(row[SC.no]).trim()),
+      studentName: isBlank(row[SC.name]) ? '' : String(row[SC.name]).trim(),
+      bitsol: false, enrollmentStatus: isBlank(row[SC.status]) ? '' : String(row[SC.status]).trim(),
+      changeDate: null, note: isBlank(row[SC.note]) ? '' : String(row[SC.note]).trim(),
+      eligibleForExam: true, eligibilityNote: '', blocked: false
+    };
+    const loc = { sheet: SN.student, studentId };
+    if (!st.classNo) add('error', '학생정보', Object.assign({ cell: cellAddr(r, SC.cls) }, loc), '학급이 비어 있습니다. 학급별 분석에서 빠집니다.');
+    if (!st.studentName) add('warn', '학생정보', Object.assign({ cell: cellAddr(r, SC.name) }, loc), '이름이 비어 있습니다.');
+    const b = row[SC.bitsol];
+    const bs = isBlank(b) ? '' : String(b).trim().toUpperCase();
+    if (bs === 'O') st.bitsol = true;
+    else if (bs === 'X' || bs === '') st.bitsol = false;
+    else add('warn', '학생정보', Object.assign({ cell: cellAddr(r, SC.bitsol) }, loc), `빛솔 값이 O/X가 아닙니다(${b}). 빛솔반 미소속으로 처리했습니다.`);
+    const cd = toISODate(row[SC.date], book.date1904);
+    st.changeDate = cd.iso;
+    if (cd.invalid) add('warn', '학적', Object.assign({ cell: cellAddr(r, SC.date) }, loc), `변동일자 형식을 해석할 수 없습니다(${cd.raw}).`);
+    // 학적 판정
+    const s = st.enrollmentStatus, ed = exam.examDate;
+    if (s === '재학' || s === '') {
+      st.eligibleForExam = true;
+      if (s === '') { add('warn', '학적', Object.assign({ cell: cellAddr(r, SC.status) }, loc), '학적상태가 비어 있어 재학으로 간주했습니다.'); st.eligibilityNote = '학적상태 미기재 → 재학 간주'; }
+    } else if (s === '전입') {
+      if (!st.changeDate) { st.eligibleForExam = true; st.eligibilityNote = '전입(변동일 없음) → 포함'; add('warn', '학적', Object.assign({ cell: cellAddr(r, SC.date) }, loc), '전입 학생의 변동일자가 없습니다. 집계에 포함했으니 확인하세요.'); }
+      else if (!ed) { st.eligibleForExam = true; st.eligibilityNote = '시험일 미입력 → 포함'; }
+      else { st.eligibleForExam = st.changeDate <= ed; st.eligibilityNote = st.eligibleForExam ? `전입 ${st.changeDate} (시험일 이전·당일) → 포함` : `전입 ${st.changeDate} (시험일 이후) → 제외`; }
+    } else if (s === '전출' || s === '자퇴' || s === '휴학') {
+      if (!st.changeDate) { st.eligibleForExam = false; st.eligibilityNote = `${s}(변동일 없음) → 제외`; add('warn', '학적', Object.assign({ cell: cellAddr(r, SC.date) }, loc), `${s} 학생의 변동일자가 없습니다. 집계에서 제외했으니 확인하세요.`); }
+      else if (!ed) { st.eligibleForExam = false; st.eligibilityNote = '시험일 미입력 → 제외'; }
+      else { st.eligibleForExam = st.changeDate > ed; st.eligibilityNote = st.eligibleForExam ? `${s} ${st.changeDate} (시험일 이후) → 포함` : `${s} ${st.changeDate} (시험일 이전·당일) → 제외`; }
+    } else {
+      st.eligibleForExam = true; st.eligibilityNote = `학적상태 '${s}' → 포함(확인 필요)`;
+      add('warn', '학적', Object.assign({ cell: cellAddr(r, SC.status) }, loc), `알 수 없는 학적상태('${s}')입니다. 집계에 포함했으니 확인하세요.`);
+    }
+    idCount.set(studentId, (idCount.get(studentId) || 0) + 1);
+    students.push(st);
+  }
+  const studentById = new Map();
+  for (const st of students) {
+    if (idCount.get(st.studentId) > 1) {
+      st.blocked = true;
+      add('error', '학생ID 중복', { sheet: SN.student, cell: cellAddr(st.row, SC.id), studentId: st.studentId, nameOverride: st.studentName }, `학생ID '${st.studentId}'가 ${idCount.get(st.studentId)}번 등록되어 있습니다. 대상을 특정할 수 없어 이 ID의 모든 데이터를 분석에서 차단했습니다.`);
+    } else studentById.set(st.studentId, st);
+  }
+
+  // ---- 문항정보
+  const QC = layout.question.cols;
+  const subjects = {};
+  for (const s of SUBJECTS) subjects[s] = { subject: s, questions: [], qMap: new Map(), available: false };
+  const maxQ = Math.max(0, ...qRows.keys());
+  for (let r = layout.question.firstRow; r <= maxQ; r++) {
+    const row = qRows.get(r); if (!row) continue;
+    const sRaw = row[QC.subject], nRaw = row[QC.qno], tRaw = row[QC.type];
+    if (isBlank(sRaw) && isBlank(nRaw) && isBlank(tRaw)) continue;
+    const subj = isBlank(sRaw) ? '' : String(sRaw).trim();
+    const loc = { sheet: SN.question, cell: cellAddr(r, QC.subject), subject: subj };
+    if (!subj) { add('error', '문항정보', loc, '과목이 비어 있는 문항 행입니다. 무시했습니다.'); continue; }
+    if (IGNORED_SUBJECTS.includes(subj)) continue;
+    if (!SUBJECTS.includes(subj)) { add('error', '문항정보', loc, `분석 대상이 아닌 과목명('${subj}')입니다. 허용: ${SUBJECTS.join('·')}`); continue; }
+    const qn = typeof nRaw === 'number' ? nRaw : Number(String(nRaw ?? '').trim());
+    if (!Number.isInteger(qn) || qn < 1 || qn > MAX_Q) { add('error', '문항정보', Object.assign({}, loc, { cell: cellAddr(r, QC.qno) }), `문항번호가 1~${MAX_Q} 정수가 아닙니다(${nRaw ?? '빈칸'}). 무시했습니다.`); continue; }
+    const S = subjects[subj];
+    if (S.qMap.has(qn)) { add('error', '문항정보', Object.assign({}, loc, { cell: cellAddr(r, QC.qno), qNo: qn }), `${subj} ${qn}번 문항이 중복 등록되어 있습니다. 첫 번째 행만 사용합니다.`); continue; }
+    const tS = isBlank(tRaw) ? '' : String(tRaw).trim();
+    let qType;
+    if (tS === '객관식') qType = 'objective';
+    else if (tS === '주관식') qType = 'shortAnswer';
+    else { qType = 'objective'; add('warn', '문항정보', Object.assign({}, loc, { cell: cellAddr(r, QC.type), qNo: qn }), `문항형태가 '객관식/주관식'이 아닙니다(${tS || '빈칸'}). 객관식으로 처리했습니다.`); }
+    const q = { subject: subj, questionNo: qn, questionType: qType, row: r, inferredCorrectAnswer: null, answerValidationStatus: 'pending', answerDetail: '' };
+    S.questions.push(q); S.qMap.set(qn, q);
+  }
+  for (const s of SUBJECTS) {
+    const S = subjects[s];
+    S.questions.sort((a, b) => a.questionNo - b.questionNo);
+    S.Q = S.questions.length;
+    S.available = S.Q > 0;
+    if (!S.available) { add('error', '문항정보', { sheet: SN.question, subject: s }, `${s} 과목의 문항정보가 없습니다. 이 과목은 분석할 수 없습니다.`); continue; }
+    const mx = S.questions[S.Q - 1].questionNo;
+    const gaps = []; for (let i = 1; i <= mx; i++) if (!S.qMap.has(i)) gaps.push(i);
+    if (gaps.length) add('error', '문항 누락', { sheet: SN.question, subject: s }, `${s} 문항번호가 1부터 연속되지 않습니다. 누락: ${gaps.join(', ')}번. 등록된 ${S.Q}개 문항만 분석합니다.`);
+    S.nObj = S.questions.filter(q => q.questionType === 'objective').length;
+    S.nShort = S.Q - S.nObj;
+  }
+
+  // ---- 입력 시트
+  const IC = layout.input.cols;
+  const records = new Map();   // `${id}|${subject}` → record
+  const rawRows = new Map();   // 중복 판정용
+  const dupBlockedKeys = new Set();
+  const rowExclusions = { unknownId: [], badSubject: [], ignoredSubject: [], missingId: [], dupRow: [], blockedId: [], ineligible: [] };
+  const maxIn = Math.max(0, ...inRows.keys());
+  for (let r = layout.input.firstRow; r <= maxIn; r++) {
+    const row = inRows.get(r); if (!row) continue;
+    const idRaw = row[IC.id], sRaw = row[IC.subject];
+    let hasData = false;
+    for (let k = 0; k < MAX_Q * 2; k++) { const c = k < MAX_Q ? IC.resp0 + k : IC.ox0 + (k - MAX_Q); if (!isBlank(row[c])) { hasData = true; break; } }
+    if (isBlank(idRaw) && isBlank(sRaw) && !hasData) continue;
+    const loc = { sheet: SN.input, cell: cellAddr(r, IC.id) };
+    if (isBlank(idRaw)) { add('error', '입력', loc, '학생ID가 비어 있는 입력 행입니다. 분석에서 제외했습니다.'); rowExclusions.missingId.push(r); continue; }
+    const sid = typeof idRaw === 'number' ? numStr(idRaw) : String(idRaw).trim();
+    const subj = isBlank(sRaw) ? '' : String(sRaw).trim();
+    loc.studentId = sid; loc.subject = subj;
+    if (IGNORED_SUBJECTS.includes(subj)) { rowExclusions.ignoredSubject.push(r); continue; }
+    if (!SUBJECTS.includes(subj)) { add('error', '입력', Object.assign({}, loc, { cell: cellAddr(r, IC.subject) }), `과목명이 올바르지 않습니다('${subj || '빈칸'}'). 허용: ${SUBJECTS.join('·')}. 이 행은 제외했습니다.`); rowExclusions.badSubject.push(r); continue; }
+    if (idCount.get(sid) > 1) { rowExclusions.blockedId.push(r); continue; }
+    if (!studentById.has(sid)) { add('error', '입력', loc, `학생정보에 없는 학생ID('${sid}')입니다. 이 행은 제외했습니다.`); rowExclusions.unknownId.push(r); continue; }
+    const key = sid + '|' + subj;
+    if (!rawRows.has(key)) rawRows.set(key, []);
+    rawRows.get(key).push({ r, row, hasData });
+  }
+  for (const [key, list] of rawRows) {
+    const [sid, subj] = key.split('|');
+    let use = list[0];
+    if (list.length > 1) {
+      const withData = list.filter(x => x.hasData);
+      const rowsTxt = list.map(x => x.r + '행').join(', ');
+      if (withData.length <= 1) {
+        use = withData[0] || list[0];
+        add('warn', '학생·과목 중복', { sheet: SN.input, cell: cellAddr(use.r, IC.id), studentId: sid, subject: subj }, `같은 학생·과목 행이 ${list.length}개(${rowsTxt}) 있습니다. 데이터가 있는 ${use.r}행만 사용했습니다.`);
+      } else {
+        add('error', '학생·과목 중복', { sheet: SN.input, cell: cellAddr(list[0].r, IC.id), studentId: sid, subject: subj }, `같은 학생·과목 행이 ${list.length}개(${rowsTxt}) 있고 모두 데이터가 있어 어느 것이 맞는지 알 수 없습니다. 이 학생의 ${subj} 데이터를 분석에서 차단했습니다.`);
+        rowExclusions.dupRow.push(...list.map(x => x.r));
+        dupBlockedKeys.add(key);
+        continue;
+      }
+    }
+    const st = studentById.get(sid);
+    const S = subjects[subj];
+    const rec = { studentId: sid, subject: subj, row: use.r, items: {}, attendanceStatus: '미응시', correctCount: 0, validationIssues: [] };
+    if (!S.available) { records.set(key, rec); continue; }
+    // 문항 수 초과 칸 확인
+    const qset = S.qMap;
+    const extra = [];
+    for (let k = 1; k <= MAX_Q; k++) {
+      if (qset.has(k)) continue;
+      if (!isBlank(use.row[IC.resp0 + k - 1]) || !isBlank(use.row[IC.ox0 + k - 1])) extra.push(k);
+    }
+    // 응시 판정: 해당 과목 전체 문항의 응답·정오가 모두 공란일 때만 미응시
+    let any = false;
+    for (const q of S.questions) {
+      const ra = use.row[IC.resp0 + q.questionNo - 1], oa = use.row[IC.ox0 + q.questionNo - 1];
+      if (!isBlank(ra) || !isBlank(oa)) { any = true; break; }
+    }
+    rec.attendanceStatus = any ? '응시' : '미응시';
+    if (!st.eligibleForExam) { if (any) rowExclusions.ineligible.push(use.r); records.set(key, rec); continue; }
+    if (extra.length && any) add('info', '문항 수 초과 칸', { sheet: SN.input, cell: cellAddr(use.r, IC.resp0 + extra[0] - 1), studentId: sid, subject: subj }, `${subj} 문항 수(${S.Q})를 넘는 칸에 값이 있어 무시했습니다: ${extra.join(', ')}번`);
+    if (!any) { records.set(key, rec); continue; }
+    for (const q of S.questions) {
+      const qn = q.questionNo;
+      const cR = IC.resp0 + qn - 1, cO = IC.ox0 + qn - 1;
+      const resp = normResp(use.row[cR], q.questionType);
+      const oxN = normOX(use.row[cO]);
+      const iloc = { sheet: SN.input, studentId: sid, subject: subj, qNo: qn };
+      const flags = [];
+      if (resp.kind === 'invalid') { flags.push('respInvalid'); add('warn', '응답 값 오류', Object.assign({ cell: cellAddr(use.r, cR) }, iloc), `객관식 응답이 1~5·NR이 아닙니다('${resp.raw}'). 정오(O/X) 기준으로 집계하고 선택지 분포에서는 '기타'로 분류합니다.`); }
+      if (oxN.invalid) { flags.push('oxInvalid'); add('warn', '정오 값 오류', Object.assign({ cell: cellAddr(use.r, cO) }, iloc), `정오 값이 O/X가 아닙니다('${oxN.raw}'). 오답으로 처리했습니다.`); }
+      const correct = oxN.ox === 'O';
+      if (correct && (resp.kind === 'nr' || resp.kind === 'blank')) {
+        flags.push('conflict');
+        add('warn', '응답·정오 충돌', Object.assign({ cell: cellAddr(use.r, cO) }, iloc), `응답이 ${resp.kind === 'nr' ? 'NR' : '빈칸'}인데 정오가 O입니다. 정오(O) 기준으로 정답 집계했으니 원본을 확인하세요.`);
+      }
+      if (!oxN.ox && !oxN.invalid) {
+        if (resp.kind === 'blank') { flags.push('bothBlank'); add('info', '부분 공란', Object.assign({ cell: cellAddr(use.r, cR) }, iloc), '응답·정오가 모두 빈칸 → 오답(무응답) 처리'); }
+        else { flags.push('oxBlank'); add('info', '정오 빈칸 보정', Object.assign({ cell: cellAddr(use.r, cO) }, iloc), `응답('${respDisplay(resp)}')은 있으나 정오가 빈칸 → 오답으로 보정`); }
+      }
+      rec.items[qn] = { resp, ox: oxN.ox, correct, key: respKey(resp, q.questionType), flags };
+      if (correct) rec.correctCount++;
+    }
+    records.set(key, rec);
+  }
+  // 입력 행이 없는 학생 (집계대상)
+  for (const s of SUBJECTS) {
+    if (!subjects[s].available) continue;
+    const miss = students.filter(st => !st.blocked && st.eligibleForExam && !records.has(st.studentId + '|' + s) && !dupBlockedKeys.has(st.studentId + '|' + s));
+    if (miss.length) add('warn', '입력 행 없음', { sheet: SN.input, subject: s }, `${s} 입력 행이 없는 집계대상 학생 ${miss.length}명 → 미응시로 처리: ${miss.slice(0, 15).map(st => `${classLabel(st.classNo)} ${st.studentNo}번 ${st.studentName}(${st.studentId})`).join(', ')}${miss.length > 15 ? ' 외' : ''}`);
+  }
+  if (rowExclusions.ignoredSubject.length) add('info', '분석 제외 과목', { sheet: SN.input }, `한국사 등 분석 대상이 아닌 과목 행 ${rowExclusions.ignoredSubject.length}개는 분석하지 않습니다.`);
+
+  const D = { fileName, layout: layout.name, exam, students, studentById, subjects, records, issues, rowExclusions, loadedAt: new Date() };
+  D.rec = (sid, s) => records.get(sid + '|' + s);
+  // 학급 목록
+  const classSet = new Set(students.filter(st => !st.blocked && st.eligibleForExam && st.classNo).map(st => st.classNo));
+  D.classes = Array.from(classSet).sort(cmpNatural);
+  ENGINE.reset(D);
+  ENGINE.inferAnswers(D);
+  return D;
+}
+
+/* =====================================================================
+   [3] 통계 계산 엔진 (화면·PDF 공용)
+   ===================================================================== */
+const ENGINE = (() => {
+  let D = null, cache = new Map();
+  function reset(data) { D = data; cache = new Map(); }
+  function groupLabel(key) {
+    if (key === 'all') return '학년 전체';
+    if (key === 'bitsol') return '빛솔반';
+    if (key.startsWith('c:')) return classLabel(key.slice(2));
+    if (key.startsWith('s:')) return '학생';
+    return key;
+  }
+  /** 집단 구성원: 시험일 기준 집계대상이고 ID 차단되지 않은 학생 (학년 전체는 학생ID당 1회) */
+  function members(key) {
+    const base = D.students.filter(st => !st.blocked && st.eligibleForExam);
+    if (key === 'all') return base;
+    if (key === 'bitsol') return base.filter(st => st.bitsol);
+    if (key.startsWith('c:')) { const c = key.slice(2); return base.filter(st => st.classNo === c); }
+    return [];
+  }
+  function sortStudents(list) {
+    return list.slice().sort((a, b) => cmpNatural(a.classNo, b.classNo) || cmpNatural(a.studentNo, b.studentNo) || a.studentId.localeCompare(b.studentId));
+  }
+  function group(subject, key) {
+    const ck = subject + '|' + key;
+    if (cache.has(ck)) return cache.get(ck);
+    const S = D.subjects[subject];
+    const mem = sortStudents(members(key));
+    const present = [], absent = [];
+    for (const st of mem) {
+      const rec = D.rec(st.studentId, subject);
+      if (rec && rec.attendanceStatus === '응시' && S.available) present.push({ st, rec });
+      else absent.push({ st, reason: '' });
+    }
+    // 차단된 중복행 학생 사유 보정
+    for (const a of absent) {
+      const rec = D.rec(a.st.studentId, subject);
+      if (rec) a.reason = '미응시(전 문항 응답·정오 공란)';
+      else {
+        const dup = D.issues.some(i => i.category === '학생·과목 중복' && i.level === 'error' && i.studentId === a.st.studentId && i.subject === subject);
+        a.reason = dup ? '학생·과목 중복 행으로 차단' : '입력 행 없음';
+      }
+    }
+    const n = present.length, Q = S.Q;
+    const questions = S.questions.map(q => {
+      const o = { qNo: q.questionNo, type: q.questionType, q, n, correct: 0, wrong: 0, noResp: 0,
+                  dist: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, NR: 0, ETC: 0 },
+                  wdist: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, NR: 0, ETC: 0 },
+                  values: new Map(), wrongIds: [], flagCount: 0 };
+      for (const { st, rec } of present) {
+        const it = rec.items[q.questionNo];
+        if (it.flags.length) o.flagCount++;
+        if (it.correct) o.correct++; else { o.wrong++; o.wrongIds.push(st.studentId); }
+        if (it.key === 'NR') o.noResp++;
+        if (q.questionType === 'objective') {
+          o.dist[it.key]++; if (!it.correct) o.wdist[it.key]++;
+        } else {
+          if (it.key === 'NR' || it.key === 'ETC') { o.dist[it.key]++; if (!it.correct) o.wdist[it.key]++; }
+          else { let v = o.values.get(it.key); if (!v) { v = { value: it.key, o: 0, x: 0 }; o.values.set(it.key, v); } if (it.correct) v.o++; else v.x++; }
+        }
+      }
+      o.rate = n ? o.correct / n * 100 : null;
+      // 최다 오답 선택지 및 오답 선택 집중도 (무응답 제외)
+      let cand = [];
+      if (q.questionType === 'objective') cand = ['1', '2', '3', '4', '5'].map(k => ({ key: k, cnt: o.wdist[k] }));
+      else cand = Array.from(o.values.values()).map(v => ({ key: v.value, cnt: v.x }));
+      cand = cand.filter(c => c.cnt > 0);
+      o.wrongChosen = cand.reduce((s, c) => s + c.cnt, 0);
+      if (o.wrongChosen > 0) {
+        const mx = Math.max(...cand.map(c => c.cnt));
+        o.topWrong = cand.filter(c => c.cnt === mx).map(c => c.key);
+        o.topWrongCount = mx;
+        o.concentration = mx / o.wrongChosen * 100;
+      } else { o.topWrong = []; o.topWrongCount = 0; o.concentration = null; }
+      return o;
+    });
+    const totalCorrect = questions.reduce((s, q) => s + q.correct, 0);
+    const totalNoResp = questions.reduce((s, q) => s + q.noResp, 0);
+    const perStudent = new Map();
+    for (const { st, rec } of present) perStudent.set(st.studentId, { correct: rec.correctCount, wrong: Q - rec.correctCount, rate: Q ? rec.correctCount / Q * 100 : null });
+    const res = { subject, key, label: groupLabel(key), members: mem, present, absent, n, Q, questions,
+                  qByNo: new Map(questions.map(x => [x.qNo, x])), totalCorrect, totalNoResp,
+                  avgRate: n && Q ? totalCorrect / (n * Q) * 100 : null,
+                  noRespRate: n && Q ? totalNoResp / (n * Q) * 100 : null, perStudent };
+    cache.set(ck, res);
+    return res;
+  }
+  /** 정답 추론: 학년 전체 응시자 중 정오 O 학생들의 답안 (객관식·주관식 공통) */
+  function inferAnswers(data) {
+    for (const s of SUBJECTS) {
+      const S = data.subjects[s];
+      if (!S.available) continue;
+      const g = group(s, 'all');
+      for (const qs of g.questions) {
+        const q = qs.q;
+        let oSet = [], mixed = [];
+        if (q.questionType === 'objective') {
+          for (const k of ['1', '2', '3', '4', '5']) {
+            const oc = qs.dist[k] - qs.wdist[k], xc = qs.wdist[k];
+            if (oc > 0) oSet.push({ key: k, cnt: oc });
+            if (oc > 0 && xc > 0) mixed.push({ key: k, o: oc, x: xc });
+          }
+        } else {
+          for (const v of qs.values.values()) { if (v.o > 0) oSet.push({ key: v.value, cnt: v.o }); if (v.o > 0 && v.x > 0) mixed.push({ key: v.value, o: v.o, x: v.x }); }
+        }
+        const nrO = (qs.dist.NR - qs.wdist.NR) + (qs.dist.ETC - qs.wdist.ETC);
+        const disp = k => q.questionType === 'objective' ? CIRCLED[+k] : `'${k}'`;
+        if (g.n === 0) { q.answerValidationStatus = 'noData'; q.answerDetail = '응시자 없음'; }
+        else if (oSet.length === 0) { q.answerValidationStatus = 'unknown'; q.answerDetail = nrO ? '정답(O) 학생의 답안이 모두 NR·빈칸·범위 밖 값' : '정답(O) 처리된 학생이 없어 정답 미확인'; }
+        else if (oSet.length === 1) { q.inferredCorrectAnswer = oSet[0].key; q.answerValidationStatus = mixed.length ? 'mixed' : 'ok'; q.answerDetail = mixed.length ? `같은 답 ${disp(oSet[0].key)}에 O ${mixed[0].o}명·X ${mixed[0].x}명 혼재` : ''; }
+        else { q.inferredCorrectAnswer = null; q.answerValidationStatus = 'conflict'; q.answerDetail = '정답(O) 처리된 답안이 서로 다름: ' + oSet.map(x => `${disp(x.key)} ${x.cnt}명`).join(', '); }
+        const loc = { sheet: '입력', subject: s, qNo: q.questionNo };
+        if (q.answerValidationStatus === 'conflict') data.issues.push(Object.assign({ level: 'warn', category: '정답 충돌', msg: `${s} ${q.questionNo}번: ${q.answerDetail}. 정답 선택지를 표시하지 않습니다(정오 O/X 기준으로는 집계).` }, loc));
+        if (mixed.length) {
+          for (const m of mixed) {
+            const ids = g.present.filter(p => { const it = p.rec.items[q.questionNo]; return it.key === m.key; }).map(p => p.st);
+            const xs = ids.filter(st => !g.present.find(p => p.st === st).rec.items[q.questionNo].correct);
+            data.issues.push(Object.assign({ level: 'warn', category: 'O/X 혼재', msg: `${s} ${q.questionNo}번: 같은 답안 ${disp(m.key)}에 O ${m.o}명, X ${m.x}명이 혼재합니다. X 학생: ${xs.slice(0, 8).map(st => `${classLabel(st.classNo)} ${st.studentNo}번 ${st.studentName}(${st.studentId})`).join(', ')}${xs.length > 8 ? ' 외' : ''}` }, loc));
+          }
+        }
+        if (q.answerValidationStatus === 'unknown' && g.n > 0) data.issues.push(Object.assign({ level: 'info', category: '정답 미확인', msg: `${s} ${q.questionNo}번: ${q.answerDetail}. 히트맵에서 정답 선택지를 표시하지 않습니다.` }, loc));
+      }
+    }
+  }
+  return { reset, group, members, inferAnswers, groupLabel, sortStudents };
+})();
+/* =====================================================================
+   [4] 화면
+   ===================================================================== */
+const $ = sel => document.querySelector(sel);
+const state = {
+  D: null, subject: '국어', view: 'grade', group: null, studentId: null,
+  set: { t0: 30, t1: 50, t2: 70, hi: 70, lo: 30 },
+  heat: 'all', heatInfo: '',
+  gSort: { key: 'q', dir: 1 }, cSort: { key: 'q', dir: 1 },
+  mx: { mode: 'ox', sort: 'cls', qf: 'all', sf: 'all', minWrong: null, wrongQ: null },
+  stu: { cmp: 'all', showBitsol: null, query: '' },
+  vFilter: { level: 'all', cat: 'all' }
+};
+const D = () => state.D;
+function band(rate) {
+  if (rate === null || rate === undefined || !Number.isFinite(rate)) return 'na';
+  const s = state.set; return rate < s.t0 ? 'b0' : rate < s.t1 ? 'b1' : rate < s.t2 ? 'b2' : 'b3';
+}
+const BAR_COLOR = { b0: 'var(--b0-bar)', b1: 'var(--b1-bar)', b2: 'var(--b2-bar)', b3: 'var(--b3-bar)', na: '#ccc' };
+const BAR_HEX = { b0: '#e5534b', b1: '#e0894a', b2: '#d4a72c', b3: '#4fae79', na: '#8a8f96' };
+function rateTd(rate, extra = '') { return `<td class="rate ${band(rate)} ${extra}">${fmtPct(rate)}</td>`; }
+function diffTd(d) { const r = d === null || !Number.isFinite(d) ? null : round1(d); return `<td class="diff ${r > 0 ? 'pos' : r < 0 ? 'neg' : ''}">${fmtDiff(d)}</td>`; }
+function typeLabel(t) { return t === 'objective' ? '객관식' : '주관식'; }
+function keyLabel(k, type) { if (k === 'NR') return '무응답'; if (k === 'ETC') return '기타(범위 외)'; return type === 'objective' ? CIRCLED[+k] : `'${k}'`; }
+function stLabel(st) { return `${classLabel(st.classNo)} ${st.studentNo}번 ${st.studentName}`; }
+function answerHTML(q, plain = false) {
+  const s = q.answerValidationStatus, a = q.inferredCorrectAnswer;
+  const disp = a == null ? '' : (q.questionType === 'objective' ? CIRCLED[+a] : a);
+  if (plain) return s === 'ok' ? disp : s === 'mixed' ? disp + ' (O/X 혼재)' : s === 'conflict' ? '충돌' : '미확인';
+  if (s === 'ok') return esc(disp);
+  if (s === 'mixed') return `${esc(disp)}<span class="flag" title="${esc(q.answerDetail)}">혼재</span>`;
+  if (s === 'conflict') return `<span class="flag err" title="${esc(q.answerDetail)}">충돌</span>`;
+  return `<span class="muted" title="${esc(q.answerDetail)}">미확인</span>`;
+}
+function topWrongText(qs, withCount = true) {
+  if (!qs.topWrong || !qs.topWrong.length) return '–';
+  const t = qs.topWrong.map(k => keyLabel(k, qs.type)).join('·');
+  return withCount ? `${t} ${qs.topWrong.length > 1 ? '각 ' : ''}${qs.topWrongCount}명` : t;
+}
+function concText(qs) { return qs.concentration === null ? '–' : fmtPct(qs.concentration); }
+function hasAnswerMark(q) { return q.answerValidationStatus === 'ok' || q.answerValidationStatus === 'mixed'; }
+
+/* ---------- 상단·내비게이션 ---------- */
+function renderTop() {
+  const d = D();
+  const meta = $('#examMeta');
+  if (!d) { meta.innerHTML = '<span class="muted">엑셀 파일을 불러오면 시험 정보가 표시됩니다.</span>'; }
+  else {
+    const e = d.exam;
+    meta.innerHTML = `<span>학년도 <b>${esc(e.schoolYear ?? '–')}</b></span><span>학년 <b>${esc(e.grade ?? '–')}</b></span><span>시험월 <b>${esc(e.examMonth ?? '–')}월</b></span><span>시험일 <b>${esc(e.examDate ?? '미입력')}</b></span><span class="muted">${esc(d.fileName)}</span>`;
+  }
+  const vb = $('#btnValid');
+  if (!d) { vb.className = 'vbadge'; vb.textContent = '데이터 검증: –'; vb.disabled = true; }
+  else {
+    const ne = d.issues.filter(i => i.level === 'error').length, nw = d.issues.filter(i => i.level === 'warn').length;
+    vb.disabled = false;
+    vb.className = 'vbadge ' + (ne ? 'err' : nw ? 'warn' : 'ok');
+    vb.textContent = ne || nw ? `데이터 검증: 오류 ${ne} · 확인 필요 ${nw}` : '데이터 검증: 정상';
+  }
+  $('#btnPdf').disabled = !d; $('#btnSettings').disabled = !d;
+}
+function renderNav() {
+  const d = D();
+  const nav = $('#navIn');
+  if (!d) { nav.innerHTML = ''; return; }
+  nav.innerHTML = `<div><span class="nav-label">과목</span><div class="seg" role="tablist">${SUBJECTS.map(s => `<button data-act="subject" data-v="${s}" class="${state.subject === s ? 'on' : ''}" ${d.subjects[s].available ? '' : 'disabled title="문항정보 없음"'}>${s}</button>`).join('')}</div></div>
+  <div class="tabs" role="tablist">${[['grade', '학년 전체'], ['class', '학급별'], ['student', '학생별']].map(([v, l]) => `<button role="tab" aria-selected="${state.view === v}" data-act="view" data-v="${v}" class="${state.view === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+}
+function render() {
+  renderTop(); renderNav();
+  const m = $('#main');
+  const d = D();
+  if (!d) { m.innerHTML = emptyHTML(); bindDrop(); return; }
+  const S = d.subjects[state.subject];
+  if (!S.available) { m.innerHTML = `<div class="panel"><h2>${esc(state.subject)}</h2><p>문항정보 시트에 이 과목의 문항이 없어 분석할 수 없습니다.</p></div>`; return; }
+  if (state.view === 'grade') m.innerHTML = viewGrade();
+  else if (state.view === 'class') m.innerHTML = viewClass();
+  else { m.innerHTML = viewStudent(); renderResults(); }
+}
+function emptyHTML() {
+  return `<div class="drop" id="drop">
+    <h2>문항분석 로우데이터 엑셀 파일을 불러오세요</h2>
+    <p class="muted">파일을 이 영역에 끌어다 놓거나 아래 버튼을 누르세요.</p>
+    <label class="btn primary file-btn" style="margin-top:6px">엑셀 파일 선택<input type="file" accept=".xlsx,.xlsm" data-file></label>
+    <div><ul>
+      <li>양식: <b>${esc(LAYOUT_V1.name)}</b> — 시험정보·학생정보·문항정보·입력 4개 시트</li>
+      <li>파일은 이 컴퓨터의 브라우저 안에서만 읽습니다. 외부 서버로 전송하지 않으며 인터넷 연결 없이도 동작합니다.</li>
+      <li>모든 통계는 입력 시트의 학생별 응답·정오(O/X)에서 직접 계산합니다. 엑셀의 자동 계산 열은 사용하지 않습니다.</li>
+      <li>응시 여부는 과목 전 문항의 응답·정오가 모두 빈칸일 때만 미응시로 자동 판정합니다.</li>
+    </ul></div></div>`;
+}
+
+/* ---------- 차트 (SVG) ---------- */
+function rateChartSVG(g, cmp) {
+  const qs = g.questions, n = qs.length;
+  const slot = 22, left = 34, right = 10, top = 12, h = 170, bottom = 30;
+  const W = left + right + slot * n, H = top + h + bottom;
+  const y = v => top + h - (v / 100) * h;
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="문항별 정답률 막대그래프" font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">`;
+  for (const v of [0, 25, 50, 75, 100]) s += `<line class="grid" x1="${left}" x2="${W - right}" y1="${y(v)}" y2="${y(v)}" stroke="#e6e5e0" stroke-width="1"/><text class="ax" x="${left - 5}" y="${y(v) + 3.5}" font-size="10" text-anchor="end" fill="#7a7974">${v}</text>`;
+  for (const [t, c] of [[state.set.t0, '#e5534b'], [state.set.t1, '#e0894a']]) s += `<line x1="${left}" x2="${W - right}" y1="${y(t)}" y2="${y(t)}" stroke="${c}" stroke-width="1" stroke-dasharray="4 3" opacity=".8"/>`;
+  qs.forEach((q, i) => {
+    const x = left + i * slot, bw = slot - 6;
+    const r = q.rate;
+    const tip = `${q.qNo}번(${typeLabel(q.type)}) 정답률 ${fmtPct(r)} — 정답 ${q.correct}명 / 응시 ${q.n}명` + (cmp ? ` · 학년 ${fmtPct(cmp.qByNo.get(q.qNo).rate)}` : '');
+    s += `<g class="bar" data-act="q" data-q="${q.qNo}"><title>${esc(tip)}</title><rect class="hit" x="${x}" y="${top}" width="${slot}" height="${h}" fill="transparent"/>`;
+    if (r !== null) {
+      const bh = Math.max(0, (r / 100) * h);
+      s += `<rect class="b" x="${x + 3}" y="${y(r)}" width="${bw}" height="${bh}" rx="2" fill="${BAR_HEX[band(r)]}"/>`;
+    }
+    if (cmp) { const cr = cmp.qByNo.get(q.qNo).rate; if (cr !== null) s += `<line x1="${x + 1}" x2="${x + slot - 1}" y1="${y(cr)}" y2="${y(cr)}" class="cmp" stroke="#1b1b1a" stroke-width="2"/>`; }
+    s += `<text class="qn${q.type === 'objective' ? '' : ' sa'}" x="${x + slot / 2}" y="${top + h + 13}" font-size="10" text-anchor="middle" fill="${q.type === 'objective' ? '#4d4c48' : '#5b44b0'}">${q.qNo}</text></g>`;
+  });
+  s += `<text class="ax" x="${left}" y="${H - 3}" font-size="10" fill="#7a7974">문항번호 (보라색: 주관식)</text></svg>`;
+  return s;
+}
+function bandLegend(withCmp) {
+  const s = state.set;
+  return `<div class="legend"><span><i style="background:${BAR_HEX.b0}"></i>${s.t0}% 미만</span><span><i style="background:${BAR_HEX.b1}"></i>${s.t0}~${s.t1}%</span><span><i style="background:${BAR_HEX.b2}"></i>${s.t1}~${s.t2}%</span><span><i style="background:${BAR_HEX.b3}"></i>${s.t2}% 이상</span>${withCmp ? '<span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>학년 전체 정답률</span>' : ''}<span class="muted">점선: ${s.t0}%·${s.t1}% 기준선</span></div>`;
+}
+
+/* ---------- 문항별 표 ---------- */
+function sortQs(list, sortState, cmp) {
+  const k = sortState.key, d = sortState.dir;
+  const val = q => k === 'rate' ? q.rate : k === 'conc' ? q.concentration : k === 'diff' ? (cmp ? (q.rate === null || cmp.qByNo.get(q.qNo).rate === null ? null : q.rate - cmp.qByNo.get(q.qNo).rate) : null) : k === 'nr' ? q.noResp : q.qNo;
+  return list.slice().sort((a, b) => {
+    const va = val(a), vb = val(b);
+    if (va === null && vb === null) return a.qNo - b.qNo;
+    if (va === null) return 1; if (vb === null) return -1;
+    return (va - vb) * d || a.qNo - b.qNo;
+  });
+}
+function sortTh(label, key, st, which) {
+  const on = st.key === key; const arrow = on ? (st.dir > 0 ? ' ▲' : ' ▼') : '';
+  return `<th class="sortable" data-act="sort" data-w="${which}" data-k="${key}" title="클릭하여 정렬">${label}${arrow}</th>`;
+}
+function qTableHTML(g, cmp, which) {
+  const st = which === 'g' ? state.gSort : state.cSort;
+  const rows = sortQs(g.questions, st, cmp);
+  return `<div class="tbl-wrap tbl-scroll"><table class="t"><thead><tr>
+    ${sortTh('문항', 'q', st, which)}<th>형태</th><th>정답</th><th>정답자</th><th>오답자</th>${sortTh('무응답', 'nr', st, which)}${sortTh('정답률', 'rate', st, which)}
+    ${cmp ? `<th>학년 정답률</th>${sortTh('학년 대비', 'diff', st, which)}` : ''}
+    <th>최다 오답</th>${sortTh('오답 집중도', 'conc', st, which)}</tr></thead><tbody>
+    ${rows.map(q => {
+      const c = cmp ? cmp.qByNo.get(q.qNo) : null;
+      return `<tr><td><button class="qlink" data-act="q" data-q="${q.qNo}">${q.qNo}</button>${q.flagCount ? `<span class="flag" title="이 문항에 원본 확인이 필요한 응답·정오가 ${q.flagCount}건 있습니다">!</span>` : ''}</td>
+      <td>${typeLabel(q.type)}</td><td>${answerHTML(q.q)}</td><td class="num">${q.correct}</td><td class="num">${q.wrong}</td><td class="num">${q.noResp}</td>${rateTd(q.rate)}
+      ${cmp ? `${rateTd(c.rate)}${diffTd(q.rate === null || c.rate === null ? null : q.rate - c.rate)}` : ''}
+      <td>${esc(topWrongText(q))}</td><td class="num">${concText(q)}</td></tr>`;
+    }).join('')}</tbody></table></div>
+    <p class="small muted" style="margin:6px 0 0">정답률 = 정답자 수 ÷ 실제 응시 인원(${g.n}명) × 100 · 무응답(NR·빈칸)은 오답에 포함 · 오답 집중도 = 최다 오답 선택 인원 ÷ 실제 답을 고른 오답자 수(무응답 제외) × 100</p>`;
+}
+
+/* ---------- 선택지 히트맵 ---------- */
+function heatCols(g) { const hasEtc = g.questions.some(q => q.dist.ETC > 0); return ['1', '2', '3', '4', '5', 'NR'].concat(hasEtc ? ['ETC'] : []); }
+function heatCell(q, k, mode, print) {
+  const cnt = mode === 'all' ? q.dist[k] : q.wdist[k];
+  const den = mode === 'all' ? q.n : q.wrong;
+  const pct = den ? cnt / den * 100 : null;
+  const isC = hasAnswerMark(q.q) && q.q.inferredCorrectAnswer === k;
+  let cls = 'hc', style = '';
+  if (isC) cls += ' correct';
+  else if (k === 'NR' || k === 'ETC') cls += ' nr';
+  else if (pct !== null && cnt > 0) {
+    if (print) { const a = 0.10 + 0.82 * Math.min(1, pct / 55); style = `background:rgba(208,59,59,${a.toFixed(3)});color:${a > 0.52 ? '#fff' : '#5c1111'}`; }
+    else { const a = 0.10 + 0.78 * Math.min(1, pct / 55); style = `background:rgba(229,83,75,${a.toFixed(3)});color:${a > 0.5 ? '#fff' : 'var(--ink)'}`; }
+  }
+  if (cnt === 0 && !isC) cls += ' zero';
+  const label = keyLabel(k, 'objective');
+  const tip = `${q.qNo}번 ${label}${isC ? '(정답)' : ''}: ${cnt}명 / ${mode === 'all' ? '응시' : '오답'} ${den}명 = ${fmtPct(pct)}`;
+  if (print) return `<td class="${cls}" style="${style}">${fmtPctShort(pct)}</td>`;
+  return `<td class="${cls}" style="${style}" title="${esc(tip)}" data-act="hcell" data-q="${q.qNo}" data-k="${k}">${fmtPctShort(pct)}</td>`;
+}
+function heatTableHTML(g, mode, print = false) {
+  const cols = heatCols(g);
+  const head = `<tr><th>문항</th><th>정답</th>${cols.map(k => `<th>${keyLabel(k, 'objective')}</th>`).join('')}<th>${mode === 'all' ? '응시' : '오답자'}</th><th>정답률</th></tr>`;
+  const body = g.questions.map(q => {
+    const qn = print ? `${q.qNo}` : `<button class="qlink" data-act="q" data-q="${q.qNo}">${q.qNo}</button>`;
+    if (q.type !== 'objective') {
+      const vals = Array.from(q.values.values()).sort((a, b) => (b.o + b.x) - (a.o + a.x));
+      const top = q.topWrong.length ? `최빈 오답 ${q.topWrong.map(k => `'${esc(k)}'`).join('·')} ${q.topWrongCount}명` : '오답 답안 없음';
+      return `<tr><td>${qn}</td><td>${answerHTML(q.q, print)}</td><td class="${print ? 'l' : 'sa'}" colspan="${cols.length}">주관식 — 서로 다른 답안 ${vals.length}종 · ${top} · 무응답 ${q.dist.NR}명${print ? '' : ' <span class="muted">(문항번호를 누르면 답안값 분포)</span>'}</td><td class="num">${mode === 'all' ? q.n : q.wrong}</td>${rateTd(q.rate)}</tr>`;
+    }
+    return `<tr><td>${qn}</td><td>${answerHTML(q.q, print)}</td>${cols.map(k => heatCell(q, k, mode, print)).join('')}<td class="num">${mode === 'all' ? q.n : q.wrong}</td>${rateTd(q.rate)}</tr>`;
+  }).join('');
+  return `<table class="${print ? 'hp' : 't heat'}"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+function heatPanel(g) {
+  return `<section class="panel"><div class="panel-h"><h2>선택지별 응답 히트맵<span class="sub">${esc(g.label)} · 응시 ${g.n}명</span></h2>
+    <div class="tools"><div class="seg small"><button data-act="heat" data-v="all" class="${state.heat === 'all' ? 'on' : ''}">전체 응답 비율</button><button data-act="heat" data-v="wrong" class="${state.heat === 'wrong' ? 'on' : ''}">오답자 내 선택 비율</button></div></div></div>
+    <div class="legend" style="margin-bottom:8px"><span><i style="background:var(--ok-bg);box-shadow:inset 0 0 0 2px var(--ok-line)"></i>정답 선택지(정오 O 학생 답안으로 추론)</span><span><i style="background:rgba(229,83,75,.22)"></i><i style="background:rgba(229,83,75,.55)"></i><i style="background:rgba(229,83,75,.88)"></i>오답 선택 비율 높을수록 진함</span><span><i style="background:var(--nr-bg)"></i>무응답(NR·빈칸)</span><span class="muted">정답 미확인·충돌 문항은 정답 표시 안 함 · 셀의 수치는 %</span></div>
+    <div class="tbl-wrap tbl-scroll">${heatTableHTML(g, state.heat)}</div>
+    <div class="heat-info" id="heatInfo">${state.heatInfo || '<span class="muted">셀을 누르면 응답 인원과 분모가 여기에 표시됩니다.</span>'}</div></section>`;
+}
+
+/* ---------- 학년 전체 ---------- */
+function cardsHTML(list) { return `<div class="cards">${list.map(c => `<div class="card"><div class="k">${c.k}</div><div class="v ${c.cls || ''}">${c.v}</div>${c.d ? `<div class="d">${c.d}</div>` : ''}</div>`).join('')}</div>`; }
+function noDataPanel(g) { return `<div class="panel"><h2>${esc(g.label)} · ${esc(g.subject)}</h2><p>이 집단의 ${esc(g.subject)} 실제 응시 인원이 0명이라 분석할 수 없습니다(분석 불가).</p>${absentListHTML(g)}</div>`; }
+function viewGrade() {
+  const d = D(), s = state.subject, S = d.subjects[s], g = ENGINE.group(s, 'all');
+  if (!g.n) return noDataPanel(g);
+  const lt0 = g.questions.filter(q => q.rate < state.set.t0).length, lt1 = g.questions.filter(q => q.rate < state.set.t1).length;
+  let h = cardsHTML([
+    { k: '실제 응시 인원', v: `${g.n}명`, d: `집계대상 ${g.members.length}명 · 미응시 ${g.absent.length}명` },
+    { k: '전체 문항 수', v: `${S.Q}문항`, d: `객관식 ${S.nObj} · 주관식 ${S.nShort}` },
+    { k: '평균 정답률', v: fmtPct(g.avgRate), d: `정답 ${g.totalCorrect}건 ÷ (${g.n}명×${S.Q}문항)` },
+    { k: `정답률 ${state.set.t0}% 미만`, v: `${lt0}문항`, d: `전체 ${S.Q}문항 중` },
+    { k: `정답률 ${state.set.t1}% 미만`, v: `${lt1}문항`, d: `전체 ${S.Q}문항 중` },
+    { k: '무응답률', v: fmtPct(g.noRespRate), d: `무응답 ${g.totalNoResp}건 (NR·빈칸)` }
+  ]);
+  h += `<section class="panel"><div class="panel-h"><h2>문항별 정답률<span class="sub">학년 전체 · 막대를 누르면 문항 상세</span></h2>${bandLegend(false)}</div><div class="chart">${rateChartSVG(g, null)}</div></section>`;
+  h += `<section class="panel"><div class="panel-h"><h2>문항별 정답률 표<span class="sub">머리글을 눌러 정렬</span></h2></div>${qTableHTML(g, null, 'g')}</section>`;
+  h += heatPanel(g);
+  h += classComparePanel(s);
+  return h;
+}
+function classComparePanel(s) {
+  const d = D(), G = ENGINE.group(s, 'all');
+  const keys = d.classes.map(c => 'c:' + c).concat(['bitsol']);
+  return `<section class="panel"><div class="panel-h"><h2>학급·빛솔반 비교<span class="sub">행을 누르면 학급별 분석으로 이동</span></h2></div>
+  <div class="tbl-wrap"><table class="t"><thead><tr><th class="l">집단</th><th>집계대상</th><th>실제 응시</th><th>미응시</th><th>평균 정답률</th><th>학년 대비</th><th>정답률 ${state.set.t0}% 미만 문항</th><th>무응답률</th></tr></thead><tbody>
+  ${keys.map(k => { const g = ENGINE.group(s, k); return `<tr data-act="goclass" data-v="${esc(k)}" style="cursor:pointer"><td class="l"><b>${esc(g.label)}</b></td><td class="num">${g.members.length}</td><td class="num">${g.n}</td><td class="num">${g.absent.length}</td>${rateTd(g.avgRate)}${diffTd(g.avgRate === null || G.avgRate === null ? null : g.avgRate - G.avgRate)}<td class="num">${g.n ? g.questions.filter(q => q.rate < state.set.t0).length : '–'}</td><td class="num">${fmtPct(g.noRespRate)}</td></tr>`; }).join('')}
+  <tr class="foot"><td class="l">학년 전체</td><td class="num">${G.members.length}</td><td class="num">${G.n}</td><td class="num">${G.absent.length}</td>${rateTd(G.avgRate)}<td>–</td><td class="num">${G.questions.filter(q => q.rate < state.set.t0).length}</td><td class="num">${fmtPct(G.noRespRate)}</td></tr>
+  </tbody></table></div><p class="small muted" style="margin:6px 0 0">빛솔반 학생은 원 학급과 빛솔반 모두에 표시되지만, 학년 전체 집계에서는 학생ID 기준으로 한 번만 계산됩니다.</p></section>`;
+}
+
+/* ---------- 학급별 ---------- */
+function viewClass() {
+  const d = D(), s = state.subject;
+  if (!state.group || !(state.group === 'bitsol' || d.classes.includes(state.group.slice(2)))) state.group = d.classes.length ? 'c:' + d.classes[0] : 'bitsol';
+  const key = state.group, g = ENGINE.group(s, key), G = ENGINE.group(s, 'all');
+  let h = `<section class="panel"><div class="panel-h"><h2>학급 선택</h2></div><div class="chips">${d.classes.map(c => `<button class="chip ${key === 'c:' + c ? 'on' : ''}" data-act="group" data-v="c:${esc(c)}">${esc(classLabel(c))}</button>`).join('')}<button class="chip bitsol ${key === 'bitsol' ? 'on' : ''}" data-act="group" data-v="bitsol">빛솔반</button></div></section>`;
+  if (!g.n) return h + noDataPanel(g);
+  const diff = g.avgRate === null || G.avgRate === null ? null : g.avgRate - G.avgRate;
+  h += cardsHTML([
+    { k: `${g.label} 실제 응시 인원`, v: `${g.n}명`, d: `집계대상 ${g.members.length}명 · 미응시 ${g.absent.length}명` },
+    { k: `${g.label} 평균 정답률`, v: fmtPct(g.avgRate), d: `정답 ${g.totalCorrect}건 ÷ (${g.n}명×${g.Q}문항)` },
+    { k: '학년 전체 평균 정답률', v: fmtPct(G.avgRate), d: `학년 응시 ${G.n}명` },
+    { k: '학년 대비 차이', v: fmtDiff(diff), cls: diff > 0 ? 'pos' : diff < 0 ? 'neg' : '', d: '선택 집단 − 학년 전체' },
+    { k: `정답률 ${state.set.t0}% 미만`, v: `${g.questions.filter(q => q.rate < state.set.t0).length}문항`, d: `학년 ${G.questions.filter(q => q.rate < state.set.t0).length}문항` }
+  ]);
+  h += `<section class="panel"><div class="panel-h"><h2>문항별 정답률 비교<span class="sub">${esc(g.label)} 막대 · 학년 전체 가로선</span></h2>${bandLegend(true)}</div><div class="chart">${rateChartSVG(g, G)}</div></section>`;
+  h += `<section class="panel"><div class="panel-h"><h2>문항별 정답률 표<span class="sub">${esc(g.label)} vs 학년 전체</span></h2></div>${qTableHTML(g, G, 'c')}</section>`;
+  h += matrixPanel(g);
+  h += heatPanel(g);
+  return h;
+}
+function absentListHTML(g) {
+  if (!g.absent.length) return '';
+  return `<details class="small" style="margin:8px 0 0" ${g.absent.length <= 10 ? 'open' : ''}><summary style="cursor:pointer"><b>미응시 ${g.absent.length}명</b> (집계대상이지만 이 과목 데이터 없음)</summary><p style="margin:4px 0 0">${g.absent.map(a => `${esc(stLabel(a.st))}(${esc(a.st.studentId)}, ${esc(a.reason)})`).join(', ')}</p></details>`;
+}
+function matrixRows(g) {
+  const m = state.mx;
+  let rows = g.present.slice();
+  const ps = g.perStudent;
+  if (m.sort === 'name') rows.sort((a, b) => a.st.studentName.localeCompare(b.st.studentName, 'ko') || a.st.studentId.localeCompare(b.st.studentId));
+  else if (m.sort === 'cDesc' || m.sort === 'rDesc') rows.sort((a, b) => ps.get(b.st.studentId).correct - ps.get(a.st.studentId).correct || cmpNatural(a.st.classNo, b.st.classNo) || cmpNatural(a.st.studentNo, b.st.studentNo));
+  else if (m.sort === 'cAsc' || m.sort === 'rAsc') rows.sort((a, b) => ps.get(a.st.studentId).correct - ps.get(b.st.studentId).correct || cmpNatural(a.st.classNo, b.st.classNo) || cmpNatural(a.st.studentNo, b.st.studentNo));
+  if (m.sf === 'many') { const k = m.minWrong ?? Math.ceil(g.Q / 2); rows = rows.filter(p => ps.get(p.st.studentId).wrong >= k); }
+  else if (m.sf === 'wrongQ' && m.wrongQ) rows = rows.filter(p => { const it = p.rec.items[m.wrongQ]; return it && !it.correct; });
+  return rows;
+}
+function matrixQs(g) {
+  const m = state.mx, t = { lt2: state.set.t2, lt1: state.set.t1, lt0: state.set.t0 }[m.qf];
+  return t === undefined ? g.questions : g.questions.filter(q => q.rate !== null && q.rate < t);
+}
+function matrixPanel(g) {
+  const m = state.mx;
+  if (m.wrongQ && !g.qByNo.has(m.wrongQ)) m.wrongQ = null;
+  const qs = matrixQs(g), rows = matrixRows(g);
+  const defK = m.minWrong ?? Math.ceil(g.Q / 2);
+  const filtered = m.sf !== 'all' || m.qf !== 'all';
+  let t = `<table class="mx"><thead><tr><th class="stk s1">학급·번호</th><th class="stk s2">이름</th><th class="stk s3">학생ID</th>
+    ${qs.map(q => `<th class="qh" data-act="q" data-q="${q.qNo}" title="${q.qNo}번 정답률 ${fmtPct(q.rate)}">${q.qNo}<span class="qr ${q.type === 'objective' ? '' : 'muted'}">${q.type === 'objective' ? '' : '주'}</span></th>`).join('')}
+    <th>정답 수<br><span class="small muted">/${g.Q}</span></th><th>개인<br>정답률</th></tr></thead><tbody>`;
+  for (const p of rows) {
+    const ps = g.perStudent.get(p.st.studentId);
+    t += `<tr><td class="stk s1">${esc(classLabel(p.st.classNo))} ${esc(p.st.studentNo)}</td><td class="stk s2" title="${esc(p.st.studentName)}${p.st.bitsol ? ' (빛솔반)' : ''}">${esc(p.st.studentName)}</td><td class="stk s3 small">${esc(p.st.studentId)}</td>`;
+    for (const q of qs) {
+      const it = p.rec.items[q.qNo];
+      const nr = it.key === 'NR';
+      const disp = m.mode === 'ox' ? (it.correct ? 'O' : 'X') : respDisplay(it.resp);
+      const short = disp.length > 4 ? disp.slice(0, 4) + '…' : disp;
+      t += `<td class="c ${it.correct ? 'o' : 'x'}${nr ? ' nr' : ''}" data-act="q" data-q="${q.qNo}" title="${esc(p.st.studentName)} ${q.qNo}번 · 응답 ${esc(respDisplay(it.resp))} · ${it.correct ? '정답(O)' : '오답(X)'}${it.flags.length ? ' · 원본 확인 필요' : ''}">${esc(short)}${it.flags.includes('conflict') || it.flags.includes('oxInvalid') || it.flags.includes('respInvalid') ? '<sup>!</sup>' : ''}</td>`;
+    }
+    t += `<td class="sum num">${ps.correct}</td><td class="sum rate ${band(ps.rate)}">${fmtPct(ps.rate)}</td></tr>`;
+  }
+  const cnt = q => rows.reduce((s, p) => s + (p.rec.items[q.qNo].correct ? 1 : 0), 0);
+  const nRows = rows.length;
+  t += `</tbody><tfoot><tr class="foot"><td class="stk s1" colspan="1">문항별</td><td class="stk s2">정답자 수</td><td class="stk s3"></td>${qs.map(q => `<td class="num">${cnt(q)}</td>`).join('')}<td></td><td></td></tr>
+    <tr class="foot"><td class="stk s1"></td><td class="stk s2">오답자 수</td><td class="stk s3"></td>${qs.map(q => `<td class="num">${nRows - cnt(q)}</td>`).join('')}<td></td><td></td></tr>
+    <tr class="foot"><td class="stk s1"></td><td class="stk s2">정답률(%)</td><td class="stk s3"></td>${qs.map(q => { const r = nRows ? cnt(q) / nRows * 100 : null; return `<td class="rate ${band(r)}" title="${fmtPct(r)}">${r === null ? '–' : Math.round(r)}</td>`; }).join('')}<td></td><td></td></tr></tfoot></table>`;
+  return `<section class="panel"><div class="panel-h"><h2>학생별 정오 매트릭스<span class="sub">${esc(g.label)} · ${g.subject} · 응시 ${g.n}명 × ${g.Q}문항</span></h2>
+    <div class="tools">
+      <div class="seg small"><button data-act="mxmode" data-v="ox" class="${m.mode === 'ox' ? 'on' : ''}">O/X 정오</button><button data-act="mxmode" data-v="resp" class="${m.mode === 'resp' ? 'on' : ''}">실제 응답값</button></div>
+      <label>정렬 <select data-ch="mxsort">${[['cls', '학급·번호순'], ['name', '이름순'], ['cDesc', '정답 많은 순'], ['cAsc', '정답 적은 순'], ['rDesc', '개인 정답률 높은 순'], ['rAsc', '개인 정답률 낮은 순']].map(([v, l]) => `<option value="${v}" ${m.sort === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label>문항 <select data-ch="mxqf">${[['all', '전체 문항'], ['lt2', `정답률 ${state.set.t2}% 미만`], ['lt1', `정답률 ${state.set.t1}% 미만`], ['lt0', `정답률 ${state.set.t0}% 미만`]].map(([v, l]) => `<option value="${v}" ${m.qf === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label>학생 <select data-ch="mxsf">${[['all', '전체 학생'], ['many', '오답 문항 수가 많은 학생'], ['wrongQ', '특정 문항을 틀린 학생']].map(([v, l]) => `<option value="${v}" ${m.sf === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      ${m.sf === 'many' ? `<label>오답 <input type="number" min="1" max="${g.Q}" value="${defK}" data-ch="mxk">개 이상</label>` : ''}
+      ${m.sf === 'wrongQ' ? `<label>문항 <select data-ch="mxwq"><option value="">선택</option>${g.questions.map(q => `<option value="${q.qNo}" ${m.wrongQ === q.qNo ? 'selected' : ''}>${q.qNo}번 (${fmtPct(q.rate)})</option>`).join('')}</select></label>` : ''}
+    </div></div>
+    <div class="legend" style="margin-bottom:8px"><span><i style="background:var(--ok-bg)"></i>정답(O)</span><span><i style="background:var(--x-bg)"></i>오답(X)</span><span><i style="background:var(--xnr-bg)"></i>무응답(NR·빈칸 → 오답)</span>${m.mode === 'resp' ? '<span>응답값: ①~⑤ 객관식 · 주관식 원본값 · NR · – (빈칸)</span>' : ''}<span><sup>!</sup> 원본 확인 필요</span><span class="muted">문항번호·셀을 누르면 문항 상세 · 문항 필터 기준은 ${esc(g.label)} 정답률</span></div>
+    ${filtered ? `<p class="small" style="margin:0 0 6px;color:var(--warn)">필터 적용: 학생 ${rows.length}/${g.n}명 · 문항 ${qs.length}/${g.Q}개 표시. 하단 집계는 표시된 학생 기준이며, 정답 수·개인 정답률은 전체 ${g.Q}문항 기준입니다.</p>` : ''}
+    <div class="mx-wrap">${rows.length && qs.length ? t : '<p style="padding:16px">조건에 맞는 학생 또는 문항이 없습니다.</p>'}</div>
+    ${absentListHTML(g)}</section>`;
+}
+
+/* ---------- 학생별 ---------- */
+function viewStudent() {
+  const d = D();
+  let h = `<section class="panel"><div class="panel-h"><h2>학생 검색<span class="sub">이름 또는 학생ID 일부를 입력하세요 (동명이인은 학생ID로 구분)</span></h2></div>
+    <div class="search"><input type="search" id="stuQ" placeholder="예: 홍길동 / 26-001" value="${esc(state.stu.query)}" autocomplete="off" data-in="stuq">
+    ${state.studentId ? '<button class="btn" data-act="clearstu">학생 변경</button>' : ''}</div><div class="results" id="stuResults"></div></section>`;
+  if (state.studentId) h += studentProfile(state.studentId);
+  return h;
+}
+function searchStudents(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return [];
+  return ENGINE.sortStudents(D().students.filter(st => st.studentName.toLowerCase().includes(q) || st.studentId.toLowerCase().includes(q)));
+}
+function renderResults() {
+  const box = $('#stuResults'); if (!box) return;
+  const q = state.stu.query.trim();
+  if (!q) { box.innerHTML = state.studentId ? '' : '<p class="small muted" style="margin:0">검색어를 입력하면 결과가 표시됩니다.</p>'; return; }
+  const res = searchStudents(q);
+  const nameCount = new Map(); for (const st of D().students) nameCount.set(st.studentName, (nameCount.get(st.studentName) || 0) + 1);
+  if (!res.length) { box.innerHTML = '<p class="small muted" style="margin:0">일치하는 학생이 없습니다.</p>'; return; }
+  box.innerHTML = res.slice(0, 60).map(st => `<button class="res" data-act="pickstu" data-v="${esc(st.studentId)}"><b>${esc(st.studentName)}</b> <span class="num">(${esc(st.studentId)})</span> — ${esc(classLabel(st.classNo))} ${esc(st.studentNo)}번
+    ${st.bitsol ? '<span class="tag bitsol">빛솔</span>' : ''}${nameCount.get(st.studentName) > 1 ? '<span class="tag">동명이인</span>' : ''}${st.blocked ? '<span class="tag ex">ID 중복·차단</span>' : !st.eligibleForExam ? '<span class="tag ex">집계 제외</span>' : ''}</button>`).join('') + (res.length > 60 ? `<p class="small muted">상위 60명만 표시(총 ${res.length}명). 검색어를 더 구체적으로 입력하세요.</p>` : '');
+}
+function sameCount(g, qNo, key) {
+  const q = g.qByNo.get(qNo); if (!q) return { all: 0, wrong: 0, wrongTotal: 0 };
+  let all, wrong;
+  if (q.type === 'objective' || key === 'NR' || key === 'ETC') { all = q.dist[key] || 0; wrong = q.wdist[key] || 0; }
+  else { const v = q.values.get(key); all = v ? v.o + v.x : 0; wrong = v ? v.x : 0; }
+  return { all, wrong, wrongTotal: q.wrong, n: q.n };
+}
+function studentProfile(sid) {
+  const d = D(), st = d.students.find(x => x.studentId === sid && (!x.blocked || true));
+  if (!st) return '';
+  const nameDup = d.students.filter(x => x.studentName === st.studentName).length > 1;
+  let h = `<section class="panel"><div class="prof"><span class="nm">${esc(st.studentName)}</span><span>학생ID <b class="num">${esc(st.studentId)}</b></span><span>${esc(classLabel(st.classNo))} ${esc(st.studentNo)}번</span><span>빛솔반 ${st.bitsol ? '<b>소속</b>' : '미소속'}</span>${nameDup ? '<span class="tag">동명이인 있음 — 학생ID로 구분</span>' : ''}<span class="muted small">학적: ${esc(st.enrollmentStatus || '–')} ${esc(st.eligibilityNote || '')}</span></div></section>`;
+  if (st.blocked) return h + '<div class="panel"><p>이 학생ID는 학생정보 시트에 중복 등록되어 분석이 차단되었습니다. 데이터 검증 화면을 확인하세요.</p></div>';
+  if (!st.eligibleForExam) return h + `<div class="panel"><p>시험일(${esc(d.exam.examDate || '–')}) 기준 집계 대상이 아닌 학생입니다(${esc(st.eligibilityNote)}). 통계에서 제외되므로 개인 분석을 제공하지 않습니다.</p></div>`;
+  // 전 과목 요약
+  h += `<section class="panel"><div class="panel-h"><h2>과목별 요약<span class="sub">과목을 누르면 해당 과목 분석으로 전환</span></h2></div><div class="tbl-wrap"><table class="t"><thead><tr><th class="l">과목</th><th>응시</th><th>정답 수</th><th>오답 수</th><th>개인 정답률</th><th>학년 평균</th><th>학급 평균</th>${st.bitsol ? '<th>빛솔반 평균</th>' : ''}</tr></thead><tbody>
+  ${SUBJECTS.filter(s => d.subjects[s].available).map(s => {
+    const G = ENGINE.group(s, 'all'), C = ENGINE.group(s, 'c:' + st.classNo), B = st.bitsol ? ENGINE.group(s, 'bitsol') : null;
+    const ps = G.perStudent.get(sid);
+    return `<tr data-act="subject" data-v="${s}" style="cursor:pointer;${s === state.subject ? 'background:var(--accent-soft)' : ''}"><td class="l"><b>${s}</b></td><td>${ps ? '응시' : '<span class="muted">미응시</span>'}</td><td class="num">${ps ? ps.correct + '/' + G.Q : '–'}</td><td class="num">${ps ? ps.wrong : '–'}</td>${ps ? rateTd(ps.rate) : '<td>–</td>'}${rateTd(G.avgRate)}${rateTd(C.avgRate)}${B ? rateTd(B.avgRate) : ''}</tr>`;
+  }).join('')}</tbody></table></div></section>`;
+  const s = state.subject, G = ENGINE.group(s, 'all'), C = ENGINE.group(s, 'c:' + st.classNo), B = ENGINE.group(s, 'bitsol');
+  const ps = G.perStudent.get(sid);
+  if (!ps) return h + `<div class="panel"><h2>${esc(s)}</h2><p>${esc(s)} 과목 미응시입니다(전 문항 응답·정오 빈칸 또는 입력 행 없음).</p></div>`;
+  const rec = d.rec(sid, s);
+  if (state.stu.showBitsol === null) state.stu.showBitsol = st.bitsol;
+  if (state.stu.cmp === 'bitsol' && !st.bitsol && !state.stu.showBitsol) state.stu.cmp = 'all';
+  const cmpG = state.stu.cmp === 'class' ? C : state.stu.cmp === 'bitsol' ? B : G;
+  const showB = state.stu.showBitsol;
+  h += cardsHTML([
+    { k: `${s} 정답 문항 수`, v: `${ps.correct} / ${G.Q}` },
+    { k: '오답 문항 수', v: `${ps.wrong}` },
+    { k: '개인 정답률', v: fmtPct(ps.rate), d: '정답 문항 수 ÷ 전체 문항 수' },
+    { k: '학년 평균 정답률', v: fmtPct(G.avgRate), d: `${esc(C.label)} ${fmtPct(C.avgRate)}` }
+  ]);
+  const cls = classifyStudent(rec, cmpG);
+  h += `<section class="panel"><div class="panel-h"><h2>개인별 우선 점검 문항</h2><div class="tools">
+    <label>비교 집단 <select data-ch="stucmp"><option value="all" ${state.stu.cmp === 'all' ? 'selected' : ''}>학년 전체</option><option value="class" ${state.stu.cmp === 'class' ? 'selected' : ''}>소속 학급(${esc(C.label)})</option><option value="bitsol" ${state.stu.cmp === 'bitsol' ? 'selected' : ''}>빛솔반</option></select></label>
+    <label>높은 정답률 기준 <input type="number" min="1" max="100" value="${state.set.hi}" data-ch="sethi">%</label><label>낮은 정답률 기준 <input type="number" min="0" max="99" value="${state.set.lo}" data-ch="setlo">%</label></div></div>
+    <div class="cls-list">
+      <div class="cls-box p"><h4>우선 점검 (${cls.p.length})</h4><div class="small muted">개인 오답 · ${esc(cmpG.label)} 정답률 ${state.set.hi}% 이상</div>${cls.p.map(q => `<span class="q" data-act="q" data-q="${q.qNo}">${q.qNo}번 ${fmtPctShort(q.rate)}%</span>`).join('') || '<div class="small">해당 없음</div>'}</div>
+      <div class="cls-box c"><h4>공통 어려움 (${cls.c.length})</h4><div class="small muted">개인 오답 · ${esc(cmpG.label)} 정답률 ${state.set.lo}% 미만</div>${cls.c.map(q => `<span class="q" data-act="q" data-q="${q.qNo}">${q.qNo}번 ${fmtPctShort(q.rate)}%</span>`).join('') || '<div class="small">해당 없음</div>'}</div>
+      <div class="cls-box s"><h4>상대적 강점 (${cls.s.length})</h4><div class="small muted">개인 정답 · ${esc(cmpG.label)} 정답률 ${state.set.lo}% 미만</div>${cls.s.map(q => `<span class="q" data-act="q" data-q="${q.qNo}">${q.qNo}번 ${fmtPctShort(q.rate)}%</span>`).join('') || '<div class="small">해당 없음</div>'}</div>
+    </div><p class="small muted" style="margin:8px 0 0">이 분류는 문항 검토 우선순위를 제시하는 기능이며, 학생의 개념 이해 부족을 확정하지 않습니다.</p></section>`;
+  // 개인 문항분석 표
+  h += `<section class="panel"><div class="panel-h"><h2>개인 문항분석<span class="sub">${esc(s)}</span></h2><div class="tools"><label><input type="checkbox" data-ch="stub" ${showB ? 'checked' : ''}> 빛솔반 정답률 표시</label></div></div>
+  <div class="tbl-wrap tbl-scroll"><table class="t"><thead><tr><th>문항</th><th>형태</th><th>개인 응답</th><th>정오</th><th>정답</th><th>학년 정답률</th><th>${esc(C.label)} 정답률</th>${showB ? '<th>빛솔반 정답률</th>' : ''}<th>학년에서 같은 답</th><th>분류</th></tr></thead><tbody>
+  ${G.questions.map(q => {
+    const it = rec.items[q.qNo];
+    const sc = sameCount(G, q.qNo, it.key);
+    const tag = cls.map.get(q.qNo);
+    return `<tr><td><button class="qlink" data-act="q" data-q="${q.qNo}">${q.qNo}</button></td><td>${typeLabel(q.type)}</td><td><b>${esc(respDisplay(it.resp))}</b></td><td class="oxc ${it.correct ? 'o' : 'x'}">${it.correct ? 'O' : 'X'}${it.flags.length ? '<sup>!</sup>' : ''}</td><td>${answerHTML(q.q)}</td>${rateTd(q.rate)}${rateTd(C.qByNo.get(q.qNo).rate)}${showB ? rateTd(B.qByNo.get(q.qNo).rate) : ''}<td class="num">${sc.all}명</td><td>${tag ? `<span class="tag ${tag === '우선 점검' ? 't-p' : tag === '공통 어려움' ? 't-c' : 't-s'}">${tag}</span>` : ''}</td></tr>`;
+  }).join('')}</tbody></table></div></section>`;
+  // 개인 오답 응답 비교
+  const wrongQs = G.questions.filter(q => !rec.items[q.qNo].correct);
+  h += `<section class="panel"><div class="panel-h"><h2>개인 오답 응답 비교<span class="sub">오답 ${wrongQs.length}문항 · 같은 오답을 고른 학생이 많을수록 집중된 오답</span></h2></div>
+  ${wrongQs.length ? `<div class="tbl-wrap tbl-scroll"><table class="t"><thead><tr><th>문항</th><th>개인 선택 답안</th><th>정답</th><th>학년 동일 답 선택</th><th>학년 오답자 중 비율</th><th>${esc(C.label)} 동일 답 선택</th><th>${esc(C.label)} 오답자 중 비율</th><th>학년 최다 오답</th><th>판단</th></tr></thead><tbody>
+  ${wrongQs.map(q => {
+    const it = rec.items[q.qNo];
+    const a = sameCount(G, q.qNo, it.key), c = sameCount(C, q.qNo, it.key);
+    const pa = a.wrongTotal ? a.wrong / a.wrongTotal * 100 : null, pc = c.wrongTotal ? c.wrong / c.wrongTotal * 100 : null;
+    let judge;
+    if (it.key === 'NR') judge = '무응답';
+    else if (q.topWrong.includes(it.key)) judge = '<b style="color:var(--neg)">학년 최다 오답과 일치</b>';
+    else if (pa !== null && pa < 10) judge = '소수 오답';
+    else judge = '분산 오답';
+    return `<tr><td><button class="qlink" data-act="q" data-q="${q.qNo}">${q.qNo}</button></td><td><b>${esc(respDisplay(it.resp))}</b>${it.key === 'NR' ? ' <span class="muted small">(무응답)</span>' : ''}</td><td>${answerHTML(q.q)}</td><td class="num">${a.all}명 / ${a.n}명</td><td class="num">${fmtPct(pa)}</td><td class="num">${c.all}명 / ${c.n}명</td><td class="num">${fmtPct(pc)}</td><td>${esc(topWrongText(q))}</td><td>${judge}</td></tr>`;
+  }).join('')}</tbody></table></div><p class="small muted" style="margin:6px 0 0">동일 답 선택 = 해당 집단 응시자 중 이 학생과 같은 답(무응답 포함)을 낸 인원(본인 포함) · 오답자 중 비율 = 같은 답을 낸 오답자 ÷ 해당 집단 전체 오답자 × 100</p>` : '<p>오답 문항이 없습니다.</p>'}</section>`;
+  return h;
+}
+function classifyStudent(rec, cmpG) {
+  const p = [], c = [], s = [], map = new Map();
+  for (const q of cmpG.questions) {
+    const it = rec.items[q.qNo]; if (!it || q.rate === null) continue;
+    if (!it.correct && q.rate >= state.set.hi) { p.push(q); map.set(q.qNo, '우선 점검'); }
+    else if (!it.correct && q.rate < state.set.lo) { c.push(q); map.set(q.qNo, '공통 어려움'); }
+    else if (it.correct && q.rate < state.set.lo) { s.push(q); map.set(q.qNo, '상대적 강점'); }
+  }
+  return { p, c, s, map };
+}
+
+/* ---------- 문항 상세 (대화상자) ---------- */
+function openDialog(title, body, wide = true) {
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<div class="dlg-h"><h3>${title}</h3><button class="xbtn" data-act="close" aria-label="닫기">×</button></div><div class="dlg-b">${body}</div>`;
+  dlg.style.maxWidth = wide ? 'min(1100px,96vw)' : 'min(720px,96vw)';
+  if (!dlg.open) dlg.showModal();
+  dlg.querySelector('.dlg-b').scrollTop = 0;
+}
+function currentGroupKey() { return state.view === 'class' ? state.group : state.view === 'student' && state.studentId ? 'c:' + (D().studentById.get(state.studentId)?.classNo ?? '') : 'all'; }
+function qDetailHTML(subject, qNo, key) {
+  const d = D(), g = ENGINE.group(subject, key), qs = g.qByNo.get(qNo), q = qs.q;
+  let h = cardsHTML([
+    { k: '응시자 수', v: `${qs.n}명` }, { k: '정답자 수', v: `${qs.correct}명` }, { k: '오답자 수', v: `${qs.wrong}명`, d: `무응답 ${qs.noResp}명 포함` },
+    { k: '정답률', v: fmtPct(qs.rate) }, { k: '최다 오답', v: esc(topWrongText(qs, false)), d: qs.topWrongCount ? `${qs.topWrongCount}명` : '' },
+    { k: '오답 선택 집중도', v: concText(qs), d: `실제 답을 고른 오답자 ${qs.wrongChosen}명 기준` }
+  ]);
+  h += `<p class="small">정답(정오 O 학생 답안으로 추론): <b>${answerHTML(q)}</b> ${q.answerDetail ? `<span class="muted">— ${esc(q.answerDetail)}</span>` : ''}</p>`;
+  if (q.questionType === 'objective') {
+    const cols = ['1', '2', '3', '4', '5', 'NR'].concat(qs.dist.ETC ? ['ETC'] : []);
+    h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">선택지별 응답 (${esc(g.label)})</h3>${cols.map(k => {
+      const cnt = qs.dist[k], pct = qs.n ? cnt / qs.n * 100 : 0, wp = qs.wrong ? qs.wdist[k] / qs.wrong * 100 : null;
+      const isC = hasAnswerMark(q) && q.inferredCorrectAnswer === k;
+      const col = isC ? 'var(--good)' : k === 'NR' || k === 'ETC' ? 'var(--ink-3)' : 'var(--bad)';
+      return `<div class="dist-row"><div><b>${keyLabel(k, 'objective')}</b>${isC ? ' <span class="tag t-ok">정답</span>' : ''}</div><div class="track"><div class="fill" style="width:${pct.toFixed(2)}%;background:${col}"></div></div><div class="num small">${cnt}명 · 전체 ${fmtPct(pct)}${!isC ? ` · 오답자 중 ${fmtPct(wp)}` : ''}</div></div>`;
+    }).join('')}<p class="small muted" style="margin:6px 0 0">①~⑤·무응답 합계 = ${cols.reduce((s, k) => s + qs.dist[k], 0)}명 (응시 ${qs.n}명)</p></div>`;
+  } else {
+    const vals = Array.from(qs.values.values()).sort((a, b) => (b.o + b.x) - (a.o + a.x) || a.value.localeCompare(b.value));
+    h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">주관식 답안값별 빈도 (${esc(g.label)})</h3><div class="tbl-wrap"><table class="t"><thead><tr><th class="l">답안값(원본)</th><th>정답(O)</th><th>오답(X)</th><th>합계</th><th>전체 대비</th><th>오답자 중</th></tr></thead><tbody>
+    ${vals.map(v => `<tr><td class="l"><b>'${esc(v.value)}'</b>${v.o && v.x ? '<span class="flag">O/X 혼재</span>' : ''}</td><td class="num">${v.o}</td><td class="num">${v.x}</td><td class="num">${v.o + v.x}</td><td class="num">${fmtPct(qs.n ? (v.o + v.x) / qs.n * 100 : null)}</td><td class="num">${fmtPct(qs.wrong ? v.x / qs.wrong * 100 : null)}</td></tr>`).join('')}
+    <tr><td class="l">무응답(NR·빈칸)</td><td class="num">${qs.dist.NR - qs.wdist.NR}</td><td class="num">${qs.wdist.NR}</td><td class="num">${qs.dist.NR}</td><td class="num">${fmtPct(qs.n ? qs.dist.NR / qs.n * 100 : null)}</td><td class="num">${fmtPct(qs.wrong ? qs.wdist.NR / qs.wrong * 100 : null)}</td></tr>
+    </tbody></table></div><p class="small muted" style="margin:6px 0 0">답안값은 앞뒤 공백만 제거하고 원본 표현을 보존합니다('012'와 '12'는 다른 답안).</p></div>`;
+  }
+  // 집단별 비교
+  const keys = ['all'].concat(d.classes.map(c => 'c:' + c), ['bitsol']);
+  h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">집단별 비교</h3><div class="tbl-wrap"><table class="t"><thead><tr><th class="l">집단</th><th>응시</th><th>정답자</th><th>정답률</th><th>학년 대비</th><th>최다 오답</th><th>오답 집중도</th><th>무응답</th></tr></thead><tbody>
+  ${keys.map(k => { const gg = ENGINE.group(subject, k), x = gg.qByNo.get(qNo), A = ENGINE.group(subject, 'all').qByNo.get(qNo); return `<tr style="${k === key ? 'background:var(--accent-soft)' : ''}"><td class="l"><b>${esc(gg.label)}</b></td><td class="num">${x.n}</td><td class="num">${x.correct}</td>${rateTd(x.rate)}${k === 'all' ? '<td>–</td>' : diffTd(x.rate === null || A.rate === null ? null : x.rate - A.rate)}<td>${esc(topWrongText(x))}</td><td class="num">${concText(x)}</td><td class="num">${x.noResp}</td></tr>`; }).join('')}
+  </tbody></table></div></div>`;
+  // 오답 학생 목록
+  const wr = g.present.filter(p => !p.rec.items[qNo].correct);
+  h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">이 문항을 틀린 학생 (${esc(g.label)} ${wr.length}명)</h3>${wr.length ? `<div class="tbl-wrap" style="max-height:340px"><table class="t"><thead><tr><th>학급</th><th>번호</th><th class="l">이름</th><th>학생ID</th><th>선택 답안</th></tr></thead><tbody>${wr.map(p => { const it = p.rec.items[qNo]; return `<tr><td>${esc(classLabel(p.st.classNo))}</td><td>${esc(p.st.studentNo)}</td><td class="l">${esc(p.st.studentName)}${p.st.bitsol ? '<span class="tag bitsol">빛솔</span>' : ''}</td><td class="num">${esc(p.st.studentId)}</td><td><b>${esc(respDisplay(it.resp))}</b>${it.key === 'NR' ? ' <span class="muted small">무응답</span>' : ''}</td></tr>`; }).join('')}</tbody></table></div>` : '<p class="small">오답 학생이 없습니다.</p>'}</div>`;
+  return h;
+}
+function openQ(qNo) {
+  const s = state.subject, key = currentGroupKey() || 'all';
+  const g = ENGINE.group(s, key);
+  if (!g.qByNo.has(qNo)) return;
+  const q = g.qByNo.get(qNo);
+  openDialog(`${esc(s)} ${qNo}번 문항 상세 · ${typeLabel(q.type)} · ${esc(g.label)}`, qDetailHTML(s, qNo, key));
+}
+
+/* ---------- 데이터 검증 화면 ---------- */
+function validationHTML() {
+  const d = D();
+  const lvName = { error: '오류', warn: '확인 필요', info: '정보' };
+  const cnt = l => d.issues.filter(i => i.level === l).length;
+  const cats = Array.from(new Set(d.issues.map(i => i.category)));
+  const f = state.vFilter;
+  const list = d.issues.filter(i => (f.level === 'all' || i.level === f.level) && (f.cat === 'all' || i.category === f.cat));
+  const rx = d.rowExclusions;
+  const excl = [
+    ['학적 기준 집계 제외 학생', d.students.filter(s => !s.blocked && !s.eligibleForExam).map(s => `${stLabel(s)}(${s.studentId}) — ${s.eligibilityNote}`)],
+    ['학생ID 중복으로 차단된 학생', d.students.filter(s => s.blocked).map(s => `${stLabel(s)}(${s.studentId})`)],
+    ['집계 제외 학생의 응답 데이터 행', rx.ineligible.map(r => r + '행')],
+    ['학생정보에 없는 ID의 입력 행', rx.unknownId.map(r => r + '행')],
+    ['과목명 오류 입력 행', rx.badSubject.map(r => r + '행')],
+    ['학생·과목 중복으로 차단된 입력 행', rx.dupRow.map(r => r + '행')],
+    ['중복 학생ID의 입력 행', rx.blockedId.map(r => r + '행')],
+    ['학생ID 누락 입력 행', rx.missingId.map(r => r + '행')],
+    ['분석 대상이 아닌 과목(한국사) 행', rx.ignoredSubject.map(r => r + '행')]
+  ].filter(x => x[1].length);
+  let h = cardsHTML([{ k: '오류', v: cnt('error'), d: '정상 분석이 불가능하거나 데이터가 차단됨' }, { k: '확인 필요', v: cnt('warn'), d: '분석은 했으나 원본 확인 필요' }, { k: '정보', v: cnt('info'), d: '부분 공란 보정 등 처리 기록' }, { k: '등록 학생', v: d.students.length, d: `집계대상 ${d.students.filter(s => !s.blocked && s.eligibleForExam).length}명` }]);
+  h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">과목별 집계 현황 (원본 응답·정오에서 직접 계산)</h3><div class="tbl-wrap"><table class="t"><thead><tr><th class="l">과목</th><th>문항 수</th><th>객관식</th><th>주관식</th><th>집계대상</th><th>실제 응시</th><th>미응시</th><th>빛솔반 응시</th><th>정답 미확인</th><th>정답 충돌</th><th>O/X 혼재</th></tr></thead><tbody>
+  ${SUBJECTS.map(s => { const S = d.subjects[s]; if (!S.available) return `<tr><td class="l">${s}</td><td colspan="10" class="l">문항정보 없음 — 분석 불가</td></tr>`; const g = ENGINE.group(s, 'all'), b = ENGINE.group(s, 'bitsol'); const st = k => S.questions.filter(q => q.answerValidationStatus === k).map(q => q.questionNo); const lst = a => a.length ? a.join(', ') : '0'; return `<tr><td class="l"><b>${s}</b></td><td class="num">${S.Q}</td><td class="num">${S.nObj}</td><td class="num">${S.nShort}</td><td class="num">${g.members.length}</td><td class="num">${g.n}</td><td class="num">${g.absent.length}</td><td class="num">${b.n}</td><td>${lst(st('unknown'))}</td><td>${lst(st('conflict'))}</td><td>${lst(st('mixed'))}</td></tr>`; }).join('')}
+  </tbody></table></div></div>`;
+  if (excl.length) h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:8px">분석에서 제외된 데이터</h3>${excl.map(([t, a]) => `<p class="small" style="margin:4px 0"><b>${t} ${a.length}건</b>: ${esc(a.slice(0, 40).join(', '))}${a.length > 40 ? ' …' : ''}</p>`).join('')}</div>`;
+  h += `<div class="panel"><div class="panel-h"><h3 style="font-size:14px">검증 상세 (${list.length}건)</h3><div class="tools">
+    <div class="seg small">${[['all', '전체'], ['error', '오류'], ['warn', '확인 필요'], ['info', '정보']].map(([v, l]) => `<button data-act="vlevel" data-v="${v}" class="${f.level === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <label>분류 <select data-ch="vcat"><option value="all">전체</option>${cats.map(c => `<option ${f.cat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label></div></div>
+    ${list.length ? `<div class="tbl-wrap" style="max-height:420px"><table class="t"><thead><tr><th>구분</th><th>분류</th><th>시트</th><th>셀</th><th>학생ID</th><th>이름</th><th>과목</th><th>문항</th><th class="l">내용</th></tr></thead><tbody>
+    ${list.slice(0, 1000).map(i => { const st = i.studentId ? (i.nameOverride ? { studentName: i.nameOverride } : d.studentById.get(i.studentId)) : null; return `<tr><td><span class="lv ${i.level}">${lvName[i.level]}</span></td><td>${esc(i.category)}</td><td>${esc(i.sheet || '')}</td><td class="num">${esc(i.cell || '')}</td><td class="num">${esc(i.studentId || '')}</td><td>${esc(st ? st.studentName : '')}</td><td>${esc(i.subject || '')}</td><td class="num">${esc(i.qNo || '')}</td><td class="l" style="white-space:normal;min-width:320px">${esc(i.msg)}</td></tr>`; }).join('')}</tbody></table></div>${list.length > 1000 ? '<p class="small muted">상위 1,000건만 표시합니다.</p>' : ''}` : '<p class="small">해당 항목이 없습니다.</p>'}</div>`;
+  h += `<div class="panel"><h3 style="font-size:14px;margin-bottom:6px">처리 규칙</h3><ul class="small" style="margin:0;padding-left:18px">
+    <li>집계 대상: 재학 / 전입(변동일 ≤ 시험일) / 전출·자퇴·휴학(변동일 &gt; 시험일). 변동일 누락 시 엑셀 양식과 같은 기준으로 판정하고 '확인 필요'로 표시합니다.</li>
+    <li>응시 판정: 과목 전 문항의 응답·정오가 모두 빈칸이면 미응시, 그 외(NR 1개 포함)는 응시입니다.</li>
+    <li>정오 판정: O=정답, X=오답, 정오 빈칸=오답(응답이 있으면 '정오 빈칸 보정' 기록). NR·빈칸 응답은 무응답이며 오답입니다.</li>
+    <li>충돌(NR·빈칸인데 O, 같은 답에 O/X 혼재, O 답안이 서로 다름)은 임의로 고치지 않고 <b>정오(O/X) 원본 기준으로 집계</b>하며 '확인 필요'로 표시합니다. 정답 충돌 문항은 히트맵에 정답을 표시하지 않습니다.</li>
+    <li>학생ID 중복: 해당 ID의 데이터 전체를 차단합니다. 학생·과목 중복 행: 데이터가 있는 행이 1개면 그 행만 사용, 2개 이상이면 차단합니다.</li>
+    <li>응답 정규화: 객관식 1~5(숫자·문자·①~⑤ 동일 처리), NR은 대소문자·앞뒤 공백 무시. 주관식은 앞뒤 공백만 제거하고 원본 표현 보존('001'·'01'·'1' 구분).</li>
+  </ul></div>`;
+  return h;
+}
+function openValidation() { openDialog('데이터 검증 결과', validationHTML()); }
+
+/* ---------- 기준 설정 ---------- */
+function openSettings() {
+  const s = state.set;
+  openDialog('분석 기준 설정', `<div class="form-grid">
+    <label>정답률 구간 기준</label><div class="opts"><label>매우 낮음 &lt; <input type="number" id="sT0" min="1" max="98" value="${s.t0}" style="width:64px">%</label><label>낮음 &lt; <input type="number" id="sT1" min="2" max="99" value="${s.t1}" style="width:64px">%</label><label>보통 &lt; <input type="number" id="sT2" min="3" max="100" value="${s.t2}" style="width:64px">%</label></div>
+    <span></span><div class="small muted">통계 카드·셀 색상·막대 색·정오 매트릭스 문항 필터에 사용합니다. (기본 30 / 50 / 70)</div>
+    <label>개인 점검 기준</label><div class="opts"><label>우선 점검: 비교 집단 정답률 ≥ <input type="number" id="sHi" min="1" max="100" value="${s.hi}" style="width:64px">%</label><label>공통 어려움·상대적 강점: &lt; <input type="number" id="sLo" min="0" max="99" value="${s.lo}" style="width:64px">%</label></div>
+    <span></span><div><button class="btn primary" data-act="saveset">적용</button> <button class="btn" data-act="resetset">기본값</button> <span id="setErr" class="small" style="color:var(--neg)"></span></div></div>`, false);
+}
+
+/* ---------- 파일 로딩 ---------- */
+async function handleFile(file) {
+  if (!file) return;
+  const m = $('#main');
+  m.innerHTML = `<div class="loading">「${esc(file.name)}」 읽는 중…</div>`;
+  try {
+    const buf = await file.arrayBuffer();
+    const t0 = performance.now();
+    const data = await loadWorkbook(buf, file.name);
+    data.loadMs = Math.round(performance.now() - t0);
+    state.D = data;
+    state.studentId = null; state.group = null; state.stu.query = ''; state.heatInfo = ''; state.stu.showBitsol = null;
+    state.mx.wrongQ = null;
+    if (!data.subjects[state.subject].available) state.subject = SUBJECTS.find(s => data.subjects[s].available) || SUBJECTS[0];
+    render();
+    if (data.issues.some(i => i.level === 'error')) openValidation();
+  } catch (err) {
+    console.error(err);
+    state.D = null; render();
+    $('#main').insertAdjacentHTML('afterbegin', `<div class="panel err-panel"><h2>파일을 분석할 수 없습니다</h2><pre style="white-space:pre-wrap;font-family:inherit;margin:8px 0 0">${esc(err.message || String(err))}</pre></div>`);
+  }
+}
+function bindDrop() {
+  const z = $('#drop'); if (!z) return;
+  ['dragenter', 'dragover'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.remove('drag'); }));
+  z.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  const act = a.dataset.act, v = a.dataset.v;
+  switch (act) {
+    case 'subject': state.subject = v; state.heatInfo = ''; state.mx.wrongQ = null; render(); break;
+    case 'view': state.view = v; state.heatInfo = ''; render(); window.scrollTo(0, 0); if (v === 'student') setTimeout(() => $('#stuQ')?.focus(), 0); break;
+    case 'group': state.group = v; state.heatInfo = ''; state.mx.wrongQ = null; render(); break;
+    case 'goclass': state.view = 'class'; state.group = v; render(); window.scrollTo(0, 0); break;
+    case 'heat': state.heat = v; state.heatInfo = ''; render(); break;
+    case 'q': { const dlg = $('#dlg'); openQ(+a.dataset.q); break; }
+    case 'hcell': {
+      const g = ENGINE.group(state.subject, currentGroupKey() || 'all'), q = g.qByNo.get(+a.dataset.q), k = a.dataset.k;
+      const isC = hasAnswerMark(q.q) && q.q.inferredCorrectAnswer === k;
+      state.heatInfo = `<b>${q.qNo}번 ${keyLabel(k, 'objective')}${isC ? ' (정답)' : ''}</b> — 선택 ${q.dist[k]}명 / 응시 ${q.n}명 = <b>${fmtPct(q.n ? q.dist[k] / q.n * 100 : null)}</b>` + (isC ? '' : ` · 오답자 ${q.wrong}명 중 ${q.wdist[k]}명 = <b>${fmtPct(q.wrong ? q.wdist[k] / q.wrong * 100 : null)}</b>`) + ` · <button class="qlink" data-act="q" data-q="${q.qNo}">문항 상세 보기</button>`;
+      const box = $('#heatInfo'); if (box) box.innerHTML = state.heatInfo; break;
+    }
+    case 'sort': { const st = a.dataset.w === 'g' ? state.gSort : state.cSort; const k = a.dataset.k; if (st.key === k) st.dir = -st.dir; else { st.key = k; st.dir = k === 'q' ? 1 : (k === 'conc' ? -1 : 1); } render(); break; }
+    case 'mxmode': state.mx.mode = v; render(); break;
+    case 'pickstu': state.studentId = v; state.stu.showBitsol = null; state.stu.cmp = 'all'; render(); setTimeout(() => document.querySelector('.prof')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0); break;
+    case 'clearstu': state.studentId = null; render(); setTimeout(() => $('#stuQ')?.focus(), 0); break;
+    case 'close': $('#dlg').close(); break;
+    case 'vlevel': state.vFilter.level = v; openValidation(); break;
+    case 'saveset': {
+      const n = id => Number($(id).value);
+      const t0 = n('#sT0'), t1 = n('#sT1'), t2 = n('#sT2'), hi = n('#sHi'), lo = n('#sLo');
+      if (![t0, t1, t2, hi, lo].every(Number.isFinite) || !(0 < t0 && t0 < t1 && t1 < t2 && t2 <= 100)) { $('#setErr').textContent = '구간 기준은 0 < 매우 낮음 < 낮음 < 보통 ≤ 100 이어야 합니다.'; return; }
+      if (!(0 <= lo && lo < hi && hi <= 100)) { $('#setErr').textContent = '개인 점검 기준은 낮은 기준 < 높은 기준 이어야 합니다.'; return; }
+      Object.assign(state.set, { t0, t1, t2, hi, lo }); $('#dlg').close(); render(); break;
+    }
+    case 'resetset': Object.assign(state.set, { t0: 30, t1: 50, t2: 70, hi: 70, lo: 30 }); $('#dlg').close(); render(); break;
+    case 'openvalid': openValidation(); break;
+    case 'opensettings': openSettings(); break;
+    case 'openpdf': openPdfDialog(); break;
+    case 'doprint': doPrint(); break;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('input[type=file][data-file]')) { handleFile(t.files[0]); t.value = ''; return; }
+  if (t.dataset.pdf) { onPdfChange(t); return; }
+  const ch = t.dataset.ch; if (!ch) return;
+  const m = state.mx;
+  switch (ch) {
+    case 'mxsort': m.sort = t.value; render(); break;
+    case 'mxqf': m.qf = t.value; render(); break;
+    case 'mxsf': m.sf = t.value; if (m.sf === 'wrongQ' && !m.wrongQ) { const g = ENGINE.group(state.subject, state.group); const low = g.questions.slice().filter(q => q.rate !== null).sort((a, b) => a.rate - b.rate)[0]; m.wrongQ = low ? low.qNo : null; } render(); break;
+    case 'mxk': m.minWrong = Math.max(1, parseInt(t.value, 10) || 1); render(); break;
+    case 'mxwq': m.wrongQ = t.value ? +t.value : null; render(); break;
+    case 'stucmp': state.stu.cmp = t.value; if (t.value === 'bitsol') state.stu.showBitsol = true; render(); break;
+    case 'stub': state.stu.showBitsol = t.checked; render(); break;
+    case 'sethi': { const v = Number(t.value); if (Number.isFinite(v) && v > state.set.lo && v <= 100) state.set.hi = v; render(); break; }
+    case 'setlo': { const v = Number(t.value); if (Number.isFinite(v) && v >= 0 && v < state.set.hi) state.set.lo = v; render(); break; }
+    case 'vcat': state.vFilter.cat = t.value; openValidation(); break;
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.dataset.in === 'stuq') { state.stu.query = e.target.value; renderResults(); }
+});
+/* =====================================================================
+   [5] PDF 보고서 (브라우저 인쇄 → 'PDF로 저장')
+   - 화면과 동일한 ENGINE.group() 결과와 동일한 서식 함수(fmtPct 등)를 사용
+   ===================================================================== */
+const PDF_ITEMS = [
+  ['basic', '기본 현황', ['grade', 'class', 'bitsol', 'student']],
+  ['rates', '문항별 정답률', ['grade', 'class', 'bitsol']],
+  ['heat', '문항별 응답 히트맵', ['grade', 'class', 'bitsol']],
+  ['focus', '오답 집중 문항', ['grade', 'class', 'bitsol']],
+  ['compare', '집단별 비교', ['grade', 'class', 'bitsol']],
+  ['matrix', '학생별 정오 매트릭스', ['class', 'bitsol']],
+  ['student', '학생 개인별 문항분석', ['student']]
+];
+function pdfNeedsPrivacy(P) { return (P.target === 'student') || (P.items.matrix && (P.target === 'class' || P.target === 'bitsol')); }
+function openPdfDialog() {
+  const d = D();
+  if (!state.pdf) {
+    state.pdf = { target: 'grade', cls: d.classes[0] || '', stu: '', subj: state.subject, orient: 'portrait', mxMode: 'ox', heatMode: 'all', privacy: false,
+                  items: { basic: true, rates: true, heat: true, focus: true, compare: true, matrix: true, student: true } };
+  }
+  const P = state.pdf;
+  P.subj = state.subject; P.privacy = false; P.heatMode = state.heat; P.mxMode = state.mx.mode;
+  if (state.view === 'class' && state.group) { if (state.group === 'bitsol') P.target = 'bitsol'; else { P.target = 'class'; P.cls = state.group.slice(2); } }
+  else if (state.view === 'student' && state.studentId) { P.target = 'student'; P.stu = state.studentId; }
+  else P.target = 'grade';
+  renderPdfDialog();
+}
+function renderPdfDialog() {
+  const d = D(), P = state.pdf;
+  const studs = ENGINE.sortStudents(d.students.filter(s => !s.blocked && s.eligibleForExam));
+  if (!P.stu && studs.length) P.stu = studs[0].studentId;
+  const needP = pdfNeedsPrivacy(P);
+  const body = `<div class="form-grid">
+    <label>출력 대상</label><div class="opts">
+      ${[['grade', '학년 전체'], ['class', '특정 학급'], ['bitsol', '빛솔반'], ['student', '학생 개인']].map(([v, l]) => `<label><input type="radio" name="pT" value="${v}" data-pdf="target" ${P.target === v ? 'checked' : ''}> ${l}</label>`).join('')}
+    </div>
+    ${P.target === 'class' ? `<label>학급</label><div class="opts"><select data-pdf="cls">${d.classes.map(c => `<option value="${esc(c)}" ${P.cls === c ? 'selected' : ''}>${esc(classLabel(c))}</option>`).join('')}</select></div>` : ''}
+    ${P.target === 'student' ? `<label>학생</label><div class="opts"><select data-pdf="stu" style="max-width:100%">${studs.map(s => `<option value="${esc(s.studentId)}" ${P.stu === s.studentId ? 'selected' : ''}>${esc(classLabel(s.classNo))} ${esc(s.studentNo)}번 ${esc(s.studentName)} (${esc(s.studentId)})</option>`).join('')}</select></div>` : ''}
+    <label>과목</label><div class="opts"><select data-pdf="subj">${SUBJECTS.filter(s => d.subjects[s].available).map(s => `<option ${P.subj === s ? 'selected' : ''}>${s}</option>`).join('')}<option value="ALL" ${P.subj === 'ALL' ? 'selected' : ''}>전체 과목(과목별 순서대로)</option></select></div>
+    <label>본문 용지 방향</label><div class="opts"><label><input type="radio" name="pO" value="portrait" data-pdf="orient" ${P.orient === 'portrait' ? 'checked' : ''}> A4 세로</label><label><input type="radio" name="pO" value="landscape" data-pdf="orient" ${P.orient === 'landscape' ? 'checked' : ''}> A4 가로</label><span class="small muted">정오 매트릭스는 항상 A4 가로 페이지로 출력</span></div>
+    <label>포함 항목</label><div class="opts">${PDF_ITEMS.map(([k, l, ok]) => { const en = ok.includes(P.target); return `<label class="${en ? '' : 'dis'}"><input type="checkbox" data-pdf="item" data-k="${k}" ${P.items[k] && en ? 'checked' : ''} ${en ? '' : 'disabled'}> ${l}</label>`; }).join('')}</div>
+    <label>표시 방식</label><div class="opts"><label>히트맵 <select data-pdf="heatMode"><option value="all" ${P.heatMode === 'all' ? 'selected' : ''}>전체 응답 비율</option><option value="wrong" ${P.heatMode === 'wrong' ? 'selected' : ''}>오답자 내 선택 비율</option></select></label><label>매트릭스 <select data-pdf="mxMode"><option value="ox" ${P.mxMode === 'ox' ? 'selected' : ''}>O/X 정오</option><option value="resp" ${P.mxMode === 'resp' ? 'selected' : ''}>실제 응답값</option></select></label></div>
+    <label>분석 기준</label><div class="small">정답률 구간 ${state.set.t0}% / ${state.set.t1}% / ${state.set.t2}% · 개인 점검 ${state.set.hi}% 이상·${state.set.lo}% 미만 (기준 설정에서 변경)</div>
+    ${needP ? `<label style="color:var(--bad)">개인정보 확인</label><div class="note danger"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" data-pdf="privacy" ${P.privacy ? 'checked' : ''}> <span>이 보고서에는 학생 이름·학생ID가 포함됩니다. 교내 교수·학습 지도 목적으로만 사용하고 외부에 공유하지 않겠습니다.</span></label></div>` : ''}
+    <span></span><div><button class="btn primary" data-act="doprint" ${needP && !P.privacy ? 'disabled' : ''}>인쇄 / PDF로 저장</button>
+      <div class="small muted" style="margin-top:6px">인쇄 창에서 대상(프린터)을 <b>'PDF로 저장'</b>으로 선택하면 PDF 파일이 됩니다. '배경 그래픽' 옵션을 켜면 색상이 정확히 출력됩니다. 페이지 번호는 보고서 하단에 자동 표시됩니다(Chrome·Edge 131 이상).</div></div>
+  </div>`;
+  openDialog('PDF 보고서 출력', body, false);
+}
+function onPdfChange(t) {
+  const P = state.pdf; if (!P) return;
+  const k = t.dataset.pdf; if (!k) return;
+  if (k === 'item') P.items[t.dataset.k] = t.checked;
+  else if (k === 'privacy') P.privacy = t.checked;
+  else { P[k] = t.value; if (k === 'target') P.privacy = false; }
+  renderPdfDialog();
+}
+/* 본문 용지 방향 + 정오 매트릭스용 가로 페이지(이름 있는 페이지는 뒤에 다시 선언해야 우선 적용됨) */
+function pageCss(orient) { return `@page{size:A4 ${orient === 'landscape' ? 'landscape' : 'portrait'}} @page wide{size:A4 landscape}`; }
+function doPrint() {
+  const P = state.pdf;
+  if (pdfNeedsPrivacy(P) && !P.privacy) return;
+  $('#print-root').innerHTML = buildReport(P);
+  $('#pageStyle').textContent = pageCss(P.orient);
+  $('#dlg').close();
+  setTimeout(() => window.print(), 80);
+}
+
+/* ---------- 보고서 본문 ---------- */
+function rpHeader(title, sub) {
+  const d = D(), e = d.exam, now = new Date();
+  const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return `<div class="hdr-band"><div><h1>${esc(title)}</h1><div>${esc(sub)}</div></div><div class="r">${esc(e.examName)}<br>시험일 ${esc(e.examDate || '미입력')} · 작성 ${ts}<br>원본: ${esc(d.fileName)}</div></div>`;
+}
+function rpCriteria() {
+  const s = state.set;
+  return `<div class="crit"><b>분석 기준</b><ul style="margin:1mm 0 0;padding-left:5mm">
+    <li>집계 대상: 시험일 기준 재적 학생(재학, 시험일 이전·당일 전입, 시험일 이후 전출·자퇴·휴학). 학년 전체는 학생ID 기준 1회 집계(빛솔반 중복 없음).</li>
+    <li>실제 응시: 집계 대상 중 해당 과목의 응답·정오 데이터가 있는 학생(전 문항 응답·정오가 모두 빈칸이면 미응시). 모든 정답률의 분모.</li>
+    <li>문항 정답률 = 정답자 ÷ 실제 응시 × 100 · 평균 정답률 = 정답 건수 ÷ (응시 인원 × 문항 수) × 100 · 무응답(NR·빈칸)은 오답.</li>
+    <li>오답 집중도 = 최다 오답 선택 인원 ÷ 실제 답을 고른 오답자(무응답 제외) × 100 · 정답은 정오 O 학생의 답안으로 추론.</li>
+    <li>정답률 구간: 매우 낮음 &lt;${s.t0}%, 낮음 &lt;${s.t1}%, 보통 &lt;${s.t2}%, 그 이상 높음.</li></ul></div>`;
+}
+function rpExclusionNote(g, withNames) {
+  const d = D();
+  const inel = d.students.filter(s => !s.blocked && !s.eligibleForExam);
+  const blocked = d.students.filter(s => s.blocked);
+  const parts = [];
+  if (g.absent.length) parts.push(`미응시 ${g.absent.length}명` + (withNames ? ': ' + g.absent.map(a => `${stLabel(a.st)}(${a.reason})`).join(', ') : ''));
+  if (inel.length) parts.push(`학년 전체 학적 기준 집계 제외 ${inel.length}명`);
+  if (blocked.length) parts.push(`학생ID 중복 차단 ${blocked.length}명`);
+  const ne = d.issues.filter(i => i.level === 'error').length, nw = d.issues.filter(i => i.level === 'warn').length;
+  parts.push(`데이터 검증: 오류 ${ne}건 · 확인 필요 ${nw}건`);
+  return `<p class="small">제외·검증 현황 — ${esc(parts.join(' / '))}</p>`;
+}
+const PRIVACY_LINE = '<div class="warnline">※ 학생 개인정보(이름·학생ID)가 포함된 교내 교수·학습 지도용 자료입니다. 외부 공유·유출에 유의하십시오.</div>';
+function rpQTable(g, cmp) {
+  return `<table><thead><tr><th>문항</th><th>형태</th><th>정답</th><th>정답자</th><th>오답자</th><th>무응답</th><th>정답률</th>${cmp ? '<th>학년 정답률</th><th>학년 대비</th>' : ''}<th>최다 오답</th><th>오답 집중도</th></tr></thead><tbody>
+  ${g.questions.map(q => { const c = cmp ? cmp.qByNo.get(q.qNo) : null; return `<tr><td>${q.qNo}</td><td>${typeLabel(q.type)}</td><td>${esc(answerHTML(q.q, true))}</td><td>${q.correct}</td><td>${q.wrong}</td><td>${q.noResp}</td><td class="rate ${band(q.rate)}">${fmtPct(q.rate)}</td>${cmp ? `<td>${fmtPct(c.rate)}</td><td>${fmtDiff(q.rate === null || c.rate === null ? null : q.rate - c.rate)}</td>` : ''}<td>${esc(topWrongText(q))}</td><td>${concText(q)}</td></tr>`; }).join('')}</tbody></table>`;
+}
+function rpMatrix(g, mode) {
+  const CH = 25;
+  const qs = g.questions, rows = g.present;
+  const chunks = []; for (let i = 0; i < qs.length; i += CH) chunks.push(qs.slice(i, i + CH));
+  return chunks.map((cq, ci) => {
+    const cnt = q => rows.reduce((s, p) => s + (p.rec.items[q.qNo].correct ? 1 : 0), 0);
+    return `<div class="wide ${ci ? 'pb' : ''}"><h3>학생별 정오 매트릭스 — ${esc(g.label)} · ${esc(g.subject)} (${cq[0].qNo}~${cq[cq.length - 1].qNo}번${chunks.length > 1 ? `, ${ci + 1}/${chunks.length}` : ''}) · 응시 ${g.n}명 · ${mode === 'ox' ? 'O/X 정오' : '실제 응답값'}</h3>
+    <table class="pmx"><thead><tr><th>학급·번호</th><th>이름</th><th>학생ID</th>${cq.map(q => `<th>${q.qNo}${q.type === 'objective' ? '' : '<br>주'}</th>`).join('')}<th>정답 수<br>/${g.Q}</th><th>개인<br>정답률</th></tr></thead><tbody>
+    ${rows.map(p => { const ps = g.perStudent.get(p.st.studentId); return `<tr><td class="nm">${esc(classLabel(p.st.classNo))} ${esc(p.st.studentNo)}</td><td class="nm">${esc(p.st.studentName)}</td><td class="nm">${esc(p.st.studentId)}</td>${cq.map(q => { const it = p.rec.items[q.qNo]; const v = mode === 'ox' ? (it.correct ? 'O' : 'X') : respDisplay(it.resp); return `<td class="c ${it.correct ? 'o' : 'x'}">${esc(v.length > 5 ? v.slice(0, 5) + '…' : v)}</td>`; }).join('')}<td>${ps.correct}</td><td class="rate ${band(ps.rate)}">${fmtPct(ps.rate)}</td></tr>`; }).join('')}
+    </tbody><tbody><tr class="foot"><td colspan="3">정답자 수</td>${cq.map(q => `<td>${cnt(q)}</td>`).join('')}<td colspan="2"></td></tr>
+    <tr class="foot"><td colspan="3">오답자 수</td>${cq.map(q => `<td>${rows.length - cnt(q)}</td>`).join('')}<td colspan="2"></td></tr>
+    <tr class="foot"><td colspan="3">정답률(%)</td>${cq.map(q => `<td class="rate ${band(q.rate)}">${fmtPctShort(q.rate)}</td>`).join('')}<td colspan="2"></td></tr></tbody></table>
+    <p class="small">O 정답 · X 오답(무응답 포함)${mode === 'resp' ? ' · 응답값: ①~⑤ 객관식, 주관식 원본값, NR 무응답, – 빈칸' : ''} · 하단 정답자 수는 각 문항의 O 개수와 같음</p></div>`;
+  }).join('');
+}
+function reportGroup(s, key, P, first) {
+  const d = D(), g = ENGINE.group(s, key), G = ENGINE.group(s, 'all');
+  const isGrade = key === 'all';
+  const names = P.privacy && pdfNeedsPrivacy(P) && !isGrade;
+  let h = rpHeader('모의고사 문항분석 보고서', `${g.label} · ${s}`);
+  if (names) h += PRIVACY_LINE;
+  if (P.items.basic) {
+    const lt = t => g.n ? g.questions.filter(q => q.rate < t).length : '–';
+    h += `<h2>1. 기본 현황</h2><table class="meta"><tbody>
+      <tr><th>시험</th><td>${esc(d.exam.examName)} (시험일 ${esc(d.exam.examDate || '미입력')})</td><th>분석 대상</th><td>${esc(g.label)} · ${esc(s)}</td></tr>
+      <tr><th>문항 수</th><td>${g.Q}문항 (객관식 ${d.subjects[s].nObj} · 주관식 ${d.subjects[s].nShort})</td><th>집계 대상 / 실제 응시</th><td>${g.members.length}명 / <b>${g.n}명</b> (미응시 ${g.absent.length}명)</td></tr>
+      <tr><th>평균 정답률</th><td><b>${fmtPct(g.avgRate)}</b>${isGrade ? '' : ` (학년 ${fmtPct(G.avgRate)}, ${fmtDiff(g.avgRate === null || G.avgRate === null ? null : g.avgRate - G.avgRate)})`}</td><th>무응답률</th><td>${fmtPct(g.noRespRate)} (${g.totalNoResp}건)</td></tr>
+      <tr><th>정답률 ${state.set.t0}% 미만</th><td>${lt(state.set.t0)}문항</td><th>정답률 ${state.set.t1}% 미만</th><td>${lt(state.set.t1)}문항</td></tr></tbody></table>
+      ${rpCriteria()}${rpExclusionNote(g, names)}`;
+  }
+  if (!g.n) return h + '<p><b>실제 응시 인원이 0명이어서 분석할 수 없습니다(분석 불가).</b></p>';
+  let sec = 2;
+  if (P.items.rates) h += `<h2>${sec++}. 문항별 정답률</h2><div class="chartbox">${rateChartSVG(g, isGrade ? null : G)}</div><p class="small">막대 색: 정답률 구간${isGrade ? '' : ' · 검은 가로선: 학년 전체 정답률'}</p>${rpQTable(g, isGrade ? null : G)}`;
+  if (P.items.heat) h += `<h2 class="${P.items.rates ? 'pb' : ''}">${sec++}. 선택지별 응답 히트맵 (${P.heatMode === 'all' ? '전체 응답 비율, 분모=응시 인원' : '오답자 내 선택 비율, 분모=오답자 수'}, 단위 %)</h2>${heatTableHTML(g, P.heatMode, true)}<p class="small">녹색 테두리: 정답 선택지(정오 O 학생 답안으로 추론) · 붉을수록 오답 선택 비율 높음 · 회색: 무응답 · 정답 미확인·충돌 문항은 정답 표시 안 함</p>`;
+  if (P.items.focus) {
+    const f = g.questions.filter(q => q.rate !== null && q.rate < state.set.t1).sort((a, b) => a.rate - b.rate || a.qNo - b.qNo);
+    h += `<h2>${sec++}. 오답 집중 문항 (정답률 ${state.set.t1}% 미만, 정답률 낮은 순)</h2>${f.length ? `<table><thead><tr><th>문항</th><th>형태</th><th>정답률</th><th>정답</th><th>최다 오답</th><th>오답자 중 비율</th><th>오답 집중도</th><th>무응답</th></tr></thead><tbody>${f.map(q => `<tr><td>${q.qNo}</td><td>${typeLabel(q.type)}</td><td class="rate ${band(q.rate)}">${fmtPct(q.rate)}</td><td>${esc(answerHTML(q.q, true))}</td><td>${esc(topWrongText(q))}</td><td>${fmtPct(q.wrong && q.topWrongCount ? q.topWrongCount / q.wrong * 100 : null)}</td><td>${concText(q)}</td><td>${q.noResp}</td></tr>`).join('')}</tbody></table>` : '<p>해당 문항이 없습니다.</p>'}`;
+  }
+  if (P.items.compare) {
+    h += `<h2>${sec++}. 집단별 비교</h2>`;
+    if (isGrade) {
+      const keys = d.classes.map(c => 'c:' + c).concat(['bitsol']);
+      const gs = keys.map(k => ENGINE.group(s, k));
+      h += `<table><thead><tr><th class="l">집단</th><th>집계대상</th><th>실제 응시</th><th>미응시</th><th>평균 정답률</th><th>학년 대비</th><th>정답률 ${state.set.t0}% 미만 문항</th></tr></thead><tbody>${gs.map(x => `<tr><td class="l">${esc(x.label)}</td><td>${x.members.length}</td><td>${x.n}</td><td>${x.absent.length}</td><td class="rate ${band(x.avgRate)}">${fmtPct(x.avgRate)}</td><td>${fmtDiff(x.avgRate === null || G.avgRate === null ? null : x.avgRate - G.avgRate)}</td><td>${x.n ? x.questions.filter(q => q.rate < state.set.t0).length : '–'}</td></tr>`).join('')}<tr class="foot"><td class="l">학년 전체</td><td>${G.members.length}</td><td>${G.n}</td><td>${G.absent.length}</td><td>${fmtPct(G.avgRate)}</td><td>–</td><td>${G.questions.filter(q => q.rate < state.set.t0).length}</td></tr></tbody></table>
+      <h3>문항별 집단 정답률 (%)</h3><table><thead><tr><th>문항</th><th>학년</th>${gs.map(x => `<th>${esc(x.label)}</th>`).join('')}</tr></thead><tbody>${G.questions.map(q => `<tr><td>${q.qNo}</td><td class="rate ${band(q.rate)}">${fmtPctShort(q.rate)}</td>${gs.map(x => { const r = x.qByNo.get(q.qNo).rate; return `<td class="rate ${band(r)}">${fmtPctShort(r)}</td>`; }).join('')}</tr>`).join('')}</tbody></table><p class="small">빛솔반 학생은 원 학급과 빛솔반 열에 모두 포함되나, 학년 열은 학생ID 기준 1회 집계.</p>`;
+    } else {
+      const df = g.questions.map(q => ({ q, d: q.rate === null || G.qByNo.get(q.qNo).rate === null ? null : q.rate - G.qByNo.get(q.qNo).rate })).filter(x => x.d !== null);
+      const neg = df.slice().sort((a, b) => a.d - b.d).filter(x => x.d < 0).slice(0, 10), pos = df.slice().sort((a, b) => b.d - a.d).filter(x => x.d > 0).slice(0, 10);
+      const tb = (arr) => arr.length ? `<table><thead><tr><th>문항</th><th>${esc(g.label)}</th><th>학년</th><th>차이</th></tr></thead><tbody>${arr.map(x => `<tr><td>${x.q.qNo}</td><td class="rate ${band(x.q.rate)}">${fmtPct(x.q.rate)}</td><td>${fmtPct(G.qByNo.get(x.q.qNo).rate)}</td><td>${fmtDiff(x.d)}</td></tr>`).join('')}</tbody></table>` : '<p class="small">해당 없음</p>';
+      h += `<p>평균 정답률 ${esc(g.label)} <b>${fmtPct(g.avgRate)}</b> / 학년 ${fmtPct(G.avgRate)} (${fmtDiff(g.avgRate === null || G.avgRate === null ? null : g.avgRate - G.avgRate)}) · 학년보다 높은 문항 ${df.filter(x => round1(x.d) > 0).length}개, 낮은 문항 ${df.filter(x => round1(x.d) < 0).length}개</p>
+      <div class="two"><div><h3>학년 대비 정답률이 낮은 문항(최대 10)</h3>${tb(neg)}</div><div><h3>학년 대비 정답률이 높은 문항(최대 10)</h3>${tb(pos)}</div></div>`;
+    }
+  }
+  if (P.items.matrix && !isGrade) h += rpMatrix(g, P.mxMode);
+  return h;
+}
+function reportStudent(s, P) {
+  const d = D(), st = d.studentById.get(P.stu);
+  let h = rpHeader('학생 개인별 문항분석 보고서', `${st ? stLabel(st) : ''} · ${s}`) + PRIVACY_LINE;
+  if (!st) return h + '<p>학생을 찾을 수 없습니다.</p>';
+  const G = ENGINE.group(s, 'all'), C = ENGINE.group(s, 'c:' + st.classNo), B = ENGINE.group(s, 'bitsol');
+  const ps = G.perStudent.get(st.studentId);
+  h += `<table class="meta"><tbody><tr><th>이름</th><td><b>${esc(st.studentName)}</b></td><th>학생ID</th><td>${esc(st.studentId)}</td></tr>
+    <tr><th>학급·번호</th><td>${esc(classLabel(st.classNo))} ${esc(st.studentNo)}번</td><th>빛솔반</th><td>${st.bitsol ? '소속' : '미소속'}</td></tr>
+    <tr><th>시험</th><td>${esc(d.exam.schoolYear)}학년도 ${esc(d.exam.grade)}학년 ${esc(d.exam.examMonth)}월 · ${esc(s)}</td><th>개인 정답률</th><td>${ps ? `<b>${fmtPct(ps.rate)}</b> (${ps.correct}/${G.Q}문항)` : '미응시'}</td></tr>
+    <tr><th>학년 평균 정답률</th><td>${fmtPct(G.avgRate)} (응시 ${G.n}명)</td><th>${esc(C.label)} 평균</th><td>${fmtPct(C.avgRate)} (응시 ${C.n}명)${st.bitsol ? ` · 빛솔반 ${fmtPct(B.avgRate)}` : ''}</td></tr></tbody></table>`;
+  if (!ps) return h + `<p>${esc(s)} 과목 미응시입니다.</p>`;
+  if (!P.items.student) return h;
+  const rec = d.rec(st.studentId, s);
+  const cmpKey = state.stu.cmp === 'class' ? C : state.stu.cmp === 'bitsol' ? B : G;
+  const cls = classifyStudent(rec, cmpKey);
+  const showB = st.bitsol;
+  const lst = arr => arr.length ? arr.map(q => `${q.qNo}번(${fmtPctShort(q.rate)}%)`).join(', ') : '해당 없음';
+  h += `<h2>1. 우선 점검 문항 (비교 집단: ${esc(cmpKey.label)})</h2><table><tbody>
+    <tr><th class="l" style="width:42mm">우선 점검<br><span class="small">개인 오답 · 정답률 ${state.set.hi}% 이상</span></th><td class="l">${lst(cls.p)}</td></tr>
+    <tr><th class="l">공통 어려움<br><span class="small">개인 오답 · 정답률 ${state.set.lo}% 미만</span></th><td class="l">${lst(cls.c)}</td></tr>
+    <tr><th class="l">상대적 강점<br><span class="small">개인 정답 · 정답률 ${state.set.lo}% 미만</span></th><td class="l">${lst(cls.s)}</td></tr></tbody></table>
+    <p class="small">이 분류는 문항 검토 우선순위를 제시하는 기능이며 학생의 개념 이해 부족을 확정하지 않습니다.</p>
+    <h2>2. 문항별 응답과 정오</h2><table><thead><tr><th>문항</th><th>형태</th><th>개인 응답</th><th>정오</th><th>정답</th><th>학년 정답률</th><th>${esc(C.label)} 정답률</th>${showB ? '<th>빛솔반 정답률</th>' : ''}<th>분류</th></tr></thead><tbody>
+    ${G.questions.map(q => { const it = rec.items[q.qNo]; return `<tr><td>${q.qNo}</td><td>${typeLabel(q.type)}</td><td><b>${esc(respDisplay(it.resp))}</b></td><td style="background:${it.correct ? '#dcefdc' : '#f6d3cf'};font-weight:700">${it.correct ? 'O' : 'X'}</td><td>${esc(answerHTML(q.q, true))}</td><td class="rate ${band(q.rate)}">${fmtPct(q.rate)}</td><td>${fmtPct(C.qByNo.get(q.qNo).rate)}</td>${showB ? `<td>${fmtPct(B.qByNo.get(q.qNo).rate)}</td>` : ''}<td>${esc(cls.map.get(q.qNo) || '')}</td></tr>`; }).join('')}</tbody></table>`;
+  const wrongQs = G.questions.filter(q => !rec.items[q.qNo].correct);
+  h += `<h2>3. 오답 응답 비교</h2>${wrongQs.length ? `<table><thead><tr><th>문항</th><th>개인 답</th><th>정답</th><th>학년 동일 답</th><th>학년 오답자 중</th><th>${esc(C.label)} 동일 답</th><th>학년 최다 오답</th></tr></thead><tbody>${wrongQs.map(q => { const it = rec.items[q.qNo]; const a = sameCount(G, q.qNo, it.key), c = sameCount(C, q.qNo, it.key); return `<tr><td>${q.qNo}</td><td>${esc(respDisplay(it.resp))}${it.key === 'NR' ? ' (무응답)' : ''}</td><td>${esc(answerHTML(q.q, true))}</td><td>${a.all}명/${a.n}명</td><td>${fmtPct(a.wrongTotal ? a.wrong / a.wrongTotal * 100 : null)}</td><td>${c.all}명/${c.n}명</td><td>${esc(topWrongText(q))}</td></tr>`; }).join('')}</tbody></table>` : '<p>오답 문항이 없습니다.</p>'}`;
+  return h;
+}
+function buildReport(P) {
+  const d = D();
+  const subs = P.subj === 'ALL' ? SUBJECTS.filter(s => d.subjects[s].available) : [P.subj];
+  const key = P.target === 'grade' ? 'all' : P.target === 'bitsol' ? 'bitsol' : P.target === 'class' ? 'c:' + P.cls : null;
+  return `<div class="rp">${subs.map((s, i) => `<div class="${i ? 'pb' : ''}">${P.target === 'student' ? reportStudent(s, P) : reportGroup(s, key, P)}</div>`).join('')}</div>`;
+}
+
+/* ---------- 시작 ---------- */
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f && !(e.target.closest && e.target.closest('#drop'))) handleFile(f); });
+render();
+/* 테스트·점검용 읽기 전용 접근점 (외부 전송 없음) */
+window.MQA = { version: APP_VERSION, loadWorkbook, ENGINE, state, buildReport, render, pageCss };
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2028 수시 농어촌 전형 탐색기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#f4f6f9; --card:#fff; --ink:#1b2333; --ink2:#4b5568; --mute:#8a93a4; --line:#e3e7ee;
+  --navy:#1f2f4f; --accent:#2f6fde; --accent-soft:#e8f0fd;
+  --solo:#0f7a55; --solo-soft:#e3f5ee; --int:#9a5b00; --int-soft:#fdf1df;
+  --out:#5b3fb3; --out-soft:#efeafc; --in:#20639b; --in-soft:#e5f0f9;
+  --warn:#b42318; --warn-soft:#fdecea;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16.33px;line-height:1.5}
+header{background:var(--navy);color:#fff;padding:22px 24px 18px}
+header h1{margin:0;font-size:26.33px;font-weight:800;letter-spacing:-.3px}
+header p{margin:6px 0 0;color:#c9d3e6;font-size:14.83px}
+.wrap{margin:0 auto;padding:16px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-size:24.33px;font-weight:800;color:var(--navy)}
+.kpi span{font-size:14.83px;color:var(--ink2)}
+details.guide{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:14px}
+details.guide summary{cursor:pointer;padding:12px 16px;font-weight:700;color:var(--navy);list-style:none}
+details.guide summary::-webkit-details-marker{display:none}
+details.guide summary:before{content:"▸ ";color:var(--accent)}
+details.guide[open] summary:before{content:"▾ "}
+.gcols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 16px 16px}
+.g{border:1px solid var(--line);border-radius:8px;padding:12px;background:#fbfcfe}
+.g h3{margin:0 0 6px;font-size:16.33px;color:var(--navy)}
+.g ul{margin:0;padding-left:0;list-style:none}
+.g li{margin:3px 0;font-size:14.83px;color:var(--ink2)}
+.g li:before{content:"• ";color:var(--accent);font-weight:700}
+.g .btn{margin-top:8px}
+.filters{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;position:sticky;top:0;z-index:5}
+.fg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fg>label{font-size:14.33px;font-weight:700;color:var(--ink2);margin-right:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:15.33px;cursor:pointer;color:var(--ink2);font-family:inherit}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+input[type=search]{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:16.33px;min-width:200px}
+.btn{border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:5px 10px;font-size:14.83px;font-weight:700;cursor:pointer;font-family:inherit}
+.count{margin-left:auto;font-size:15.33px;color:var(--ink2)}
+.tbox{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:calc(100vh - 120px)}
+table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+thead th{position:sticky;top:0;background:#eef2f8;color:var(--navy);font-size:15.33px;font-weight:800;text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);z-index:2;cursor:pointer}
+thead th.nosort{cursor:default}
+tbody td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:16.33px}
+tbody tr:hover td{background:#fafcff}
+tbody tr.none td{color:var(--mute);background:#fafafa}
+td.u{font-weight:800;font-size:19.33px}
+td{word-break:keep-all;overflow-wrap:anywhere}
+td .ln{display:block;padding-left:10px;text-indent:-10px}
+td .ln.red{color:var(--warn);font-weight:600}
+td .ln:before{content:"• ";color:#9aa6bb}
+.tag{display:inline-block;border-radius:6px;padding:1px 7px;font-size:13.83px;font-weight:700;white-space:nowrap}
+.t-solo{background:var(--solo-soft);color:var(--solo)}
+.t-int{background:var(--int-soft);color:var(--int)}
+.t-out{background:var(--out-soft);color:var(--out)}
+.t-in{background:var(--in-soft);color:var(--in)}
+.t-q{background:#eef0f3;color:var(--ink2)}
+.t-min{background:var(--warn-soft);color:var(--warn)}
+.t-type{background:#eef2f8;color:var(--navy)}
+.vB{color:var(--mute);font-size:11px;font-weight:700}
+.rg{font-size:14.33px;color:var(--ink2);white-space:nowrap}
+.num{font-weight:800;color:var(--navy);white-space:nowrap}
+footer{max-width:1500px;margin:0 auto;padding:6px 16px 30px;color:var(--ink2);font-size:12.5px}
+footer ul{padding-left:0;list-style:none;margin:6px 0}
+footer li:before{content:"• ";color:var(--accent)}
+@media (max-width:1000px){table{min-width:1100px}.kpis{grid-template-columns:repeat(3,1fr)}.gcols{grid-template-columns:1fr}.filters{position:static}}
+@media print{.filters,details.guide{display:none}.tbox{max-height:none;overflow:visible}header{background:#fff;color:#000}header p{color:#333}thead th{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>2028 수시 농어촌 전형 탐색기 <span style="font-weight:500;font-size:17.33px;color:#c9d3e6">서울 · 경기 · 인천 · 충청권</span></h1>
+  <p>2028학년도 대학별 대학입학전형 시행계획(2026.4. 공표) 원문 기준 · 수시모집 농어촌학생 지원 가능 전형 · 충주대원고 진학전략기획부 · 2026.11.</p>
+</header>
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <details class="guide">
+    <summary>읽는 법과 지도 조언 (펼치기/접기)</summary>
+    <div class="gcols">
+      <div class="g">
+        <h3>① 농어촌 전형은 세 가지 모양</h3>
+        <ul>
+          <li><b>농어촌 단독</b>: 농어촌 학생끼리만 경쟁. 대부분 정원외</li>
+          <li><b>통합형</b>: 기회균형·고른기회 안에 보훈·기초/차상위·한부모 등과 함께 경쟁. 대부분 정원내</li>
+          <li><b>둘 다 운영</b>: 단독 + 통합형에 모두 지원 가능 → 같은 대학에서 기회 2번</li>
+        </ul>
+        <button class="btn" data-preset="dual">둘 다 운영하는 대학만 보기</button>
+      </div>
+      <div class="g">
+        <h3>② 서울 주요대는 통합형이 대세</h3>
+        <ul>
+          <li>서울대·고려대·연세대·서강대·성균관대·한양대·경희대·한국외대·이화여대·건국대·동국대는 수시에서 통합형만 운영</li>
+          <li>농어촌 단독 TO는 정시(수능)로 운영하는 경우가 많음 → 수능 준비 여부가 전형 선택을 가름</li>
+          <li>서울시립대·한국항공대는 수시에 농어촌 지원 경로 없음</li>
+        </ul>
+        <button class="btn" data-preset="seoulint">서울 통합형만 보기</button>
+      </div>
+      <div class="g">
+        <h3>③ 교과형 vs 종합형</h3>
+        <ul>
+          <li>충청·경기 중위권은 대부분 <b>교과100(또는 교과90+출결10)</b> 단독 정원외 → 내신 등급 경쟁</li>
+          <li>서울권·국립대 일부는 <b>서류100 종합형</b> → 세특·탐구 서사가 관건</li>
+          <li>면접 있는 전형: 고려대·연세대·서울대·숭실대·삼육대·가천대(종합)·충남대·교대 등</li>
+        </ul>
+        <button class="btn" data-preset="solo-kyo">단독 + 교과형만 보기</button>
+      </div>
+      <div class="g">
+        <h3>④ 수능최저는 거의 없음</h3>
+        <ul>
+          <li>최저가 붙는 곳은 의·치·한·약·간호 등 일부 모집단위 중심</li>
+          <li>모집단위 전체에 최저가 걸리는 곳은 서울교대(2합8+한국사4)와 건양대 의학과(3합5) 정도</li>
+        </ul>
+        <button class="btn" data-preset="min">최저 있는 전형만 보기</button>
+      </div>
+      <div class="g">
+        <h3>⑤ 지원자격 체크포인트</h3>
+        <ul>
+          <li>6년형: 중·고 6년 농어촌 학교 재학 + 본인·부모 모두 거주</li>
+          <li>12년형: 초·중·고 12년 재학 + 본인 거주</li>
+          <li>공주교대는 원문상 6년형만 인정 / 한성대는 올해 12년형 새로 인정</li>
+          <li>덕성여대는 농어촌을 정원내로 선발(드문 사례)</li>
+          <li>특목고·영재학교·특성화고 재학 이력 제한 대학 다수 → 비고란 확인</li>
+        </ul>
+      </div>
+      <div class="g">
+        <h3>⑥ 우리 지역(충주)에서 가까운 선택지</h3>
+        <ul>
+          <li>국립한국교통대 교과 43명(학생부100) + 실기 3명</li>
+          <li>건국대(글로컬) 교과 30명(의예는 면접·최저)</li>
+          <li>충북대 종합 119명(서류100, 전년 대비 4명 감소)</li>
+          <li>세명대 교과 35명 / 청주대 70명 / 서원대 55명</li>
+        </ul>
+        <button class="btn" data-preset="cb">충북만 보기</button>
+      </div>
+    </div>
+  </details>
+
+  <div class="filters" id="filters">
+    <div class="fg" data-key="r"><label>지역</label></div>
+    <div class="fg" data-key="t"><label>유형</label></div>
+    <div class="fg" data-key="kind"><label>대상</label></div>
+    <div class="fg" data-key="io"><label>정원</label></div>
+    <div class="fg" data-key="min"><label>수능최저</label></div>
+    <div class="fg" data-key="iv"><label>면접</label></div>
+    <input type="search" id="q" placeholder="대학·전형명 검색">
+    <button class="btn" id="reset">초기화</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="tbox">
+    <table>
+      <colgroup><col style="width:3.5%"><col style="width:7%"><col style="width:11%"><col style="width:5%"><col style="width:5%"><col style="width:11%"><col style="width:12%"><col style="width:10%"><col style="width:5.5%"><col style="width:7.5%"><col style="width:6.5%"><col style="width:8%"><col style="width:8%"></colgroup>
+      <thead><tr>
+        <th data-s="r">지역</th><th data-s="u">대학</th><th data-s="n">① 전형명</th><th data-s="io">② 정원</th><th data-s="t">③ 유형</th>
+        <th class="nosort">④ 대상</th><th class="nosort">⑤ 전형방법</th><th class="nosort">⑥ 수능최저</th>
+        <th data-s="c">모집인원</th><th class="nosort">지원자격</th><th class="nosort">면접</th><th class="nosort">2027 대비</th><th class="nosort">비고</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+const ROWS=[{"r": "서울", "u": "서울대", "n": "기회균형특별전형(사회통합)", "io": "정원내", "t": "종합", "tg": ["농어촌", "기초·차상위", "한부모", "보훈", "서해5도", "자립지원 등"], "m": "1단계 서류100(2배수) → 2단계 1단계70+면접30", "mn": "없음", "c": "183", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "미술·음악 일부 모집단위 실기 별도 / 농생명계열 고졸예정자 정원외 4명 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "고려대", "n": "학생부종합(고른기회전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "자립지원"], "m": "1단계 서류100(3배수) → 2단계 1단계80+면접20(제시문)", "mn": "없음", "c": "200", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "고른기회·다문화·재직자 간 복수지원 불가 / 특목고·영재학교 출신 지원불가", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "연세대", "n": "학생부종합[기회균형]", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모"], "m": "1단계 서류100(3배수) → 2단계 서류60+면접40", "mn": "없음", "c": "225", "el": "6년·12년", "iv": "O(2단계)", "ch": "종전과 동일(원문)", "nt": "정원내 220 + 정원외 계약학과 5 / 특성화고·자사고 아닌 특목고 등 재학 사실 있으면 농어촌 지원불가", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "서강대", "n": "학생부종합(기회균형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "장애인", "자립지원", "북한이탈"], "m": "서류100", "mn": "없음", "c": "85", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "성균관대", "n": "학생부종합(서류형)[기회균형]", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "특성화고", "기초·차상위·한부모(이웃사랑)", "장애인"], "m": "서류100", "mn": "없음", "c": "29", "el": "6년·12년", "iv": "X", "ch": "", "nt": "농어촌 단독 전형은 정시(정원외 110명)만", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "한양대", "n": "학생부종합(고른기회)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모"], "m": "서류100", "mn": "없음", "c": "107", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 가·나군 농어촌학생(정원외) 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "중앙대", "n": "학생부종합(기회균형) – 농어촌학생", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "141", "el": "6년·12년", "iv": "X", "ch": "", "nt": "기회균형을 농어촌/기초·차상위/장애인 등으로 나눠 선발 / 서울71·다빈치70", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "경희대", "n": "학생부종합(기회균형전형Ⅰ)", "io": "정원내", "t": "종합", "tg": ["농어촌(서해5도 포함)", "보훈", "기초·차상위", "한부모", "자립지원"], "m": "서류100", "mn": "없음", "c": "165", "el": "6년·12년", "iv": "X", "ch": "", "nt": "서울·국제캠퍼스 합산", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "한국외대", "n": "학생부종합(기회균형전형)", "io": "", "t": "종합", "tg": ["농어촌", "서해5도", "보훈", "기초·차상위", "한부모", "장애인"], "m": "서류100", "mn": "없음", "c": "189", "el": "6년·12년", "iv": "X", "ch": "", "nt": "서울72·글로벌117", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "이화여대", "n": "학생부종합(고른기회전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "북한이탈"], "m": "서류100", "mn": "없음", "c": "164", "el": "6년·12년", "iv": "X", "ch": "", "nt": "농어촌 소재 특목고 재학 시 지원불가", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "건국대", "n": "학생부종합(기회균형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위"], "m": "서류70+학생부(교과정량)30", "mn": "없음", "c": "80", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 수능 농어촌학생(정원외) 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "동국대", "n": "학생부교과(기회균형통합)", "io": "", "t": "교과", "tg": ["농어촌", "보훈", "기초·차상위", "서해5도"], "m": "교과70+서류(종합평가)30", "mn": "없음", "c": "134", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 농어촌학생(가·나·다군) 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "홍익대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과95+출결5", "mn": "없음", "c": "40", "el": "6년·12년", "iv": "X", "ch": "교과100 → 교과95+출결5", "nt": "서울캠퍼스 / 40명은 교과·실기 농어촌 합계(원문) / 고른기회Ⅰ·Ⅱ는 농어촌 대상 아님", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "홍익대", "n": "실기/실적 농어촌학생전형(미술)", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "1단계 교과20+서류80(2배수) → 2단계 1단계40+면접60", "mn": "없음", "c": "(40에 포함)", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "서울캠퍼스 미술계열", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "숙명여대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "63", "el": "6년·12년", "iv": "X", "ch": "전년도 대비 모집인원·전형방법 동일(원문)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "숙명여대", "n": "학생부종합(기회균형전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모 등"], "m": "서류100", "mn": "없음", "c": "55", "el": "6년·12년", "iv": "X", "ch": "모집인원 축소(71→55)", "nt": "농어촌 학생은 정원외 농어촌학생전형과 둘 다 해당", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "서울시립대", "n": "(수시 농어촌 대상 전형 없음)", "io": "—", "t": "—", "tg": [], "m": "—", "mn": "—", "c": "—", "el": "", "iv": "", "ch": "", "nt": "수시 기회균형Ⅰ은 보훈·기초·차상위·한부모·특성화고만 대상. 농어촌은 정시 기회균형Ⅱ(정원외, 수능100) 34명", "none": true, "v": "A", "solo": false}, {"r": "서울", "u": "광운대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "40", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "국민대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "100", "el": "6년·12년", "iv": "X", "ch": "", "nt": "미충원 시 정시 이월", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "덕성여대", "n": "학생부종합(기회균형전형Ⅰ_농어촌학생)", "io": "정원내", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "26", "el": "6년·12년", "iv": "X", "ch": "학생부교과 기회균형 폐지 → 학생부종합으로 이동", "nt": "농어촌을 정원내로 선발하는 드문 사례(원문 명시)", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "동덕여대", "n": "학생부종합[기회균형 특별전형]", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모"], "m": "서류100", "mn": "없음", "c": "12", "el": "6년·12년", "iv": "X", "ch": "전년도 동일(원문)", "nt": "정시 수능 농어촌학생(정원외) 41명 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "명지대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "101", "el": "6년·12년", "iv": "X", "ch": "모집인원 확대(93→101)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "삼육대", "n": "학생부교과 농어촌전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "약학과 - 국·영·수·과탐(1) 3합5", "c": "43", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "서울", "u": "삼육대", "n": "학생부종합(기회균형Ⅰ전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "자립지원", "북한이탈"], "m": "1단계 서류100(4배수) → 2단계 1단계60+면접40", "mn": "없음", "c": "34", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "상명대", "n": "학생부종합(기회균형전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "서해5도", "특성화고", "자립지원"], "m": "서류100", "mn": "없음", "c": "70", "el": "6년·12년", "iv": "X", "ch": "", "nt": "서울캠퍼스 / 정시 수능 농어촌학생전형 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "서경대", "n": "학생부교과(농어촌)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "47", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "서울", "u": "서울과기대", "n": "학생부종합(기회균형전형-농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(3배수) → 2단계 1단계70+면접30", "mn": "없음", "c": "68", "el": "6년·12년", "iv": "O(2단계)", "ch": "모집인원 동일(68)", "nt": "미충원 시 정시 이월", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "서울교대", "n": "학생부종합(농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(2배수) → 2단계 1단계50+면접50", "mn": "전 모집단위 - 국·수·영·탐(1) 중 2합8 + 한국사4", "c": "10", "el": "원문(요약본)에 세부 미기재", "iv": "O(2단계)", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "서울여대", "n": "학생부종합(기회균형전형_농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "63", "el": "원문(주요사항)에 세부 미기재", "iv": "X", "ch": "모집인원 동일(63)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "성공회대", "n": "학생부교과(농어촌학생)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "6", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "성신여대", "n": "학생부종합(기회균형Ⅰ전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "특성화고"], "m": "서류100", "mn": "없음", "c": "110", "el": "6년·12년", "iv": "X", "ch": "", "nt": "농어촌 소재 특성화고·특목고 재학 사실 있으면 지원불가", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "세종대", "n": "학생부종합(기회균형 전형)", "io": "", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "특성화고"], "m": "서류100", "mn": "없음", "c": "99", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 수능 농어촌학생 101명 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "숭실대", "n": "학생부종합(기회균형전형)", "io": "", "t": "종합", "tg": ["농어촌", "보훈", "서해5도", "특성화고", "기초·차상위", "한부모"], "m": "1단계 서류100(3배수) → 2단계 1단계50+면접50", "mn": "없음", "c": "130", "el": "6년·12년", "iv": "O(2단계)", "ch": "모집인원 동일(130)", "nt": "정시 농어촌학생전형(가·나·다군 94명) 별도", "v": "A", "none": false, "solo": false}, {"r": "서울", "u": "한성대", "n": "학생부교과 기회균형(농어촌학생)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "54", "el": "6년·12년", "iv": "X", "ch": "지원자격 확대: 6년만 → 6년+12년", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "서울", "u": "한성대", "n": "실기/실적(농어촌)", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "교과20+실기80", "mn": "없음", "c": "4", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "가천대", "n": "학생부교과 농어촌(교과)전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "한의예과 - 국·수·영·사·과 중 2개 각 1등급", "c": "84", "el": "6년·12년", "iv": "X", "ch": "교과 반영과목 방식 변경(국·수·영 중 5과목, 사·과 중 5과목 미반영)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "가천대", "n": "학생부종합 농어촌(종합)전형", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(4배수) → 2단계 1단계50+면접50", "mn": "없음", "c": "72", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "가톨릭대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "약학과 - 국·수·영·과 중 3합7", "c": "68", "el": "6년·12년", "iv": "X", "ch": "교과100 → 교과90+출결10 / 자유전공학부 선발", "nt": "신학과는 교리문답(합격·불합격 자료) 추가", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "가톨릭대", "n": "학생부종합(기회균형Ⅰ전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "서해5도", "자립지원"], "m": "서류100", "mn": "없음", "c": "96", "el": "6년·12년", "iv": "X", "ch": "", "nt": "기회균형Ⅱ(정원외)는 특성화고 등 대상", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "강남대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "58", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "경기대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "63", "el": "6년·12년", "iv": "X", "ch": "", "nt": "수원 58 / 서울 5", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "경기대", "n": "학생부종합(기회균형선발전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "서해5도", "자립지원", "북한이탈"], "m": "서류100", "mn": "없음", "c": "203", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "단국대(죽전)", "n": "학생부종합[농어촌학생_정원외]", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "51", "el": "6년·12년", "iv": "X", "ch": "", "nt": "죽전+천안 합계 109명 중 죽전 51명 / 기회균형선발·사회적배려대상자 전형은 농어촌 대상 아님", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "대진대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "57", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "대진대", "n": "학생부교과(고른기회전형)", "io": "정원내", "t": "교과", "tg": ["농어촌(정원내)", "보훈", "기초·차상위", "한부모", "장애인", "특성화고"], "m": "교과90+출결10", "mn": "없음", "c": "107", "el": "6년·12년", "iv": "X", "ch": "", "nt": "농어촌 학생은 정원외 농어촌전형과 이중 기회", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "성결대", "n": "학생부교과(농어촌학생)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "23", "el": "6년·12년", "iv": "X", "ch": "", "nt": "23명은 교과·실기 농어촌 합계(원문 총계)", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "성결대", "n": "실기/실적(농어촌학생)", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "체육교육과 교과40+실기60", "mn": "없음", "c": "(23에 포함)", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "수원대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "85", "el": "6년·12년", "iv": "X", "ch": "", "nt": "연기예술학부는 실기(교과30+실기70) / 모집인원은 2차자료", "v": "B", "none": false, "solo": true}, {"r": "경기", "u": "신한대", "n": "학생부교과(농어촌전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "37", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "아주대", "n": "학생부종합(고른기회1전형)", "io": "", "t": "종합", "tg": ["농어촌", "특성화고"], "m": "서류100", "mn": "없음", "c": "95", "el": "6년·12년", "iv": "X", "ch": "", "nt": "고른기회2는 기초·차상위·한부모 등(농어촌 아님) / 정시 농어촌 별도", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "안양대", "n": "학생부교과 농어촌학생 특별전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "30", "el": "6년·12년", "iv": "X", "ch": "", "nt": "전형방법은 원문 확인, 모집인원은 2차자료", "v": "B", "none": false, "solo": true}, {"r": "경기", "u": "용인대", "n": "학생부교과 농어촌학생 특별전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "27", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "경기", "u": "용인대", "n": "실기/실적 농어촌학생 특별전형", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "태권도·미디어디자인·영화영상: 학생부30+전공실기70 / 체육·스포츠레저: 학생부30+기초체력70", "mn": "없음", "c": "14", "el": "6년·12년", "iv": "X", "ch": "전년도와 동일(원문)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "평택대", "n": "학생부교과(농어촌학생)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "17", "el": "6년·12년", "iv": "X", "ch": "모집인원 확대(12→17)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "한경국립대", "n": "학생부교과(농어촌학생)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "49", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "한국공학대", "n": "학생부종합(기회균형)", "io": "", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "자립지원", "북한이탈"], "m": "서류100", "mn": "없음", "c": "58", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 수능 농어촌학생(정원외) 55명 별도", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "한국항공대", "n": "(농어촌 대상 전형 없음)", "io": "—", "t": "—", "tg": [], "m": "—", "mn": "—", "c": "—", "el": "", "iv": "", "ch": "", "nt": "시행계획 원문에 농어촌 관련 전형·지원자격 없음", "v": "A", "none": true, "solo": false}, {"r": "경기", "u": "한세대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "19", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "한세대", "n": "실기 농어촌학생", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "디자인학부 교과30+실기70 / 예술학부 교과20+실기80", "mn": "없음", "c": "3", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "한신대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "22", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "한양대(ERICA)", "n": "학생부종합(고른기회)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "자립지원 등"], "m": "서류100", "mn": "없음", "c": "72", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 가군 농어촌학생(정원외) 별도", "v": "A", "none": false, "solo": false}, {"r": "경기", "u": "협성대", "n": "학생부교과(농어촌학생 특별전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "20", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "경기", "u": "협성대", "n": "학생부교과(기회균형)", "io": "정원내", "t": "교과", "tg": ["농어촌", "보훈", "기초·차상위 등"], "m": "교과100", "mn": "없음", "c": "38", "el": "6년·12년", "iv": "X", "ch": "", "nt": "농어촌 자격은 정원외 농어촌전형과 동일", "v": "B", "none": false, "solo": false}, {"r": "인천", "u": "경인교대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(2.5배수) → 2단계 1단계70+면접30", "mn": "없음", "c": "21", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "중·고교 조기졸업자 지원불가", "v": "A", "none": false, "solo": true}, {"r": "인천", "u": "인천대", "n": "학생부종합(기회균형전형)", "io": "", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "장애인", "서해5도", "특성화고"], "m": "서류100", "mn": "없음", "c": "110", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 농어촌학생(정원외) 별도", "v": "A", "none": false, "solo": false}, {"r": "인천", "u": "인하대", "n": "학생부종합(농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "의예과(1명) - 국·수·영·탐(통합과학) 중 3합5", "c": "139", "el": "6년·12년", "iv": "X", "ch": "의예과 선발 및 수능최저 도입", "nt": "고른기회 전형은 농어촌 대상 아님", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "건국대(글로컬)", "n": "학생부교과 농어촌학생[정원외]", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100 / 의예: 1단계 교과100(10배수) → 2단계 1단계70+면접30", "mn": "간호학과 - 국·수·영·사탐·과탐 중 2합7 / 의예과 - 상위 4개 영역 합7 + 한국사4", "c": "30", "el": "6년·12년", "iv": "의예만", "ch": "", "nt": "최저는 원문 확인, 의예 단계별 방법은 2차자료", "v": "B", "none": false, "solo": true}, {"r": "충북", "u": "국립한국교통대", "n": "학생부교과(농어촌전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "학생부100 / 스포츠의학과 학생부60+실기40", "mn": "없음", "c": "43", "el": "6년·12년", "iv": "X", "ch": "모집인원 축소(44→43)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "국립한국교통대", "n": "실기/실적(농어촌전형)", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "산업디자인·음악 학생부20+실기80 / 스포츠산업 학생부30+실기70", "mn": "없음", "c": "3", "el": "6년·12년", "iv": "X", "ch": "모집인원 확대(2→3)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "서원대", "n": "학생부교과 농어촌전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "55", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "세명대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "한의예과 - 국어·수학(미적분·기하)·영어 3합5", "c": "35", "el": "6년·12년", "iv": "X", "ch": "한의예 최저 변경(탐구 제외, 수학 미적분·기하 지정)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "청주교대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(3배수) → 2단계 1단계60+면접40", "mn": "없음", "c": "7", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "충북", "u": "청주대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "70", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "충북대", "n": "학생부종합(농어촌학생전형)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100(일괄)", "mn": "없음", "c": "119", "el": "6년·12년", "iv": "X", "ch": "모집인원 축소(123→119)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충북", "u": "한국교원대", "n": "학생부종합(농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(3배수) → 2단계 1단계80+면접20", "mn": "없음", "c": "11", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "충남", "u": "건양대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "60", "el": "6년·12년", "iv": "X", "ch": "", "nt": "의학과 제외", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "건양대", "n": "학생부교과 농어촌[면접](의학과)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "1단계 교과70+서류30(5배수) → 2단계 1단계80+면접20", "mn": "의학과 - 국·수·영·과 중 3합5", "c": "2", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "충남", "u": "공주교대", "n": "학생부종합 농어촌학생", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(2배수) → 2단계 서류70+면접30", "mn": "없음", "c": "14", "el": "6년만(원문)", "iv": "O(2단계)", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "국립공주대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "학생부(교과)100", "mn": "없음", "c": "97", "el": "6년·12년", "iv": "X", "ch": "", "nt": "체육계열 일부 모집단위 실기 반영 여부는 모집요강 확인", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "국립공주대", "n": "실기/실적 농어촌학생전형", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "학생부30+실기70", "mn": "없음", "c": "12", "el": "6년·12년", "iv": "X", "ch": "", "nt": "예술대학 해당 모집단위", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "남서울대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "학생부90+비교과(출결)10", "mn": "없음", "c": "48", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "남서울대", "n": "학생부교과 기회균형", "io": "", "t": "교과", "tg": ["농어촌", "기초·차상위", "장애인", "특성화고", "보훈", "서해5도", "자립지원"], "m": "학생부90+비교과(출결)10", "mn": "없음", "c": "62", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": false}, {"r": "충남", "u": "단국대(천안)", "n": "학생부종합[농어촌학생_정원외]", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100 / 의·약학계열: 1단계 서류100(5배수) → 2단계 1단계60+면접40", "mn": "의학계열 - 국·수·영·탐(통합과학) 중 수학 포함 3합4 / 약학계열 - 국·수·영·탐(통합과학) 중 수학 포함 3합5", "c": "58", "el": "6년·12년", "iv": "의·약학만", "ch": "", "nt": "죽전+천안 합계 109명 중 천안 58명 / 폴더의 「단국대학교 천안 기본계획」 파일은 내용상 2027학년도 계획 → 2028 죽전 파일(천안 포함) 기준", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "백석대", "n": "학생부교과 농어촌", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10 / 항공서비스 교과54+출결6+면접40", "mn": "없음", "c": "58", "el": "6년·12년", "iv": "항공서비스만", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "충남", "u": "백석대", "n": "실기 농어촌(특수체육교육과)", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "학생부60+실기40", "mn": "없음", "c": "2", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "상명대(천안)", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "52", "el": "6년·12년", "iv": "X", "ch": "", "nt": "3대 계열 통합선발(간호 별도)", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "상명대(천안)", "n": "학생부종합(기회균형전형)", "io": "정원내", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "서해5도", "특성화고", "자립지원"], "m": "서류100", "mn": "없음", "c": "69", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": false}, {"r": "충남", "u": "선문대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "41", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "순천향대", "n": "학생부교과(농어촌)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "48", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "순천향대", "n": "학생부종합(농어촌)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "4", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "한국기술교육대", "n": "학생부종합 농어촌학생", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "서류100", "mn": "없음", "c": "33", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "충남", "u": "호서대", "n": "학생부교과(농어촌학생전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "70", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "대전", "u": "국립한밭대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "63", "el": "6년·12년", "iv": "X", "ch": "모집인원 확대(62→63)", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "대전", "u": "대전대", "n": "학생부교과 농어촌학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "학생부100", "mn": "없음", "c": "132", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 농어촌은 한의예과만 최저 적용", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "목원대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "23", "el": "6년·12년", "iv": "X", "ch": "", "nt": "사회적배려자전형(교과)에도 농어촌학생 자격 포함", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "목원대", "n": "실기/실적 농어촌학생", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "실기 중심(모집단위별)", "mn": "없음", "c": "21", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "배재대", "n": "학생부교과(농어촌학생 특별전형)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "40", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "우송대", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과90+출결10", "mn": "없음", "c": "55", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "을지대", "n": "학생부교과 농어촌학생(정원외)", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100 / 일부 보건의료계열 교과70+면접30(MMI)", "mn": "의학계열 - 국·수·영·탐(필수) 중 3합6 / 간호·보건과학 - 일부 적용(안경광학·의료경영 제외)", "c": "29", "el": "6년·12년", "iv": "일부", "ch": "", "nt": "", "v": "B", "none": false, "solo": true}, {"r": "대전", "u": "충남대", "n": "학생부종합Ⅲ 고른기회 특별전형(농어촌학생)", "io": "정원외", "t": "종합", "tg": ["농어촌"], "m": "1단계 서류100(3배수) → 2단계 1단계66.7+면접33.3", "mn": "없음", "c": "122", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "", "v": "A", "none": false, "solo": true}, {"r": "대전", "u": "충남대", "n": "학생부교과 기회균형선발Ⅰ", "io": "정원내", "t": "교과", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "서해5도", "자립지원"], "m": "교과100", "mn": "없음", "c": "77", "el": "6년·12년", "iv": "X", "ch": "", "nt": "", "v": "A", "none": false, "solo": false}, {"r": "대전", "u": "한남대", "n": "학생부교과 농어촌(도서·벽지)학생전형", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과100", "mn": "없음", "c": "원문 총계 미확인", "el": "6년·12년", "iv": "X", "ch": "", "nt": "해당 학과만 모집", "v": "A", "none": false, "solo": true}, {"r": "세종", "u": "고려대(세종)", "n": "학생부종합(기회균형전형)", "io": "", "t": "종합", "tg": ["농어촌", "보훈", "기초·차상위", "한부모", "특성화고", "자립지원"], "m": "서류100", "mn": "없음", "c": "24", "el": "6년·12년", "iv": "X", "ch": "", "nt": "정시 농어촌학생전형 52명 별도", "v": "A", "none": false, "solo": false}, {"r": "세종", "u": "홍익대(세종)", "n": "학생부교과 농어촌학생", "io": "정원외", "t": "교과", "tg": ["농어촌"], "m": "교과95+출결5", "mn": "없음", "c": "20", "el": "6년·12년", "iv": "X", "ch": "교과100 → 교과95+출결5", "nt": "세종캠퍼스 / 20명은 교과·실기 농어촌 합계(원문)", "v": "A", "none": false, "solo": true}, {"r": "세종", "u": "홍익대(세종)", "n": "실기/실적 농어촌학생", "io": "정원외", "t": "실기", "tg": ["농어촌"], "m": "1단계 교과20+서류80(2배수) → 2단계 서류·면접", "mn": "없음", "c": "(20에 포함)", "el": "6년·12년", "iv": "O(2단계)", "ch": "", "nt": "미술계열", "v": "A", "none": false, "solo": true}];
+const REG=['서울','경기','인천','충북','충남','대전','세종'];
+const minHas=r=>!r.none && r.mn && !/^없음$/.test(r.mn.trim());
+const ivHas=r=>!r.none && r.iv && r.iv!=='X';
+const kind=r=>r.none?'없음':(r.solo?'단독':'통합형');
+const ioK=r=>r.none?'—':(r.io||'미표기');
+const dualSet=new Set();
+(function(){const m={};ROWS.forEach(r=>{if(r.none)return;m[r.u]=m[r.u]||{s:0,i:0};r.solo?m[r.u].s++:m[r.u].i++;});
+  Object.entries(m).forEach(([u,v])=>{if(v.s&&v.i)dualSet.add(u);});})();
+const F={r:new Set(),t:new Set(),kind:new Set(),io:new Set(),min:new Set(),iv:new Set(),dual:false};
+const OPTS={r:REG,t:['교과','종합','실기'],kind:['단독','통합형'],io:['정원외','정원내','미표기'],min:['없음','있음'],iv:['없음','있음']};
+function chips(){document.querySelectorAll('.fg').forEach(g=>{const k=g.dataset.key;OPTS[k].forEach(v=>{const b=document.createElement('button');b.className='chip';b.textContent=v;b.onclick=()=>{F[k].has(v)?F[k].delete(v):F[k].add(v);b.classList.toggle('on');F.dual=false;render();};g.appendChild(b);});});}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lines=a=>a.filter(x=>x&&String(x).trim()).map(x=>`<span class="ln">${esc(String(x).trim())}</span>`).join('');
+const split=s=>!s?[]:String(s).split(/\s\/\s|\s→\s/);
+const nameCell=n=>{const m=String(n).match(/^(학생부종합Ⅲ|학생부종합|학생부교과|실기\/실적|실기)\s*(.+)$/);return m?`<span class="ln">${esc(m[1])}<br>${esc(m[2])}</span>`:lines([n]);};
+let sortK=null,sortD=1;
+function pass(r){
+  const q=document.getElementById('q').value.trim();
+  if(F.dual && !dualSet.has(r.u))return false;
+  if(F.r.size&&!F.r.has(r.r))return false;
+  if(F.t.size&&!F.t.has(r.t))return false;
+  if(F.kind.size&&!F.kind.has(kind(r)))return false;
+  if(F.io.size&&!F.io.has(ioK(r)))return false;
+  if(F.min.size&&!F.min.has(minHas(r)?'있음':'없음'))return false;
+  if(F.iv.size&&!F.iv.has(ivHas(r)?'있음':'없음'))return false;
+  if(q&&!(r.u+r.n+r.nt+r.tg.join('')).includes(q))return false;
+  if((F.t.size||F.kind.size||F.io.size||F.min.size||F.iv.size)&&r.none)return false;
+  return true;
+}
+function render(){
+  let rs=ROWS.filter(pass);
+  const ord=r=>REG.indexOf(r.r);
+  rs.sort((a,b)=>{ if(sortK){let x=a[sortK],y=b[sortK]; if(sortK==='c'){x=parseInt(x)||0;y=parseInt(y)||0;} if(sortK==='r'){x=ord(a);y=ord(b);} return (x>y?1:x<y?-1:0)*sortD;} return ord(a)-ord(b)||a.u.localeCompare(b.u,'ko'); });
+  const tb=document.getElementById('tb');
+  tb.innerHTML=rs.map(r=>{
+    if(r.none) return `<tr class="none"><td class="rg">${r.r}</td><td class="u">${esc(r.u)}</td><td colspan="11">${lines([r.n,r.nt])}</td></tr>`;
+    const kd=r.solo?`<span class="tag t-solo">농어촌 단독</span>`:`<span class="tag t-int">통합형</span>`;
+    const others=r.tg.filter(x=>!/^농어촌/.test(x));
+    const tgt=r.solo?'':lines([others.join(' · ')]);
+    const io=r.io?`<span class="tag ${r.io==='정원외'?'t-out':'t-in'}">${r.io}</span>`:`<span class="tag t-q">미표기</span>`;
+    let mn; if(!minHas(r)) mn='X'; else { const parts=split(r.mn); const part=parts.some(x=>x.trim()==='없음'||/그 외 없음/.test(x)); const items=parts.filter(x=>x.trim()!=='없음'&&!/그 외 없음/.test(x));  mn=items.map(x=>`<span class="ln${/그 외 없음/.test(x)?'':' red'}">${esc(x)}</span>`).join(''); }
+    return `<tr>
+      <td class="rg">${r.r}</td>
+      <td class="u">${esc(r.u)}</td>
+      <td class="nm">${nameCell(r.n)}</td>
+      <td>${io}</td>
+      <td><span class="tag t-type">${r.t}</span></td>
+      <td>${kd}${tgt}</td>
+      <td>${lines(split(r.m))}</td>
+      <td>${mn}</td>
+      <td class="num">${esc(r.c)}</td>
+      <td class="nw">${lines([r.el])}</td>
+      <td class="nw">${(r.iv==='X'?'X':lines([r.iv]))}</td>
+      <td>${lines(r.ch?r.ch.split(' / '):['원문 별도 표기 없음'])}</td>
+      <td>${lines(split(r.nt))}</td></tr>`;}).join('');
+  const real=rs.filter(r=>!r.none);
+  document.getElementById('count').textContent=`${new Set(rs.map(r=>r.u)).size}개 대학 · ${real.length}개 전형`;
+}
+function kpis(){
+  const real=ROWS.filter(r=>!r.none);
+  const sum=real.reduce((a,r)=>a+(parseInt(r.c)||0),0);
+  const k=[[new Set(ROWS.map(r=>r.u)).size,'검토 대학'],[real.length,'농어촌 지원 가능 수시 전형'],[real.filter(r=>r.solo).length,'농어촌 단독 전형'],[real.filter(r=>!r.solo).length,'통합형(기회균형 등)'],[dualSet.size,'단독+통합 둘 다 운영 대학'],[real.filter(minHas).length,'수능최저 있는 전형(일부 모집단위 포함)']];
+  document.getElementById('kpis').innerHTML=k.map(([b,s])=>`<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+}
+function resetAll(){Object.keys(F).forEach(k=>{if(F[k] instanceof Set)F[k].clear();});F.dual=false;document.getElementById('q').value='';document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));}
+function setChip(k,v){F[k].add(v);document.querySelectorAll(`.fg[data-key="${k}"] .chip`).forEach(c=>{if(c.textContent===v)c.classList.add('on');});}
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{resetAll();const p=b.dataset.preset;
+  if(p==='dual')F.dual=true;
+  if(p==='seoulint'){setChip('r','서울');setChip('kind','통합형');}
+  if(p==='solo-kyo'){setChip('kind','단독');setChip('t','교과');}
+  if(p==='min')setChip('min','있음');
+  if(p==='cb')setChip('r','충북');
+  render();document.getElementById('filters').scrollIntoView({behavior:'smooth'});});
+document.getElementById('reset').onclick=()=>{resetAll();render();};
+document.getElementById('q').oninput=render;
+document.querySelectorAll('th[data-s]').forEach(th=>th.onclick=()=>{const k=th.dataset.s;sortD=(sortK===k)?-sortD:1;sortK=k;render();});
+chips();kpis();render();
+</script>
+</body>
+</html>

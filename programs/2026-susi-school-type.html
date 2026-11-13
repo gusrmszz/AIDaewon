@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 수시전형 서울 주요 대학교 고등학교 유형별 합격 수</title>
+<style>
+  :root{
+    --gen:#2f6fb5;      /* 일반고 */
+    --gen-soft:#e7f0fa;
+    --spc:#e07b28;      /* 특목고·자사고 */
+    --spc-soft:#fdf0e5;
+    --ink:#1f2933;
+    --sub:#5b6875;
+    --line:#d9dee4;
+    --bg:#f6f7f9;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html{font-size:17px}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR",sans-serif;
+    font-size:17px;line-height:1.55;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+  .wrap{width:100%;max-width:1440px;margin:0 auto;padding:28px 20px 48px}
+  h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-0.02em}
+  .head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+  .org{font-size:1.05rem;font-weight:700;color:var(--sub);white-space:nowrap}
+  .lead{color:var(--sub);margin:0 0 22px}
+  h2{font-size:1.2rem;margin:0 0 12px;letter-spacing:-0.01em}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:20px}
+
+  /* 필터 */
+  .filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .filter span{color:var(--sub);margin-right:4px}
+  .filter button{
+    font:inherit;font-size:17px;padding:7px 18px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+  }
+  .filter button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .top-row{display:flex;gap:28px;align-items:flex-start}
+  .top-main{flex:1 1 auto;min-width:0}
+  .filter.vert{flex-direction:column;align-items:stretch;flex-wrap:nowrap;margin:0;min-width:160px;
+    padding:14px;border:1px solid var(--line);border-radius:10px;background:#fafbfc}
+  .filter.vert span{margin:0 0 2px;font-weight:700;color:var(--ink)}
+  .filter.vert button{border-radius:8px;text-align:center}
+  @media (max-width:720px){ .top-row{flex-direction:column;align-items:stretch} .top-main{width:100%} .filter.vert{width:100%} }
+
+  /* 요약 카드 */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 16px 10px;line-height:1.3}
+  .card .k{color:var(--sub);font-size:0.88rem}
+  .card .v{font-size:1.55rem;font-weight:700;letter-spacing:-0.02em;margin:1px 0}
+  .card .p{font-size:0.88rem;color:var(--sub)}
+  .card .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .card.gen{border-top:4px solid var(--gen)}
+  .card.spc{border-top:4px solid var(--spc)}
+  .card.tot{border-top:4px solid var(--ink)}
+
+  /* 범례 */
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin:-4px 0 14px;color:var(--sub)}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+
+  /* 표 */
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:17px}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  thead th{background:#eef1f4;font-weight:700;text-align:center;white-space:nowrap;border-bottom:2px solid #b9c2cc}
+  td.univ{font-weight:700;background:#fafbfc;white-space:nowrap;border-right:1px solid var(--line)}
+  td.r{text-align:right;white-space:nowrap}
+  td.c{text-align:center}
+  td.gen{color:var(--gen);font-weight:600}
+  td.spc{color:var(--spc);font-weight:600}
+  td.tot{font-weight:700}
+  .tag{display:inline-block;font-size:0.82rem;padding:1px 8px;border-radius:6px;margin-right:6px;vertical-align:1px}
+  .tag.k{background:#e6f4ea;color:#1e7a3a}
+  .tag.j{background:#efe9fb;color:#5b3ea8}
+  .ratio{display:flex;align-items:center;gap:10px;min-width:150px}
+  .ratio .bar{flex:0 0 70px;height:10px;background:var(--gen-soft);border-radius:5px;overflow:hidden}
+  .ratio .bar b{display:block;height:100%;background:var(--spc)}
+  .ratio .txt{white-space:normal;word-break:keep-all}
+  tfoot td{font-weight:700;background:#eef1f4;border-top:2px solid #b9c2cc}
+
+  /* 막대 차트 */
+  .chart{display:grid;grid-template-columns:minmax(150px,260px) 1fr;row-gap:7px;column-gap:14px;align-items:center}
+  .chart .lab{text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chart .lab small{color:var(--sub)}
+  .chart .track{display:flex;align-items:center;gap:8px;min-width:0}
+  .chart .stack{display:flex;height:30px;border-radius:5px;overflow:hidden;flex:0 0 auto}
+  .chart .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;font-weight:600;white-space:nowrap;overflow:hidden}
+  .chart .seg.g{background:var(--gen)}
+  .chart .seg.s{background:var(--spc)}
+  .chart .sum{font-weight:700;white-space:nowrap}
+  .chart.pct .sum{flex:0 0 78px;text-align:right}
+  td.type,td.nm{white-space:nowrap}
+  .chart.pct .stack{flex:1 1 auto;height:34px}
+  .chart.pct .seg{font-size:0.92rem}
+
+  /* 소계 표 */
+  table.mini{max-width:760px}
+  table.mini th:first-child, table.mini td:first-child{text-align:left}
+
+  .note{color:var(--sub);font-size:0.95rem;margin:12px 0 0}
+
+  /* 움직임 */
+  [data-k]{transition:width .75s cubic-bezier(.22,.8,.26,1)}
+  @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  #tb tr{animation:rowIn .45s ease both}
+  .chart .lab{animation:rowIn .45s ease both}
+  .chart .sum{animation:fadeIn .5s ease .45s both}
+  .card .v,.card .p{transition:color .3s}
+  .card.pulse{animation:pulse .6s ease}
+  @keyframes pulse{0%{transform:scale(1)}40%{transform:scale(1.025)}100%{transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){
+    [data-k]{transition:none} #tb tr,.chart .lab,.chart .sum,.card.pulse{animation:none}
+  }
+  @media (max-width:720px){
+    .cards{grid-template-columns:1fr}
+    .chart{grid-template-columns:1fr}
+    .chart .lab{text-align:left}
+  }
+  @media print{
+    body{background:#fff}
+    .filter{display:none}
+    section{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>2026 수시전형 서울 주요 대학교 고등학교 유형별 합격 수</h1>
+    <div class="org">충주대원고등학교 진학전략기획부</div>
+  </div>
+  <p class="lead">주요 13개 대학 · 31개 전형 · 일반고와 특목고·자사고 합격 인원 비교</p>
+
+  <section>
+    <h2>고교 유형별 · 전형별 합계</h2>
+    <div class="top-row">
+      <div class="top-main">
+    <div class="tbl-wrap">
+      <table class="mini">
+        <thead><tr><th>고교 유형</th><th>인원율</th><th>교과전형</th><th>종합전형</th><th>총합</th></tr></thead>
+        <tbody id="tb2"></tbody>
+      </table>
+    </div>
+      </div>
+      <div class="filter vert" role="group" aria-label="전형 구분 필터">
+    <span>보기</span>
+    <button type="button" data-f="all" class="on">전체</button>
+    <button type="button" data-f="교과">교과전형</button>
+    <button type="button" data-f="종합">종합전형</button>
+  </div>
+    </div>
+  </section>
+
+
+  <div class="cards">
+    <div class="card tot"><div class="k">합격 인원 합계</div><div class="row"><div class="v num" id="cTot"></div><div class="p num" id="cTotP"></div></div></div>
+    <div class="card gen"><div class="k">일반고</div><div class="row"><div class="v num" id="cGen"></div><div class="p num" id="cGenP"></div></div></div>
+    <div class="card spc"><div class="k">특목고·자사고</div><div class="row"><div class="v num" id="cSpc"></div><div class="p num" id="cSpcP"></div></div></div>
+  </div>
+
+
+
+
+  <section>
+    <h2>대학·전형별 일반고 / 특목고·자사고 합격 인원</h2>
+    <div class="legend"><span><i style="background:var(--gen)"></i>일반고</span><span><i style="background:var(--spc)"></i>특목고·자사고</span></div>
+    <div class="chart" id="ch1"></div>
+  </section>
+
+  <section>
+    <h2>대학별 총 합격 인원 중 일반고 / 특목고·자사고 비율</h2>
+    <div class="legend"><span><i style="background:var(--gen)"></i>일반고</span><span><i style="background:var(--spc)"></i>특목고·자사고</span></div>
+    <div class="chart pct" id="ch2"></div>
+    <p class="note">• 위 ‘보기’ 필터에서 선택한 전형만 대학별로 합산합니다.</p>
+  </section>
+
+  <section>
+    <h2>대학·전형별 합격 인원</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>대학</th><th>전형명</th><th>전형 유형</th>
+            <th>합격 인원</th><th>특목고·자사고</th><th>일반고</th><th>특목고·자사고 비율</th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+        <tfoot id="tf"></tfoot>
+      </table>
+    </div>
+    <p class="note">• 합격 인원 외의 인원·비율은 원본 표기(“약 ○명”, “○% 내외”)를 그대로 옮긴 추정치입니다. 비율 막대는 표의 인원으로 계산한 값입니다.</p>
+  </section>
+</div>
+
+<script>
+// [대학, 전형명, 전형 유형, 합격 인원, 특목고·자사고, 일반고, 비율(원본 표기)]
+const DATA = [
+["서울대","지역균형","학생부종합 (학교장추천)",509,15,494,"3% 내외"],
+["서울대","일반전형","학생부종합 (제시문면접)",1515,954,561,"약 63%"],
+["연세대","추천형","학생부교과",529,16,513,"3% 내외"],
+["연세대","활동우수형","학생부종합 (수능최저)",729,313,416,"약 43%"],
+["연세대","국제형","학생부종합 (국내고)",275,212,63,"약 77%"],
+["고려대","학교추천","학생부교과",651,13,638,"2% 내외"],
+["고려대","학업우수","학생부종합 (높은 수능최저)",871,375,496,"약 43%"],
+["고려대","계열적합","학생부종합 (심층면접)",530,437,93,"약 82.5%"],
+["성균관대","학교장추천","학생부교과",410,12,398,"3% 내외"],
+["성균관대","융합형","학생부종합 (서류100%)",350,112,238,"약 32%"],
+["성균관대","탐구형","학생부종합 (전공세부)",610,415,195,"약 68%"],
+["서강대","지역균형","학생부교과",178,5,173,"3% 내외"],
+["서강대","일반전형","학생부종합 (서류100%)",565,268,297,"약 47.5%"],
+["한양대","추천형(교과)","학생부교과",341,17,324,"약 5%"],
+["한양대","추천형(학종)","학생부종합 (수능최저)",197,74,123,"약 37.5%"],
+["한양대","서류형/면접형","학생부종합 (최저없음)",682,358,324,"약 52.5%"],
+["중앙대","지역균형","학생부교과",500,15,485,"3% 내외"],
+["중앙대","CAU융합형인재","학생부종합 (서류100%)",525,142,383,"약 27%"],
+["중앙대","CAU탐구형인재","학생부종합 (서류100%)",424,233,191,"약 55%"],
+["경희대","지역균형","학생부교과",578,17,561,"3% 내외"],
+["경희대","네오르네상스","학생부종합 (서류+면접)",1055,369,686,"약 35%"],
+["한국외대","학교장추천","학생부교과",375,11,364,"3% 내외"],
+["한국외대","면접형/서류형","학생부종합",976,439,537,"약 45% (외고·국제고 우세)"],
+["서울시립대","지역균형선발","학생부교과",230,5,225,"2% 내외"],
+["서울시립대","학생부종합Ⅰ/Ⅱ","학생부종합",483,135,348,"약 28%"],
+["건국대","KU학교추천","학생부교과",341,10,331,"3% 내외"],
+["건국대","KU자기추천","학생부종합 (서류+면접)",830,249,581,"약 30%"],
+["홍익대","학교장추천자","학생부교과",313,9,304,"3% 내외"],
+["홍익대","학교생활우수자","학생부종합 (높은 수능최저)",904,226,678,"약 25%"],
+["동국대","학교장추천인재","학생부교과",409,12,397,"3% 내외"],
+["동국대","Do Dream(전형 전체)","학생부종합 (서류+면접)",810,186,624,"약 23%"]
+].map(r=>({u:r[0],name:r[1],type:r[2],tot:r[3],spc:r[4],gen:r[5],ratio:r[6],
+           kind:r[2].startsWith("학생부교과")?"교과":"종합"}));
+
+const RATE = [["일반고+자공고",0.788],["자사고+외고/국제고+과학고+영재고",0.09],["기타(검정고시+특성화고)",0.122]];
+
+const fmt = n => n.toLocaleString("ko-KR");
+const pct = (a,b,d=1) => b ? (a/b*100).toFixed(d)+"%" : "-";
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const REDUCE = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cur = {tot:0,gen:0,spc:0};
+let nonce = 0;   // 전형별 막대는 매번 0에서 다시 자라도록
+
+// 숫자 카운트 애니메이션
+function countTo(el, from, to, pre, post, ms=700){
+  if(REDUCE || from===to){ el.textContent = pre+fmt(to)+post; return; }
+  const t0 = performance.now();
+  const step = now=>{
+    const k = Math.min(1,(now-t0)/ms), e = 1-Math.pow(1-k,3);
+    el.textContent = pre+fmt(Math.round(from+(to-from)*e))+post;
+    if(k<1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// 막대: 이전 너비(없으면 0)에서 새 너비로 자라도록
+function morph(prev){
+  const els = document.querySelectorAll("[data-k]");
+  els.forEach(el=>{ el.style.width = prev[el.dataset.k] || "0px"; });
+  void document.body.offsetWidth;            // 강제 리플로우
+  requestAnimationFrame(()=>els.forEach(el=>{
+    const row = el.closest("tr,.track"); const d = row && row.previousElementSibling && row.previousElementSibling.style ? row.previousElementSibling.style.animationDelay || row.style.animationDelay : "";
+    el.style.transitionDelay = d || "0ms";
+    el.style.width = el.dataset.w;
+  }));
+}
+
+function render(f){
+  const rows = f==="all" ? DATA : DATA.filter(d=>d.kind===f);
+  const T = rows.reduce((a,d)=>(a.tot+=d.tot,a.gen+=d.gen,a.spc+=d.spc,a),{tot:0,gen:0,spc:0});
+  nonce++;
+
+  // 지금 화면의 막대 너비 기억
+  const prev = {};
+  document.querySelectorAll("[data-k]").forEach(el=>prev[el.dataset.k]=el.style.width);
+
+  // 카드
+  countTo(document.getElementById("cTot"), cur.tot, T.tot, "", "명");
+  countTo(document.getElementById("cGen"), cur.gen, T.gen, "약 ", "명");
+  countTo(document.getElementById("cSpc"), cur.spc, T.spc, "약 ", "명");
+  document.getElementById("cTotP").textContent = rows.length+"개 전형";
+  document.getElementById("cGenP").textContent = pct(T.gen,T.tot);
+  document.getElementById("cSpcP").textContent = pct(T.spc,T.tot);
+  Object.assign(cur,T);
+  document.querySelectorAll(".card").forEach(c=>{c.classList.remove("pulse"); void c.offsetWidth; c.classList.add("pulse");});
+
+  // 표
+  const span = {}; rows.forEach(d=>span[d.u]=(span[d.u]||0)+1);
+  const seen = {};
+  document.getElementById("tb").innerHTML = rows.map((d,i)=>{
+    const first = !seen[d.u]; seen[d.u]=1;
+    const share = (d.spc/d.tot*100).toFixed(1)+"%";
+    return `<tr style="animation-delay:${i*22}ms">
+      ${first?`<td class="univ" rowspan="${span[d.u]}">${esc(d.u)}</td>`:""}
+      <td class="nm">${esc(d.name)}</td>
+      <td class="type"><span class="tag ${d.kind==="교과"?"k":"j"}">${d.kind}</span>${esc(d.type)}</td>
+      <td class="r num tot">${fmt(d.tot)}명</td>
+      <td class="r num spc">약 ${fmt(d.spc)}명</td>
+      <td class="r num gen">약 ${fmt(d.gen)}명</td>
+      <td><div class="ratio"><div class="bar"><b data-k="t${nonce}|${esc(d.u+d.name)}" data-w="${share}"></b></div><span class="txt num">${esc(d.ratio)}</span></div></td>
+    </tr>`;
+  }).join("");
+  const label = f==="all" ? "주요 13개 대학 주요 전형 합계" : `주요 13개 대학 ${f}전형 합계`;
+  document.getElementById("tf").innerHTML = `<tr>
+      <td>합계</td><td colspan="2">${label}</td>
+      <td class="r num">${fmt(T.tot)}명</td>
+      <td class="r num">약 ${fmt(T.spc)}명</td>
+      <td class="r num">약 ${fmt(T.gen)}명</td>
+      <td><div class="ratio"><div class="bar"><b data-k="t|합계" data-w="${(T.spc/T.tot*100).toFixed(1)}%"></b></div><span class="txt num">약 ${pct(T.spc,T.tot)}</span></div></td>
+    </tr>`;
+
+  // 차트 1: 전형별 인원(누적 막대)
+  const max = Math.max(...rows.map(d=>d.tot));
+  let prevU = null;
+  document.getElementById("ch1").innerHTML = rows.map((d,i)=>{
+    const k = esc(d.u+"|"+d.name);
+    const w = (d.tot/max).toFixed(4);
+    const gW = d.gen/d.tot*100, sW = d.spc/d.tot*100;
+    const showU = d.u!==prevU; prevU = d.u;
+    return `<div class="lab" style="animation-delay:${i*22}ms" title="${esc(d.u)} · ${esc(d.name)}">${showU?`<b>${esc(d.u)}</b> · `:`<small>└ </small>`}${esc(d.name)}</div>
+      <div class="track"><div class="stack" data-k="a${nonce}|${k}" data-w="calc((100% - 90px) * ${w})">
+        <div class="seg g num" style="width:${gW}%" title="일반고 ${fmt(d.gen)}명 (${pct(d.gen,d.tot)})">${gW>=14?fmt(d.gen):""}</div>
+        <div class="seg s num" style="width:${sW}%" title="특목고·자사고 ${fmt(d.spc)}명 (${pct(d.spc,d.tot)})">${sW>=14?fmt(d.spc):""}</div>
+      </div><span class="sum num">${fmt(d.tot)}명</span></div>`;
+  }).join("");
+
+  // 차트 2: 대학별 비율(100% 누적)
+  const U = [];
+  rows.forEach(d=>{
+    let u = U.find(x=>x.u===d.u);
+    if(!u){u={u:d.u,gen:0,spc:0};U.push(u);}
+    u.gen+=d.gen; u.spc+=d.spc;
+  });
+  document.getElementById("ch2").innerHTML = U.map((u,i)=>{
+    const t=u.gen+u.spc, g=u.gen/t*100, s=u.spc/t*100, k=esc(u.u);
+    return `<div class="lab" style="animation-delay:${i*30}ms"><b>${esc(u.u)}</b></div>
+      <div class="track"><div class="stack">
+        <div class="seg g num" data-k="bg|${k}" data-w="${g}%" title="일반고 ${fmt(u.gen)}명">${g>=16?`${g.toFixed(1)}% (${fmt(u.gen)}명)`:g.toFixed(1)+"%"}</div>
+        <div class="seg s num" data-k="bs|${k}" data-w="${s}%" title="특목고·자사고 ${fmt(u.spc)}명">${s>=16?`${s.toFixed(1)}% (${fmt(u.spc)}명)`:(s>=6?s.toFixed(1)+"%":"")}</div>
+      </div><span class="sum num">${fmt(t)}명</span></div>`;
+  }).join("");
+
+  morph(prev);
+}
+
+// 고교 유형별·전형별 합계(필터와 무관한 전체 기준)
+(function(){
+  const sum=(k,key)=>DATA.filter(d=>d.kind===k).reduce((a,d)=>a+d[key],0);
+  const g=[sum("교과","gen"),sum("종합","gen")], s=[sum("교과","spc"),sum("종합","spc")];
+  document.getElementById("tb2").innerHTML =
+    `<tr><td><b style="color:var(--gen)">${RATE[0][0]}</b></td><td class="r num">${(RATE[0][1]*100).toFixed(1)}%</td><td class="r num">${fmt(g[0])}명</td><td class="r num">${fmt(g[1])}명</td><td class="r num tot">${fmt(g[0]+g[1])}명</td></tr>
+     <tr><td><b style="color:var(--spc)">${RATE[1][0]}</b></td><td class="r num">${(RATE[1][1]*100).toFixed(1)}%</td><td class="r num">${fmt(s[0])}명</td><td class="r num">${fmt(s[1])}명</td><td class="r num tot">${fmt(s[0]+s[1])}명</td></tr>
+     <tr><td>${RATE[2][0]}</td><td class="r num">${(RATE[2][1]*100).toFixed(1)}%</td><td class="c">-</td><td class="c">-</td><td class="c">-</td></tr>`;
+})();
+
+document.querySelectorAll(".filter button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".filter button").forEach(x=>x.classList.toggle("on",x===b));
+  render(b.dataset.f);
+}));
+render("all");
+</script>
+</body>
+</html>
